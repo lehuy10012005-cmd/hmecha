@@ -75,11 +75,13 @@ const product = dbProduct
 
         <section className="productBox">
           <ProductGallery
-  images={(product.images || []).map((image, index) => ({
-    image_url: image,
-    sort_order: index,
-  }))}
   productName={product.name}
+  images={((product.images || []) as string[]).map(
+    (image: string, index: number) => ({
+      image_url: image,
+      sort_order: index,
+    })
+  )}
 />
 
           <div className="details">
@@ -153,9 +155,9 @@ const product = dbProduct
 
             <h3>Thông tin sản phẩm</h3>
             <ul>
-              {product.specs.map((spec) => (
-                <li key={spec}>{spec}</li>
-              ))}
+             {((product.specs || []) as string[]).map((spec: string) => (
+  <li key={spec}>{spec}</li>
+))}
             </ul>
 
             <h3>Hướng dẫn mua hàng</h3>

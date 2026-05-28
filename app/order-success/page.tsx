@@ -1,5 +1,5 @@
 "use client";
-
+import { Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 
@@ -14,7 +14,7 @@ const BANK_INFO = {
   qrImage: "/qr/tpbank-huy.png",
 };
 
-export default function OrderSuccessPage() {
+function OrderSuccessContent() {
   const searchParams = useSearchParams();
 
   const method = searchParams.get("method") || "cod";
@@ -302,5 +302,12 @@ export default function OrderSuccessPage() {
         }
       `}</style>
     </main>
+  );
+}
+export default function OrderSuccessPage() {
+  return (
+    <Suspense fallback={<div>Đang tải thông tin đơn hàng...</div>}>
+      <OrderSuccessContent />
+    </Suspense>
   );
 }
