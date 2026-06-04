@@ -1,6 +1,9 @@
 import Link from "next/link";
-import { products as localProducts, formatPrice } from "../../data/products";
+import { products as localProducts } from "../../data/products";
 import { supabase } from "../../lib/supabase";
+import ProductFilterGrid, {
+  type FilterProduct,
+} from "../../components/ProductFilterGrid";
 
 type DbProductImage = {
   image_url: string;
@@ -33,7 +36,7 @@ export default async function ProductsPage() {
     `)
     .order("created_at", { ascending: false });
 
-  const databaseProducts =
+   const databaseProducts: FilterProduct[] =
     dbProducts?.map((product: DbProduct) => {
       const image =
         product.product_images
@@ -44,26 +47,32 @@ export default async function ProductsPage() {
         id: product.id,
         name: product.name,
         slug: product.slug,
-        price: product.price,
-        status: product.status,
+        price: Number(product.price || 0),
+        category: product.category || "Khác",
+        status: product.status || "Đang cập nhật",
         badge: product.badge,
         image,
         source: "database",
       };
     }) || [];
 
-  const demoProducts = localProducts.map((product) => ({
+  const demoProducts: FilterProduct[] = localProducts.map((product) => ({
     id: product.id,
     name: product.name,
     slug: product.slug,
-    price: product.price,
-    status: product.status,
+    price: Number(product.price || 0),
+    category: product.category || "Khác",
+    status: product.status || "Đang cập nhật",
     badge: product.badge,
-    image: product.images[0],
+    image: product.images[0] || "/logo/logo.png",
     source: "demo",
   }));
 
-  const allProducts = [...databaseProducts, ...demoProducts];
+  const allProducts: FilterProduct[] = [
+    ...databaseProducts,
+    ...demoProducts,
+  ];
+
 
   return (
     <main className="page">
@@ -82,33 +91,7 @@ export default async function ProductsPage() {
           </span>
         </div>
 
-        <div className="grid">
-          {allProducts.map((product) => (
-            <Link href={`/${product.slug}`} className="card" key={`${product.source}-${product.id}`}>
-              <div className="thumb">
-                <img src={product.image} alt={product.name} />
-
-                {product.badge && <span className="badge">{product.badge}</span>}
-
-                {product.source === "database" && (
-                  <span className="dbBadge">Admin</span>
-                )}
-
-                <button className="heart" type="button">
-                  ♡
-                </button>
-              </div>
-
-              <div className="info">
-                <h2>{product.name}</h2>
-                <p className="price">{formatPrice(product.price)}</p>
-                <p className="stock">
-                  Tình trạng: <b>{product.status}</b>
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
+              <ProductFilterGrid products={allProducts} />
       </div>
 
       <style>{`
@@ -164,7 +147,95 @@ export default async function ProductsPage() {
         .heading span {
           color: #b8c4e6;
         }
+        .filters {
+          display: flex;
+          align-items: flex-end;
+          flex-wrap: wrap;
+          gap: 16px;
+          margin-bottom: 28px;
+          padding: 20px;
+          border-radius: 18px;
+          background: rgba(11, 16, 38, 0.8);
+          border: 1px solid rgba(0, 229, 255, 0.2);
+          box-shadow: 0 0 28px rgba(124, 77, 255, 0.1);
+        }
 
+        .filterGroup {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          min-width: 230px;
+        }
+
+        .filterGroup label {
+          color: #c5d2f2;
+          font-size: 14px;
+          font-weight: 700;
+        }
+
+        .filterGroup select {
+          height: 48px;
+          padding: 0 14px;
+          border-radius: 12px;
+          background: rgba(5, 8, 22, 0.9);
+          border: 1px solid rgba(0, 229, 255, 0.28);
+          color: #ffffff;
+          outline: none;
+          cursor: pointer;
+        }
+
+        .filterGroup select:focus {
+          border-color: #00e5ff;
+          box-shadow: 0 0 14px rgba(0, 229, 255, 0.18);
+        }
+
+        .resetFilter {
+          height: 48px;
+          padding: 0 20px;
+          border-radius: 12px;
+          font-weight: 800;
+          cursor: pointer;
+        }
+
+        .filterCount {
+          margin: 0 0 14px auto;
+          color: #b8c4e6;
+          font-size: 14px;
+        }
+
+        .filterCount strong {
+          color: #00e5ff;
+          font-size: 17px;
+        }
+
+        .emptyFilter {
+          padding: 46px 20px;
+          text-align: center;
+          border-radius: 18px;
+          color: #bac8ea;
+          border: 1px dashed rgba(0, 229, 255, 0.28);
+          background: rgba(11, 16, 38, 0.55);
+        }
+
+        .info .category {
+          margin: 0 0 7px;
+          color: #00e5ff;
+          font-size: 12px;
+          font-weight: 800;
+          letter-spacing: 0.7px;
+          text-transform: uppercase;
+        }
+
+        @media (max-width: 720px) {
+          .filterGroup {
+            width: 100%;
+          }
+
+          .filterCount {
+            width: 100%;
+            margin: 4px 0 0;
+          }
+        }
         .grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));

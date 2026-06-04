@@ -2030,24 +2030,7 @@ a.backtop {
 									<path d="M7.13382 7.1278L7.13379 7.12777L0.512271 0.509686L0.795057 0.226752L0.51227 0.509685C0.512123 0.509538 0.51201 0.509431 0.511927 0.509356L7.13382 7.1278ZM7.13382 7.1278C7.62239 7.61603 7.622 8.40641 7.13301 8.89414L7.13298 8.89417L0.502368 15.5089C0.50222 15.509 0.502106 15.5091 0.502022 15.5092C0.501841 15.5092 0.501547 15.5093 0.501149 15.5093C0.500827 15.5093 0.500574 15.5093 0.500392 15.5092L7.13055 8.89499C7.13056 8.89498 7.13057 8.89497 7.13058 8.89495C7.61976 8.407 7.62011 7.61541 7.13138 7.12699L7.13382 7.1278Z"></path>
 								</svg>
 							</a>
-							<ul>
-								
-								<li class="li-account"><a rel="nofollow" href="/account/login" title="Đăng nhập">
-									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-in-right" viewBox="0 0 16 16">
-										<path fill-rule="evenodd" d="M6 3.5a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 0-1 0v2A1.5 1.5 0 0 0 6.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-8A1.5 1.5 0 0 0 5 3.5v2a.5.5 0 0 0 1 0v-2z"/>
-										<path fill-rule="evenodd" d="M11.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 1 0-.708.708L10.293 7.5H1.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
-									</svg>
-									Đăng nhập</a>
-								</li>
-								<li class="li-account"><a rel="nofollow" href="/account/register" title="Đăng ký">
-									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-plus" viewBox="0 0 16 16">
-										<path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H1s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C9.516 10.68 8.289 10 6 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
-										<path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5z"/>
-									</svg>
-									Đăng ký</a>
-								</li>
-								
-							</ul>
+						
 						</div>
 						<div class="sudes-header-iwish sm-hidden">
 							<a href="/san-pham-yeu-thich" title="Danh sách yêu thích">
@@ -3443,7 +3426,251 @@ a.backtop {
 
 
 
+<style>
+	/* ===== HMECHA HOME PRODUCT FILTER ===== */
+	.hmecha-home-filter {
+		padding: 38px 0 16px;
+	}
 
+	.hmecha-filter-panel {
+		padding: 26px 28px;
+		border-radius: 22px;
+		background:
+			radial-gradient(circle at top right, rgba(0, 229, 255, 0.14), transparent 30%),
+			radial-gradient(circle at top left, rgba(124, 77, 255, 0.18), transparent 35%),
+			rgba(5, 8, 22, 0.9);
+		border: 1px solid rgba(0, 229, 255, 0.24);
+		box-shadow: 0 0 32px rgba(124, 77, 255, 0.12);
+	}
+
+	.hmecha-filter-heading {
+		margin-bottom: 22px;
+	}
+
+	.hmecha-filter-heading p {
+		margin: 0 0 6px;
+		color: #00e5ff;
+		font-size: 13px;
+		font-weight: 800;
+		letter-spacing: 2px;
+	}
+
+	.hmecha-filter-heading h2 {
+		margin: 0;
+		color: #ffffff;
+		font-size: 30px;
+		font-weight: 800;
+	}
+
+	.hmecha-filter-controls {
+		display: flex;
+		align-items: flex-end;
+		flex-wrap: wrap;
+		gap: 16px;
+	}
+
+	.hmecha-filter-field {
+		display: flex;
+		flex-direction: column;
+		gap: 9px;
+		min-width: 245px;
+	}
+
+	.hmecha-filter-field span {
+		color: #d7e2ff;
+		font-size: 14px;
+		font-weight: 700;
+	}
+
+		.hmecha-filter-field select {
+		display: block !important;
+		width: 100% !important;
+		height: 56px !important;
+		padding: 0 46px 0 16px !important;
+		border-radius: 13px !important;
+		border: 1px solid rgba(0, 229, 255, 0.38) !important;
+		background-color: #080d22 !important;
+		background-image: none !important;
+		color: #ffffff !important;
+		-webkit-text-fill-color: #ffffff !important;
+		font-size: 15px !important;
+		font-weight: 500 !important;
+		opacity: 1 !important;
+		cursor: pointer !important;
+		outline: none !important;
+		appearance: auto !important;
+		-webkit-appearance: auto !important;
+		color-scheme: dark;
+	}
+
+	.hmecha-filter-field select option {
+		background: #080d22 !important;
+		color: #ffffff !important;
+		-webkit-text-fill-color: #ffffff !important;
+	}
+
+	.hmecha-filter-field select:focus {
+		border-color: #00e5ff !important;
+		box-shadow: 0 0 18px rgba(0, 229, 255, 0.22) !important;
+	}
+
+	.hmecha-reset-filter:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 0 22px rgba(0, 229, 255, 0.3);
+	}
+
+	.hmecha-filter-tip {
+		margin: 18px 0 0;
+		color: #aebce0;
+		font-size: 14px;
+	}
+
+	.hmecha-filter-result {
+		margin-top: 28px;
+	}
+
+	.hmecha-filter-count {
+		margin: 0 0 18px;
+		color: #becbeb;
+		font-size: 15px;
+	}
+
+	.hmecha-filter-count strong {
+		color: #00e5ff;
+		font-size: 19px;
+	}
+
+	.hmecha-filter-grid {
+		display: grid;
+		grid-template-columns: repeat(5, minmax(0, 1fr));
+		gap: 20px;
+	}
+
+	.hmecha-filter-grid .swiper-slide {
+		width: 100% !important;
+		height: auto !important;
+		margin: 0 !important;
+	}
+
+	.hmecha-filter-grid .item_product_main,
+	.hmecha-filter-grid .product-action {
+		height: 100%;
+	}
+
+	.hmecha-filter-grid .product-action-bottom {
+		margin-top: 14px;
+	}
+
+	.hmecha-filter-grid .product-action-bottom .btn-cart {
+		width: 100%;
+	}
+
+	.hmecha-no-result {
+		grid-column: 1 / -1;
+		padding: 38px 20px;
+		border-radius: 16px;
+		text-align: center;
+		color: #c0cce8;
+		background: rgba(255, 255, 255, 0.04);
+		border: 1px dashed rgba(0, 229, 255, 0.3);
+	}
+
+	.hmecha-filter-hidden {
+		display: none !important;
+	}
+
+	@media (max-width: 1199px) {
+		.hmecha-filter-grid {
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+		}
+	}
+
+	@media (max-width: 991px) {
+		.hmecha-filter-grid {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+		}
+	}
+
+	@media (max-width: 767px) {
+		.hmecha-home-filter {
+			padding: 24px 0 12px;
+		}
+
+		.hmecha-filter-panel {
+			padding: 20px 16px;
+		}
+
+		.hmecha-filter-heading h2 {
+			font-size: 24px;
+		}
+
+		.hmecha-filter-field {
+			width: 100%;
+			min-width: 0;
+		}
+
+		.hmecha-reset-filter {
+			width: 100%;
+		}
+
+		.hmecha-filter-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: 12px;
+		}
+	}
+</style>
+
+<section class="section-index hmecha-home-filter" id="hmecha-home-filter">
+	<div class="container">
+		<div class="hmecha-filter-panel">
+			<div class="hmecha-filter-heading">
+				<p>TÌM MẪU PHÙ HỢP</p>
+				<h2>Lọc sản phẩm HMECHA</h2>
+			</div>
+
+			<div class="hmecha-filter-controls">
+				<label class="hmecha-filter-field">
+					<span>Loại sản phẩm</span>
+					<select id="hmecha-category-filter">
+						<option value="">Tất cả loại sản phẩm</option>
+					</select>
+				</label>
+
+				<label class="hmecha-filter-field">
+					<span>Khoảng giá</span>
+					<select id="hmecha-price-filter">
+						<option value="">Tất cả mức giá</option>
+						<option value="under300">Dưới 300.000₫</option>
+						<option value="from300to500">300.000₫ - dưới 500.000₫</option>
+						<option value="from500to1000">500.000₫ - 1.000.000₫</option>
+						<option value="over1000">Trên 1.000.000₫</option>
+					</select>
+				</label>
+
+				<button
+					type="button"
+					id="hmecha-reset-filter"
+					class="hmecha-reset-filter"
+					hidden
+				>
+					Xóa bộ lọc
+				</button>
+			</div>
+
+			<p class="hmecha-filter-tip" id="hmecha-filter-tip">
+				Chọn loại sản phẩm hoặc khoảng giá để xem kết quả ngay trên trang chủ.
+			</p>
+
+			<div class="hmecha-filter-result" id="hmecha-filter-result" hidden>
+				<p class="hmecha-filter-count">
+					Tìm thấy <strong id="hmecha-filter-count">0</strong> sản phẩm
+				</p>
+
+				<div class="hmecha-filter-grid" id="hmecha-filter-grid"></div>
+			</div>
+		</div>
+	</div>
+</section>
 <section class="section-index section_flash_sale">
 	<div class="container">
 		<div class="block-product-sale  has-deal-time">
@@ -10500,18 +10727,6 @@ Các Builder ơi, HÔM NAY LÀ NGÀY...</p>
 				<p class="alert-content"></p>
 			</div>
 			
-			
-
-
-.section_services {
-	transform: none !important;
-	margin-top: 28px !important;
-	padding: 0 0 34px !important;
-}
-
-.hmecha-footer-container {
-	padding: 48px 48px 16px !important;
-}
 
 <div class="section_services ">
 	<div class="container">
@@ -10635,7 +10850,7 @@ Các Builder ơi, HÔM NAY LÀ NGÀY...</p>
 				<h4 class="hmecha-footer-title">KHÁM PHÁ HMECHA</h4>
 				<ul class="hmecha-footer-links">
 					<li><a href="/" target="_top">Trang chủ</a></li>
-					<li><a href="/in-stock" target="_top">Sản phẩm có sẵn</a></li>
+					<li><a href="/products" target="_top">Sản phẩm có sẵn</a></li>
 					<li><a href="/preorder" target="_top">Đặt trước mô hình</a></li>
 					<li><a href="/gundam-bandai" target="_top">Gundam Bandai</a></li>
 					<li><a href="/tin-tuc" target="_top">Tin tức & hướng dẫn</a></li>
@@ -10673,15 +10888,22 @@ Các Builder ơi, HÔM NAY LÀ NGÀY...</p>
 		<div class="hmecha-contact-bar">
 
 			<div class="hmecha-contact-item">
-				<svg class="hmecha-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-					<path d="M12 21s7-6.1 7-12a7 7 0 1 0-14 0c0 5.9 7 12 7 12Z"/>
-					<circle cx="12" cy="9" r="2.5"/>
-				</svg>
-				<div>
-					<strong>Cửa hàng HMECHA</strong>
-					<span>99 Hồ Đắc Di, Thành Phố Huế</span>
-				</div>
-			</div>
+	<svg class="hmecha-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+		<path d="M12 21s7-6.1 7-12a7 7 0 1 0-14 0c0 5.9 7 12 7 12Z"/>
+		<circle cx="12" cy="9" r="2.5"/>
+	</svg>
+	<div>
+		<strong>Cửa hàng HMECHA</strong>
+		<a
+			href="https://maps.app.goo.gl/2SHFrp68LC1VShfc6"
+			target="_blank"
+			rel="noopener noreferrer"
+			title="Xem địa chỉ HMECHA trên Google Maps"
+		>
+			99 Hồ Đắc Di, Thành Phố Huế
+		</a>
+	</div>
+</div>
 
 			<div class="hmecha-contact-item">
 				<svg class="hmecha-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -12349,7 +12571,7 @@ var ajaxCart = (function(module, $) {
 		</div>
 			
 		<div class="item map">
-			<a target="_blank" href="https://maps.app.goo.gl/h2Gkyc6xkDXaq1Ga9">
+			<a target="_blank" rel="noopener noreferrer" href="https://maps.app.goo.gl/2SHFrp68LC1VShfc6">
 				<span class="img">
 					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pin-map" viewBox="0 0 16 16">
 						<path fill-rule="evenodd" d="M3.1 11.2a.5.5 0 0 1 .4-.2H6a.5.5 0 0 1 0 1H3.75L1.5 15h13l-2.25-3H10a.5.5 0 0 1 0-1h2.5a.5.5 0 0 1 .4.2l3 4a.5.5 0 0 1-.4.8H.5a.5.5 0 0 1-.4-.8l3-4z"/>
@@ -12627,7 +12849,141 @@ var ajaxCart = (function(module, $) {
       </div>
     `;
   }
+  function productMatchesPrice(product, range) {
+    const price = Number(product.price || 0);
 
+    switch (range) {
+      case "under300":
+        return price < 300000;
+
+      case "from300to500":
+        return price >= 300000 && price < 500000;
+
+      case "from500to1000":
+        return price >= 500000 && price <= 1000000;
+
+      case "over1000":
+        return price > 1000000;
+
+      default:
+        return true;
+    }
+  }
+
+  function populateHomeFilterCategories(products) {
+    const categorySelect = document.getElementById("hmecha-category-filter");
+
+    if (!categorySelect) return;
+
+    const categories = Array.from(
+      new Set(
+        products
+          .map(function (product) {
+            return String(product.category || "").trim();
+          })
+          .filter(Boolean)
+      )
+    ).sort(function (a, b) {
+      return a.localeCompare(b, "vi");
+    });
+
+    categorySelect.innerHTML =
+      '<option value="">Tất cả loại sản phẩm</option>' +
+      categories
+        .map(function (category) {
+          return (
+            '<option value="' +
+            escapeHtml(category) +
+            '">' +
+            escapeHtml(category) +
+            "</option>"
+          );
+        })
+        .join("");
+  }
+
+  function setupHomeProductFilter(products) {
+    const categorySelect = document.getElementById("hmecha-category-filter");
+    const priceSelect = document.getElementById("hmecha-price-filter");
+    const resetButton = document.getElementById("hmecha-reset-filter");
+    const resultBox = document.getElementById("hmecha-filter-result");
+    const resultGrid = document.getElementById("hmecha-filter-grid");
+    const resultCount = document.getElementById("hmecha-filter-count");
+    const resultTip = document.getElementById("hmecha-filter-tip");
+
+    if (
+      !categorySelect ||
+      !priceSelect ||
+      !resetButton ||
+      !resultBox ||
+      !resultGrid ||
+      !resultCount ||
+      !resultTip
+    ) {
+      return;
+    }
+
+    populateHomeFilterCategories(products);
+
+    const normalProductSections = document.querySelectorAll(
+      ".section_flash_sale, .section_product_1, .section_product_2, .section_product_tab_1, .section_product_tab_2, .section_product_3, .section_product_4"
+    );
+
+    function applyHomeFilter() {
+      const selectedCategory = categorySelect.value;
+      const selectedPrice = priceSelect.value;
+      const isFiltering = Boolean(selectedCategory || selectedPrice);
+
+      resetButton.hidden = !isFiltering;
+      resultBox.hidden = !isFiltering;
+      resultTip.hidden = isFiltering;
+
+      normalProductSections.forEach(function (section) {
+        section.classList.toggle("hmecha-filter-hidden", isFiltering);
+      });
+
+      if (!isFiltering) {
+        resultGrid.innerHTML = "";
+        resultCount.textContent = "0";
+        return;
+      }
+
+      const filteredProducts = products.filter(function (product) {
+        const matchedCategory =
+          !selectedCategory ||
+          String(product.category || "").trim() === selectedCategory;
+
+        const matchedPrice = productMatchesPrice(product, selectedPrice);
+
+        return matchedCategory && matchedPrice;
+      });
+
+      resultCount.textContent = String(filteredProducts.length);
+
+      if (filteredProducts.length === 0) {
+        resultGrid.innerHTML =
+          '<div class="hmecha-no-result">Không có sản phẩm phù hợp với bộ lọc hiện tại.</div>';
+        return;
+      }
+
+      resultGrid.innerHTML = filteredProducts.map(renderProductCard).join("");
+
+      bindAddToCartButtons(resultGrid);
+
+      if (typeof awe_lazyloadImage === "function") {
+        awe_lazyloadImage();
+      }
+    }
+
+    categorySelect.addEventListener("change", applyHomeFilter);
+    priceSelect.addEventListener("change", applyHomeFilter);
+
+    resetButton.addEventListener("click", function () {
+      categorySelect.value = "";
+      priceSelect.value = "";
+      applyHomeFilter();
+    });
+  }
   function addToCartFromButton(button) {
     const item = {
       id: button.dataset.id,
@@ -12674,8 +13030,14 @@ var ajaxCart = (function(module, $) {
     alert("Đã thêm sản phẩm vào giỏ hàng.");
   }
 
-  function bindAddToCartButtons() {
-    document.querySelectorAll(".hmecha-add-cart").forEach(function (button) {
+    function bindAddToCartButtons(scope) {
+    const root = scope || document;
+
+    root.querySelectorAll(".hmecha-add-cart").forEach(function (button) {
+      if (button.dataset.cartBound === "true") return;
+
+      button.dataset.cartBound = "true";
+
       button.addEventListener("click", function () {
         addToCartFromButton(button);
       });
@@ -12723,7 +13085,9 @@ var ajaxCart = (function(module, $) {
         return;
       }
 
-      const products = data.products || [];
+            const products = data.products || [];
+
+      setupHomeProductFilter(products);
 
       Object.keys(SECTION_CONFIG).forEach(function (sectionKey) {
         renderSection(sectionKey, products);
