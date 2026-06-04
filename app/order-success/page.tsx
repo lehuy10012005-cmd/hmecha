@@ -109,8 +109,8 @@ function OrderSuccessContent() {
             Về trang chủ
           </Link>
 
-          <Link href="/admin/orders" className="adminBtn">
-            Xem đơn trong admin
+          <Link href="/tai-khoan/don-hang" className="adminBtn">
+            Xem đơn hàng của tôi
           </Link>
         </div>
       </section>

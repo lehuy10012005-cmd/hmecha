@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { supabase } from "../../lib/supabase";
 
 type CartItem = {
   id: string;
@@ -19,11 +18,6 @@ function formatPrice(price: number) {
   return Number(price || 0).toLocaleString("vi-VN") + "₫";
 }
 
-function isUuid(value: string) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-    value
-  );
-}
 
 export default function CheckoutPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -40,10 +34,22 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     const savedCart = localStorage.getItem("hmecha-cart");
-
     if (savedCart) {
       setCart(JSON.parse(savedCart));
     }
+
+    fetch("/api/account/profile")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (!data?.profile) return;
+        setCustomer((current) => ({
+          ...current,
+          name: current.name || data.profile.full_name || "",
+          phone: current.phone || data.profile.phone || "",
+          email: current.email || data.profile.email || "",
+        }));
+      })
+      .catch(() => undefined);
   }, []);
 
   const subtotal = useMemo(() => {
@@ -93,6 +99,11 @@ export default function CheckoutPage() {
 
         const data = await response.json();
 
+        if (response.status === 401) {
+          window.location.href = "/dang-nhap?next=/checkout";
+          return;
+        }
+
         if (!response.ok) {
           setPlacing(false);
           alert(data.message || "Không tạo được thanh toán VNPAY.");
@@ -111,83 +122,28 @@ export default function CheckoutPage() {
       }
     }
 
-    const { data: order, error: orderError } = await supabase
-      .from("orders")
-      .insert({
-        customer_name: customer.name,
-        customer_phone: customer.phone,
-        customer_email: customer.email || null,
-        customer_address: customer.address,
-        note: customer.note || null,
-        payment_method: "cod",
-        payment_status: "cod",
-        subtotal,
-        shipping_fee: shippingFee,
-        total,
-        status: "Chờ xác nhận",
-      })
-      .select()
-      .single();
-
-    if (orderError) {
+    try {
+      const response = await fetch("/api/checkout/cod", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cart, customer: { ...customer, payment: "cod" } }),
+      });
+      const data = await response.json();
+      if (response.status === 401) {
+        window.location.href = "/dang-nhap?next=/checkout";
+        return;
+      }
+      if (!response.ok) {
+        setPlacing(false);
+        alert(data.message || "Không tạo được đơn COD.");
+        return;
+      }
+      localStorage.removeItem("hmecha-cart");
+      window.open(data.successUrl, "_top");
+    } catch {
       setPlacing(false);
-      alert("Lỗi tạo đơn COD: " + orderError.message);
-      return;
+      alert("Lỗi kết nối khi tạo đơn COD.");
     }
-
-    const orderItems = cart.map((item) => ({
-      order_id: order.id,
-      product_id: isUuid(item.id) ? item.id : null,
-      product_name: item.name,
-      product_price: item.price,
-      quantity: item.quantity,
-    }));
-
-   const { error: itemsError } = await supabase
-  .from("order_items")
-  .insert(orderItems);
-
-if (itemsError) {
-  setPlacing(false);
-  alert("Đã tạo đơn nhưng lỗi lưu sản phẩm: " + itemsError.message);
-  return;
-}
-
-// COD: trừ kho ngay sau khi tạo đơn thành công
-for (const item of cart) {
-  if (isUuid(item.id)) {
-    await supabase.rpc("decrement_product_stock", {
-      product_id_input: item.id,
-      quantity_input: item.quantity,
-    });
-  }
-}
-
-await supabase
-  .from("orders")
-  .update({
-    stock_deducted: true,
-    stock_deducted_at: new Date().toISOString(),
-  })
-  .eq("id", order.id);
-await fetch("/api/orders/send-email", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    orderId: order.id,
-  }),
-});
-localStorage.removeItem("hmecha-cart");
-
-    const successUrl =
-      `/order-success?method=cod` +
-      `&total=${total}` +
-      `&order=${encodeURIComponent(order.id)}` +
-      `&content=${encodeURIComponent("COD")}`;
-
-    window.open(successUrl, "_top");
   }
 
   return (

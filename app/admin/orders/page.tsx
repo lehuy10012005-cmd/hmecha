@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "../../../lib/supabase";
 
 type OrderItem = {
   id: string;
@@ -40,41 +39,28 @@ export default function AdminOrdersPage() {
 
   async function loadOrders() {
     setLoading(true);
-
-    const { data, error } = await supabase
-      .from("orders")
-      .select(`
-        *,
-        order_items (
-          id,
-          product_name,
-          product_price,
-          quantity
-        )
-      `)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      alert("Lỗi tải đơn hàng: " + error.message);
+    const response = await fetch("/api/admin/orders", { cache: "no-store" });
+    const result = await response.json();
+    if (!response.ok) {
+      alert("Lỗi tải đơn hàng: " + (result.message || "Không rõ lỗi."));
       setLoading(false);
       return;
     }
-
-    setOrders(data || []);
+    setOrders(result.orders || []);
     setLoading(false);
   }
 
   async function updateStatus(orderId: string, status: string) {
-    const { error } = await supabase
-      .from("orders")
-      .update({ status })
-      .eq("id", orderId);
-
-    if (error) {
-      alert("Lỗi cập nhật trạng thái: " + error.message);
+    const response = await fetch("/api/admin/orders", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderId, status }),
+    });
+    const result = await response.json();
+    if (!response.ok) {
+      alert("Lỗi cập nhật trạng thái: " + (result.message || "Không rõ lỗi."));
       return;
     }
-
     loadOrders();
   }
 

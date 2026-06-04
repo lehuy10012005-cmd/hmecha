@@ -1,7 +1,7 @@
 import Link from "next/link";
 import crypto from "crypto";
 import qs from "qs";
-import { supabase } from "../../../lib/supabase";
+import { supabaseAdmin as supabase } from "../../../lib/supabase-admin";
 import { sendOrderEmail } from "../../../lib/sendOrderEmail";
 function sortObject(obj: Record<string, string>) {
   const sorted: Record<string, string> = {};
@@ -185,8 +185,8 @@ if (txnRef && isValidSignature) {
             Về trang chủ
           </Link>
 
-          <Link href="/admin/orders" className="adminBtn">
-            Xem đơn hàng admin
+          <Link href="/tai-khoan/don-hang" className="adminBtn">
+            Xem đơn hàng của tôi
           </Link>
         </div>
       </section>

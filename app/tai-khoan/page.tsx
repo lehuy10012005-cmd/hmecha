@@ -1,0 +1,9 @@
+import Link from "next/link";
+import { createAuthServerClient } from "../../lib/supabase-auth/server";
+export default async function CustomerAccountPage() {
+  const supabase = await createAuthServerClient(); const { data: { user } } = await supabase.auth.getUser();
+  const { data: profile } = await supabase.from("profiles").select("full_name,email,phone").eq("id", user!.id).maybeSingle();
+  return <section className="account"><p className="eyebrow">HMECHA MEMBER</p><h1>Xin chào, {profile?.full_name || user?.email || "khách hàng"}!</h1><p className="intro">Từ đây bạn có thể xem đơn hàng đã mua bằng tài khoản này. Tích điểm và voucher sẽ được bổ sung ở bước tiếp theo.</p><div className="cards"><article><span>Đơn hàng của tôi</span><strong>Theo dõi ngay</strong><Link href="/tai-khoan/don-hang">Xem đơn hàng →</Link></article><article><span>Điểm tích lũy</span><strong>0 điểm</strong><small>Sắp triển khai sau khi đơn hoàn thành.</small></article><article><span>Hạng thành viên</span><strong>Rookie Builder</strong><small>Hạng khởi đầu của thành viên HMecha.</small></article></div><style>{`
+    .eyebrow{color:#00e5ff;font-size:13px;font-weight:950;letter-spacing:2px}h1{margin:13px 0;font-size:43px}.intro{max-width:700px;margin-bottom:34px;color:#aab9dd;line-height:1.7}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:17px}.cards article{min-height:170px;padding:25px;border-radius:20px;border:1px solid rgba(0,229,255,.16);background:rgba(255,255,255,.055)}article span{display:block;color:#9eaed3;font-size:13px;font-weight:850;text-transform:uppercase}article strong{display:block;margin:19px 0;color:#00e5ff;font-size:24px}article a{color:#ff78d2;text-decoration:none;font-weight:850}article small{color:#aab9dd;line-height:1.5}@media(max-width:950px){.cards{grid-template-columns:1fr}}
+  `}</style></section>;
+}

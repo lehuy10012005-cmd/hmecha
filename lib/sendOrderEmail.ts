@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { supabase } from "./supabase";
+import { supabaseAdmin as supabase } from "./supabase-admin";
 
 function formatPrice(price: number) {
   return Number(price || 0).toLocaleString("vi-VN") + "₫";

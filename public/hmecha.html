@@ -247,40 +247,291 @@ button[type="submit"]:hover {
 .cate-name {
 	color: #ffffff !important;
 }
-	/* Ẩn Fanpage + Hỗ trợ thanh toán + Mua hàng qua Zalo */
-footer .row > div:last-child,
-.footer .row > div:last-child,
-.footer-main .row > div:last-child,
-footer .f-b-box,
-footer .block-payment,
-footer .info_support_zalo,
-footer .title-menu:has(span),
-.bg-footer .f-b-box,
-.bg-footer .block-payment,
-.bg-footer .info_support_zalo {
+	/* ===== FOOTER MỚI HMECHA - PHONG CÁCH CAO CẤP ===== */
+
+.hmecha-custom-footer {
+	background: #181412;
+	border: 1px solid #342d29;
+	color: #cdbd9d;
+	font-family: inherit;
+}
+
+.hmecha-footer-container {
+	max-width: 1820px;
+	margin: 0 auto;
+	padding: 42px 48px 16px;
+}
+
+.hmecha-footer-top {
+	display: grid;
+	grid-template-columns: 1.15fr 0.95fr 1fr 1.08fr;
+	gap: 58px;
+	align-items: start;
+}
+
+.hmecha-brand-header {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	margin-bottom: 26px;
+}
+
+.hmecha-brand-logo {
+	width: 62px;
+	height: 62px;
+	object-fit: contain;
+}
+
+.hmecha-brand-name {
+	color: #f2dfbb;
+	font-size: 27px;
+	line-height: 1;
+	font-weight: 700;
+	letter-spacing: 1.5px;
+	margin: 0;
+}
+
+.hmecha-brand-subtitle {
+	color: #bb8f55;
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 1.2px;
+	margin-top: 5px;
+	text-transform: uppercase;
+}
+
+.hmecha-brand-description {
+	max-width: 400px;
+	color: #c8b99c;
+	font-size: 16px;
+	line-height: 1.8;
+	margin: 0 0 30px;
+}
+
+.hmecha-brand-description strong {
+	color: #ead3a7;
+	font-weight: 500;
+}
+
+.hmecha-footer-title {
+	color: #efd6aa;
+	font-size: 21px;
+	font-weight: 700;
+	margin: 5px 0 24px;
+	letter-spacing: 0.4px;
+}
+
+.hmecha-footer-links {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.hmecha-footer-links li {
+	margin-bottom: 17px;
+}
+
+.hmecha-footer-links a {
+	color: #cab99a !important;
+	font-size: 16px;
+	text-decoration: none !important;
+	transition: color 0.25s ease, transform 0.25s ease;
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.hmecha-footer-links a::before {
+	content: "✧";
+	color: #c49457;
+	font-size: 15px;
+}
+
+.hmecha-support-links a::before {
+	content: "•";
+}
+
+.hmecha-footer-links a:hover {
+	color: #ffffff !important;
+	transform: translateX(4px);
+}
+
+.hmecha-socials {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+}
+
+.hmecha-socials a {
+	width: 48px;
+	height: 48px;
+	border-radius: 50%;
+	background: #282321;
+	border: 1px solid rgba(216, 188, 143, 0.12);
+	color: #f5ebd7 !important;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.25s ease;
+}
+
+.hmecha-socials a:hover {
+	background: #bd8f55;
+	border-color: #bd8f55;
+	color: #181412 !important;
+	transform: translateY(-3px);
+}
+
+.hmecha-socials svg {
+	width: 22px;
+	height: 22px;
+	display: block;
+}
+
+.hmecha-newsletter-text {
+	color: #c8b99c;
+	font-size: 16px;
+	line-height: 1.75;
+	margin: 0 0 22px;
+	max-width: 405px;
+}
+
+.hmecha-newsletter-form {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.hmecha-newsletter-form input {
+	width: 100%;
+	height: 55px;
+	border: 1px solid #3c3531;
+	border-radius: 13px;
+	background: #302b28;
+	padding: 0 18px;
+	color: #f8f1e6;
+	font-size: 16px;
+	outline: none;
+}
+
+.hmecha-newsletter-form input::placeholder {
+	color: #8f8478;
+}
+
+.hmecha-newsletter-form input:focus {
+	border-color: #bd8f55;
+}
+
+.hmecha-newsletter-form button {
+	height: 55px;
+	border: none;
+	border-radius: 13px;
+	background: #bd8f55;
+	color: #191412;
+	font-size: 16px;
+	font-weight: 700;
+	letter-spacing: 0.8px;
+	cursor: pointer;
+	transition: background 0.25s ease, transform 0.25s ease;
+}
+
+.hmecha-newsletter-form button:hover {
+	background: #d1a269;
+	transform: translateY(-2px);
+}
+
+.hmecha-contact-bar {
+	margin-top: 54px;
+	padding: 30px 0;
+	border-top: 1px solid #342d29;
+	border-bottom: 1px solid #342d29;
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 28px;
+}
+
+.hmecha-contact-item {
+	display: flex;
+	align-items: flex-start;
+	gap: 15px;
+}
+
+.hmecha-contact-icon {
+	width: 24px;
+	height: 24px;
+	color: #c49457;
+	flex-shrink: 0;
+	margin-top: 3px;
+}
+
+.hmecha-contact-item strong {
+	display: block;
+	color: #f3e6d1;
+	font-size: 16px;
+	margin-bottom: 6px;
+}
+
+.hmecha-contact-item span,
+.hmecha-contact-item a {
+	color: #cdbd9d !important;
+	font-size: 15px;
+	text-decoration: none !important;
+	line-height: 1.5;
+}
+
+.hmecha-contact-item a:hover {
+	color: #ffffff !important;
+}
+
+.hmecha-footer-bottom {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 20px;
+	padding-top: 18px;
+	color: #a99779;
+	font-size: 14px;
+}
+
+.hmecha-footer-bottom strong {
+	color: #d4b27b;
+	font-weight: 500;
+}
+
+/* Ẩn cụm liên hệ nổi cũ của template Sapo vì web đã có ChatWidget riêng */
+.main-widget {
 	display: none !important;
 }
-/* Xóa mấy link liên kết trong footer */
-footer .footer-click,
-.footer .footer-click,
-.bg-footer .footer-click,
-footer .list-social,
-.footer .list-social,
-.bg-footer .list-social,
-footer ul.social,
-.footer ul.social,
-.bg-footer ul.social {
-	display: none !important;
+
+@media (max-width: 1100px) {
+	.hmecha-footer-top {
+		grid-template-columns: repeat(2, 1fr);
+		gap: 42px;
+	}
+
+	.hmecha-contact-bar {
+		grid-template-columns: repeat(2, 1fr);
+	}
 }
-/* Ẩn Fanpage trong popup liên hệ */
-.contact-box .fanpage,
-.contact-box [class*="fanpage"],
-.contact-box a[href*="facebook"],
-.contact-box li:has(a[href*="facebook"]),
-.contact-box li:has(.fa-facebook),
-.contact-box li:has(img[src*="facebook"]),
-.contact-box li:has(span:contains("Fanpage")) {
-	display: none !important;
+
+@media (max-width: 650px) {
+	.hmecha-footer-container {
+		padding: 32px 20px 16px;
+	}
+
+	.hmecha-footer-top,
+	.hmecha-contact-bar {
+		grid-template-columns: 1fr;
+	}
+
+	.hmecha-footer-bottom {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.hmecha-brand-name {
+		font-size: 24px;
+	}
 }
 
 /* ===== HMECHA HERO CLEANUP - GIỮ GIAO DIỆN, CHỈ CHỈNH NHẸ ===== */
@@ -1381,7 +1632,244 @@ a[title="Xem tất cả"] {
 	position: static !important;
 }
 </style>
+<style>
+/* ===== FOOTER HMECHA NEON - ĐỒNG BỘ TOÀN WEB ===== */
 
+/* FIX: Khối 4 tiện ích không được đè lên footer */
+.section_services {
+	position: relative !important;
+	z-index: 2 !important;
+	transform: none !important;
+	margin-top: 28px !important;
+	margin-bottom: 0 !important;
+	padding: 0 0 34px !important;
+	background: transparent !important;
+}
+
+.section_services .container {
+	background: transparent !important;
+	border: none !important;
+	box-shadow: none !important;
+	padding: 0 15px !important;
+}
+
+/* Đổi 4 ô tiện ích từ xanh chói sang neon hợp tổng thể */
+.section_services .promo-item {
+	background: linear-gradient(135deg, rgba(18, 25, 51, 0.96), rgba(11, 16, 38, 0.98)) !important;
+	border: 1px solid rgba(0, 229, 255, 0.28) !important;
+	border-radius: 14px !important;
+	box-shadow:
+		0 0 18px rgba(0, 229, 255, 0.10),
+		inset 0 0 20px rgba(124, 77, 255, 0.08) !important;
+	overflow: hidden !important;
+	min-height: 82px !important;
+}
+
+.section_services .promo-item:hover {
+	border-color: rgba(0, 229, 255, 0.65) !important;
+	box-shadow:
+		0 0 24px rgba(0, 229, 255, 0.22),
+		0 0 30px rgba(124, 77, 255, 0.12) !important;
+	transform: translateY(-3px);
+}
+
+.section_services .promo-item .info h3 {
+	color: #ffffff !important;
+	font-weight: 800 !important;
+}
+
+.section_services .promo-item .info span {
+	color: #aebce4 !important;
+}
+
+.section_services .promo-item .icon {
+	background: linear-gradient(135deg, #7c4dff, #00e5ff) !important;
+}
+
+/* Footer nền navy/tím thay cho nền nâu cũ */
+.hmecha-custom-footer {
+	position: relative !important;
+	z-index: 1 !important;
+	background:
+		radial-gradient(circle at 8% 15%, rgba(124, 77, 255, 0.15), transparent 28%),
+		radial-gradient(circle at 92% 18%, rgba(0, 229, 255, 0.10), transparent 28%),
+		linear-gradient(180deg, #080b1d 0%, #050816 100%) !important;
+	border: 1px solid rgba(0, 229, 255, 0.14) !important;
+	border-top: 1px solid rgba(0, 229, 255, 0.30) !important;
+	color: #dce6ff !important;
+	margin-top: 0 !important;
+	box-shadow: inset 0 1px 0 rgba(124, 77, 255, 0.14) !important;
+}
+
+/* Tạo khoảng trống thật sự phía trên footer */
+.hmecha-footer-container {
+	max-width: 1820px !important;
+	margin: 0 auto !important;
+	padding: 48px 48px 16px !important;
+}
+
+/* Logo footer sáng theo tone neon */
+.hmecha-brand-logo {
+	width: 72px !important;
+	height: 72px !important;
+	filter:
+		drop-shadow(0 0 10px rgba(0, 229, 255, 0.55))
+		drop-shadow(0 0 18px rgba(124, 77, 255, 0.42)) !important;
+}
+
+.hmecha-brand-name {
+	color: #ffffff !important;
+	text-shadow: 0 0 14px rgba(0, 229, 255, 0.35) !important;
+}
+
+.hmecha-brand-subtitle {
+	color: #00e5ff !important;
+}
+
+.hmecha-brand-description {
+	color: #b9c8ed !important;
+}
+
+.hmecha-brand-description strong {
+	color: #ffffff !important;
+}
+
+/* Tiêu đề từng cột */
+.hmecha-footer-title {
+	color: #ffffff !important;
+	text-shadow: 0 0 13px rgba(0, 229, 255, 0.25) !important;
+	position: relative;
+	padding-bottom: 13px;
+}
+
+.hmecha-footer-title::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	width: 48px;
+	height: 2px;
+	border-radius: 10px;
+	background: linear-gradient(90deg, #7c4dff, #00e5ff);
+	box-shadow: 0 0 10px rgba(0, 229, 255, 0.50);
+}
+
+/* Link footer */
+.hmecha-footer-links a {
+	color: #c5d2f2 !important;
+}
+
+.hmecha-footer-links a::before {
+	color: #00e5ff !important;
+}
+
+.hmecha-footer-links a:hover {
+	color: #00e5ff !important;
+	text-shadow: 0 0 10px rgba(0, 229, 255, 0.28);
+}
+
+/* Icon Facebook / Instagram / TikTok */
+.hmecha-socials a {
+	background: rgba(18, 25, 51, 0.88) !important;
+	border: 1px solid rgba(0, 229, 255, 0.25) !important;
+	color: #ffffff !important;
+	box-shadow: inset 0 0 14px rgba(124, 77, 255, 0.10) !important;
+}
+
+.hmecha-socials a:hover {
+	background: linear-gradient(135deg, #7c4dff, #00e5ff) !important;
+	border-color: #00e5ff !important;
+	color: #050816 !important;
+	box-shadow: 0 0 20px rgba(0, 229, 255, 0.40) !important;
+}
+
+/* Phần đăng ký email */
+.hmecha-newsletter-text {
+	color: #b9c8ed !important;
+}
+
+.hmecha-newsletter-form input {
+	background: rgba(11, 16, 38, 0.90) !important;
+	border: 1px solid rgba(0, 229, 255, 0.28) !important;
+	color: #ffffff !important;
+}
+
+.hmecha-newsletter-form input::placeholder {
+	color: #8d9bc4 !important;
+}
+
+.hmecha-newsletter-form input:focus {
+	border-color: #00e5ff !important;
+	box-shadow: 0 0 15px rgba(0, 229, 255, 0.18) !important;
+}
+
+.hmecha-newsletter-form button {
+	background: linear-gradient(90deg, #7c4dff, #00e5ff) !important;
+	color: #050816 !important;
+	box-shadow: 0 0 20px rgba(0, 229, 255, 0.28) !important;
+}
+
+.hmecha-newsletter-form button:hover {
+	background: linear-gradient(90deg, #ff4fd8, #7c4dff) !important;
+	color: #ffffff !important;
+}
+
+/* Thanh thông tin liên hệ phía dưới */
+.hmecha-contact-bar {
+	border-top: 1px solid rgba(0, 229, 255, 0.15) !important;
+	border-bottom: 1px solid rgba(0, 229, 255, 0.15) !important;
+}
+
+.hmecha-contact-icon {
+	color: #00e5ff !important;
+	filter: drop-shadow(0 0 8px rgba(0, 229, 255, 0.35));
+}
+
+.hmecha-contact-item strong {
+	color: #ffffff !important;
+}
+
+.hmecha-contact-item span,
+.hmecha-contact-item a {
+	color: #bac8ea !important;
+}
+
+.hmecha-contact-item a:hover {
+	color: #00e5ff !important;
+}
+
+/* Dòng cuối footer */
+.hmecha-footer-bottom {
+	color: #8493bd !important;
+}
+
+.hmecha-footer-bottom strong {
+	color: #00e5ff !important;
+}
+
+/* Nút lên đầu trang đồng bộ */
+.backtop,
+a.backtop {
+	background: linear-gradient(135deg, #7c4dff, #00e5ff) !important;
+	box-shadow: 0 0 20px rgba(0, 229, 255, 0.34) !important;
+	border: none !important;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+	.section_services {
+		padding-bottom: 22px !important;
+	}
+
+	.section_services .promo-item {
+		margin-bottom: 14px !important;
+	}
+
+	.hmecha-footer-container {
+		padding: 34px 20px 16px !important;
+	}
+}
+</style>
 	</head>
 	<body>
 		<div class="opacity_menu"></div>
@@ -1412,8 +1900,8 @@ a[title="Xem tất cả"] {
 				</div>
 				<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 col-12 text-hea-right d-none d-md-block">
 					<div class="box_top_hea">
-						<a title="094563231" href="tel:094563231" class="opaci_href"></a>
-						<span>HOTLINE</span> <b>094563231</b>
+					<a title="0945632321" href="tel:0945632321" class="opaci_href"></a>
+<span>HOTLINE</span> <b>0945632321</b>
 					</div>
 				</div>
 			</div>
@@ -1527,7 +2015,7 @@ a[title="Xem tất cả"] {
 					<div class="col-6 col-xl-4 col-lg-5  col-md-8 header-right">
 
 						<div class="sudes-header-account header-action_account">
-							<a href="javascript:;" class="header-account" aria-label="Tài khoản" title="Tài khoản">
+							<a href="/dang-nhap" target="_top" class="header-account" aria-label="Tài khoản" title="Tài khoản">
 								<span class="box-icon">
 									<svg viewBox="-42 0 512 512.001" xmlns="http://www.w3.org/2000/svg">
 										<path d="m210.351562 246.632812c33.882813 0 63.21875-12.152343 87.195313-36.128906 23.96875-23.972656 36.125-53.304687 36.125-87.191406 0-33.875-12.152344-63.210938-36.128906-87.191406-23.976563-23.96875-53.3125-36.121094-87.191407-36.121094-33.886718 0-63.21875 12.152344-87.191406 36.125s-36.128906 53.308594-36.128906 87.1875c0 33.886719 12.15625 63.222656 36.128906 87.195312 23.980469 23.96875 53.316406 36.125 87.191406 36.125zm-65.972656-189.292968c18.394532-18.394532 39.972656-27.335938 65.972656-27.335938 25.996094 0 47.578126 8.941406 65.976563 27.335938 18.394531 18.398437 27.339844 39.980468 27.339844 65.972656 0 26-8.945313 47.578125-27.339844 65.976562-18.398437 18.398438-39.980469 27.339844-65.976563 27.339844-25.992187 0-47.570312-8.945312-65.972656-27.339844-18.398437-18.394531-27.34375-39.976562-27.34375-65.976562 0-25.992188 8.945313-47.574219 27.34375-65.972656zm0 0"/><path d="m426.128906 393.703125c-.691406-9.976563-2.089844-20.859375-4.148437-32.351563-2.078125-11.578124-4.753907-22.523437-7.957031-32.527343-3.3125-10.339844-7.808594-20.550781-13.375-30.335938-5.769532-10.15625-12.550782-19-20.160157-26.277343-7.957031-7.613282-17.699219-13.734376-28.964843-18.199219-11.226563-4.441407-23.667969-6.691407-36.976563-6.691407-5.226563 0-10.28125 2.144532-20.042969 8.5-6.007812 3.917969-13.035156 8.449219-20.878906 13.460938-6.707031 4.273438-15.792969 8.277344-27.015625 11.902344-10.949219 3.542968-22.066406 5.339844-33.042969 5.339844-10.96875 0-22.085937-1.796876-33.042968-5.339844-11.210938-3.621094-20.300782-7.625-26.996094-11.898438-7.769532-4.964844-14.800782-9.496094-20.898438-13.46875-9.753906-6.355468-14.808594-8.5-20.035156-8.5-13.3125 0-25.75 2.253906-36.972656 6.699219-11.257813 4.457031-21.003906 10.578125-28.96875 18.199219-7.609375 7.28125-14.390625 16.121094-20.15625 26.273437-5.558594 9.785157-10.058594 19.992188-13.371094 30.339844-3.199219 10.003906-5.875 20.945313-7.953125 32.523437-2.0625 11.476563-3.457031 22.363282-4.148437 32.363282-.679688 9.777344-1.023438 19.953125-1.023438 30.234375 0 26.726562 8.496094 48.363281 25.25 64.320312 16.546875 15.746094 38.4375 23.730469 65.066406 23.730469h246.53125c26.621094 0 48.511719-7.984375 65.0625-23.730469 16.757813-15.945312 25.253906-37.589843 25.253906-64.324219-.003906-10.316406-.351562-20.492187-1.035156-30.242187zm-44.90625 72.828125c-10.933594 10.40625-25.449218 15.464844-44.378906 15.464844h-246.527344c-18.933594 0-33.449218-5.058594-44.378906-15.460938-10.722656-10.207031-15.933594-24.140625-15.933594-42.585937 0-9.59375.316406-19.066407.949219-28.160157.617187-8.921874 1.878906-18.722656 3.75-29.136718 1.847656-10.285156 4.199219-19.9375 6.996094-28.675782 2.683593-8.378906 6.34375-16.675781 10.882812-24.667968 4.332031-7.617188 9.316407-14.152344 14.816407-19.417969 5.144531-4.925781 11.628906-8.957031 19.269531-11.980469 7.066406-2.796875 15.007812-4.328125 23.628906-4.558594 1.050781.558594 2.921875 1.625 5.953125 3.601563 6.167969 4.019531 13.277344 8.605469 21.136719 13.625 8.859375 5.648437 20.273437 10.75 33.910156 15.152344 13.941406 4.507812 28.160156 6.796875 42.273437 6.796875 14.113282 0 28.335938-2.289063 42.269532-6.792969 13.648437-4.410156 25.058594-9.507813 33.929687-15.164063 8.042969-5.140624 14.953125-9.59375 21.121094-13.617187 3.03125-1.972656 4.902344-3.042969 5.953125-3.601563 8.625.230469 16.566406 1.761719 23.636719 4.558594 7.636719 3.023438 14.121093 7.058594 19.265625 11.980469 5.5 5.261719 10.484375 11.796875 14.816406 19.421875 4.542969 7.988281 8.207031 16.289062 10.886719 24.660156 2.800781 8.75 5.15625 18.398438 7 28.675782 1.867187 10.433593 3.132812 20.238281 3.75 29.144531v.007812c.636719 9.058594.957031 18.527344.960937 28.148438-.003906 18.449219-5.214844 32.378906-15.9375 42.582031zm0 0"/>
@@ -10015,7 +10503,15 @@ Các Builder ơi, HÔM NAY LÀ NGÀY...</p>
 			
 
 
+.section_services {
+	transform: none !important;
+	margin-top: 28px !important;
+	padding: 0 0 34px !important;
+}
 
+.hmecha-footer-container {
+	padding: 48px 48px 16px !important;
+}
 
 <div class="section_services ">
 	<div class="container">
@@ -10076,313 +10572,156 @@ Các Builder ơi, HÔM NAY LÀ NGÀY...</p>
 	</div>
 </div>
 
-<footer class="footer">
-	<div class="mid-footer" style="background-image:url(//bizweb.dktcdn.net/100/382/833/themes/1088984/assets/footer_pattent.png?1777947443506);">
-		<div class="container">
-			<div class="line_foo"></div>
-			<div class="row">
-				<div class="col-xl-4 col-lg-12 col-md-12 col-sm-12 col-xs-12 col-12 footer-info bg_colfirst">
-					<div class="logo-footer">
-						<a href="/" class="logo-wrapper" title="HMECHA Gundam Store">
-							<img width="400" height="231" src="/logo/logo.png" data-src="/logo/logo.png" alt="HMECHA Gundam Store">
-						</a>
-					</div>
-					
-				
-						<div class="info_foo_content">
-	<p>HMECHA luôn trân trọng mọi ý kiến đóng góp từ khách hàng để nâng cấp trải nghiệm dịch vụ và sản phẩm tốt hơn.</p>
-</div>
+<footer class="hmecha-custom-footer">
+	<div class="hmecha-footer-container">
 
-					</div>
-					
-					<div class="list-menu toggle-mn">
-						<div class="content-contact clearfix">
-							<span class="list_footer">
-								<b>Địa chỉ: </b>
-								
-								99 Hồ Đắc Di, Thành Phố Huế
-								
-							</span>
-						</div>
-						<div class="content-contact clearfix">
-							<span class="list_footer">
-								<b>Điện thoại: </b>
-								<a title="0945632321" href="tel:0945632321">
-									0945632321
-								</a>
-							</span>
-						</div>
-						<div class="content-contact clearfix">
-							<span class="list_footer">
-								<b>Email: </b>
-								<a title="lehuy10012005@gmail.com" href="mailto:lehuy10012005@gmail.com">
-									lehuy10012005@gmail.com
-								</a>
-							</span>
-						</div>
-					</div>
-					
-					<div class="social-footer">
-						<div class="social">
-							
-						
-<a href="https://www.facebook.com/share/1DdrYRwtQT/" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="Theo dõi HMECHA trên Facebook">
-	<img class="lazyload" width="35" height="35" alt="Facebook" data-src="//bizweb.dktcdn.net/100/382/833/themes/1088984/assets/facebook_2.svg?1777947443506" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC"/>
-</a>
+		<div class="hmecha-footer-top">
 
-<a href="https://www.instagram.com/hmecha.vn?igsh=MXM4a3B6bXN3enpiaw==" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="Theo dõi HMECHA trên Instagram">
-	<svg width="35" height="35" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle;">
-		<rect x="3" y="3" width="18" height="18" rx="5" stroke="#ffffff" stroke-width="1.8"/>
-		<circle cx="12" cy="12" r="4.2" stroke="#ffffff" stroke-width="1.8"/>
-		<circle cx="17.2" cy="6.8" r="1" fill="#ffffff"/>
-	</svg>
-</a>
-
-
-							
-							
-							
-							
-							
-							<a href="https://www.tiktok.com/@hunbi51" target="_blank" aria-label="Tiktok" title="Theo dõi HMECHA Gundam Store trên Tiktok">
-								<img class="lazyload" width=35 height=35 alt="Tiktok" data-src="//bizweb.dktcdn.net/100/382/833/themes/1088984/assets/tiktok.svg?1777947443506" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC"/>
-							</a>
-						
-							
-							
-						</div>
+			<!-- Cột 1: Thương hiệu -->
+			<div>
+				<div class="hmecha-brand-header">
+					<img class="hmecha-brand-logo" src="/logo/logo.png" alt="HMECHA Logo">
+					<div>
+						<h3 class="hmecha-brand-name">HMECHA</h3>
+						<div class="hmecha-brand-subtitle">Gunpla & Model Kit Store</div>
 					</div>
-					
-					
-					<div class="bo_cong_thuong">
-						<a href="http://online.gov.vn/Home/WebDetails/72952" title="Bộ công thương" target="_blank">
-							<img width="300" height="114" alt="Bộ công thương" data-src="//bizweb.dktcdn.net/100/382/833/themes/1088984/assets/bo_cong_thuong.png?1777947443506" class="lazyload" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC">
-						</a>
-					</div>
-					
 				</div>
-				<div class="col-xl-8 col-lg-12 col-md-12 col-sm-12 col-xs-12 col-12">
-					<div class="row">
-						<div class="col-xs-12 col-md-4 col-lg-3 footer-click">
-							<h4 class="title-menu clicked">
-								<span>Menu</span>
-							</h4>
-							<ul class="list-menu toggle-mn hidden-mob" >
-								
-								
-								<li class="li_menu">
-									<a href="/preorder" title="Đặt Trước">Đặt Trước</a>
-								</li>
-								
-								<li class="li_menu">
-									<a href="/in-stock" title="Có Sẵn">Có Sẵn</a>
-								</li>
-								
-								<li class="li_menu">
-									<a href="/gundam-bandai" title="Gundam Bandai">Gundam Bandai</a>
-								</li>
-								
-								<li class="li_menu">
-									<a href="/gundam-assemble" title="Gundam Assemble">Gundam Assemble</a>
-								</li>
-								
-								<li class="li_menu">
-									<a href="/tcg-card" title="Metal Build">Metal Build</a>
-								</li>
-								
-								<li class="li_menu">
-									<a href="/pokemon" title="Mecha Girl">Mecha Girl</a>
-								</li>
-								
-								<li class="li_menu">
-									<a href="/dong-kit-khac" title="Dòng Kit Khác">Dòng Kit Khác</a>
-								</li>
-								
-								<li class="li_menu">
-									<a href="/accesories" title="Phụ Kiện">Phụ Kiện</a>
-								</li>
-								
-								<li class="li_menu">
-									<a href="/sales" title="Sale">Sale</a>
-								</li>
-								
-								
-							</ul>
-						</div>
-						<div class="col-xs-12 col-md-4 col-lg-3 footer-click">
-							<h4 class="title-menu clicked">
-								<span>Chính sách</span>
-							</h4>
-							<ul class="list-menu toggle-mn hidden-mob footer-click" >
-								
-								
-								<li class="li_menu">
-									<a href="/chinh-sach-bao-mat" title="Chính sách bảo mật">Chính sách bảo mật</a>
-								</li>
-								
-								<li class="li_menu">
-									<a href="/chinh-sach-van-chuyen" title="Chính sách vận chuyển">Chính sách vận chuyển</a>
-								</li>
-								
-								<li class="li_menu">
-									<a href="/chinh-sach-doi-tra" title="Chính sách đổi trả">Chính sách đổi trả</a>
-								</li>
-								
-								<li class="li_menu">
-									<a href="/chinh-sach-thanh-toan" title="Chính sách thanh toán">Chính sách thanh toán</a>
-								</li>
-								
-								<li class="li_menu">
-									<a href="/chinh-sach-bao-hanh" title="Chính sách bảo hành">Chính sách bảo hành</a>
-								</li>
-								
-								<li class="li_menu">
-									<a href="/quy-dinh-dat-coc" title="Quy định đặt cọc">Quy định đặt cọc</a>
-								</li>
-								
-								
-							</ul>
-						</div>
-						<div class="col-xs-12 col-md-4 col-lg-3 footer-click">
-							<h4 class="title-menu clicked">
-								<span>Thông Tin</span>
-							</h4>
-							<ul class="list-menu toggle-mn hidden-mob footer-click" >
-								
-								
-								<li class="li_menu">
-									<a href="/search" title="Tìm kiếm">Tìm kiếm</a>
-								</li>
-								
-								<li class="li_menu">
-									<a href="/account/login" title="Đăng nhập">Đăng nhập</a>
-								</li>
-								
-								<li class="li_menu">
-									<a href="/account/register" title="Đăng ký">Đăng ký</a>
-								</li>
-								
-								<li class="li_menu">
-									<a href="/cart" title="Giỏ hàng">Giỏ hàng</a>
-								</li>
-								
-								
-							</ul>
-						</div>
-						<div class="col-xs-12 col-md-12 col-lg-3">
-							
-							<h4 class="title-menu">
-								<span>Fanpage</span>
-							</h4>
-							<div class="f-b-box">
-								<div id="fb-root"></div>
-								<script>
-									(function(d, s, id) {
-										var js, fjs = d.getElementsByTagName(s)[0];
-										if (d.getElementById(id)) return;
-										js = d.createElement(s); js.id = id;
-										js.src = 'https://connect.facebook.net/vi_VN/sdk.js#xfbml=1&version=v2.11&appId=252271411871880';
-										fjs.parentNode.insertBefore(js, fjs);
-									}(document, 'script', 'facebook-jssdk'));
-								</script>
-								<div class="fb-page" data-href="https://www.facebook.com/GUNDAMVNBUILDSTORE" data-small-header="false" data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="true"><blockquote cite="https://www.facebook.com/GUNDAMVNBUILDSTORE" class="fb-xfbml-parse-ignore"><a style="color:#fff;" href="https://www.facebook.com/GUNDAMVNBUILDSTORE">HMECHA Gundam Store</a></blockquote></div>
-							</div>
-							
-							
-							<div class="block-payment">
-								<h4 class="title-menu">
-									<span>Hỗ trợ thanh toán</span>
-								</h4>
-								<div class="payment-footer list-menu">
-									
-									
-									
-									
-									
-									<div class="payment-item">
-										<img class="lazyload" width=126 height=58 alt="MoMo" data-src="//bizweb.dktcdn.net/100/382/833/themes/1088984/assets/payment_1.png?1777947443506" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC"/>
-									</div>
-									
-									
-									
-									
-									
-									
-									<div class="payment-item">
-										<img class="lazyload" width=126 height=58 alt="Zalo Pay" data-src="//bizweb.dktcdn.net/100/382/833/themes/1088984/assets/payment_2.png?1777947443506" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC"/>
-									</div>
-									
-									
-									
-									
-									
-									
-									<div class="payment-item">
-										<img class="lazyload" width=126 height=58 alt="Mpos" data-src="//bizweb.dktcdn.net/100/382/833/themes/1088984/assets/payment_3.png?1777947443506" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC"/>
-									</div>
-									
-									
-									
-									
-									
-									
-									<div class="payment-item">
-										<img class="lazyload" width=126 height=58 alt="MasterCard" data-src="//bizweb.dktcdn.net/100/382/833/themes/1088984/assets/payment_4.png?1777947443506" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC"/>
-									</div>
-									
-									
-									
-									
-									
-									
-									<div class="payment-item">
-										<img class="lazyload" width=126 height=58 alt="Visa" data-src="//bizweb.dktcdn.net/100/382/833/themes/1088984/assets/payment_5.png?1777947443506" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC"/>
-									</div>
-									
-									
-								</div>
-							</div>
-							
-							<h4 class="title-menu">
-								<span>Mua hàng qua Zalo</span>
-							</h4>
-							<div class="info_support_zalo">
-								<a href="https://apps.sapo.vn/aimini" target="_blank" title="Zalo Mini App">
-									<img class="lazyload" width="256" height="256" alt="Zalo Mini App" data-src="//bizweb.dktcdn.net/100/382/833/themes/1088984/assets/qrzalo.jpg?1777947443506" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsQAAA7EAZUrDhsAAAANSURBVBhXYzh8+PB/AAffA0nNPuCLAAAAAElFTkSuQmCC"/>
-								</a>
-							</div>
-						</div>
-					</div>
+
+				<p class="hmecha-brand-description">
+					<strong>“Lắp ráp đam mê, trưng bày cá tính.”</strong><br>
+					HMECHA mang đến những mẫu Gundam, model kit và phụ kiện chính hãng dành cho cộng đồng yêu mô hình.
+				</p>
+
+				<div class="hmecha-socials">
+					<!-- Facebook: đổi sang SVG đồng bộ -->
+					<a href="https://www.facebook.com/share/1DdrYRwtQT/"
+						target="_blank"
+						rel="noopener noreferrer"
+						aria-label="Facebook"
+						title="Facebook HMECHA">
+						<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+							<path d="M13.5 22V12.9H16.55L17.1 9.4H13.5V7.15C13.5 6.13 14 5.46 15.45 5.46H17.2V2.3C16.9 2.26 15.85 2.15 14.63 2.15C12.08 2.15 10.34 3.7 10.34 6.5V9.4H7.45V12.9H10.34V22H13.5Z"/>
+						</svg>
+					</a>
+
+					<!-- Instagram -->
+					<a href="https://www.instagram.com/hmecha.vn?igsh=MXM4a3B6bXN3enpiaw=="
+						target="_blank"
+						rel="noopener noreferrer"
+						aria-label="Instagram"
+						title="Instagram HMECHA">
+						<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<rect x="3" y="3" width="18" height="18" rx="5" stroke="currentColor" stroke-width="1.8"/>
+							<circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.8"/>
+							<circle cx="17.2" cy="6.8" r="1" fill="currentColor"/>
+						</svg>
+					</a>
+
+					<!-- TikTok: đổi sang SVG đồng bộ -->
+					<a href="https://www.tiktok.com/@hunbi51"
+						target="_blank"
+						rel="noopener noreferrer"
+						aria-label="TikTok"
+						title="TikTok HMECHA">
+						<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+							<path d="M14.2 3H17.25C17.42 4.2 17.93 5.25 18.78 6.1C19.62 6.94 20.69 7.46 21.9 7.64V10.7C20.45 10.67 19.12 10.27 17.91 9.5V15.13C17.91 18.65 15.07 21.5 11.55 21.5C8.03 21.5 5.18 18.65 5.18 15.13C5.18 11.61 8.03 8.76 11.55 8.76C11.84 8.76 12.12 8.78 12.39 8.83V11.98C12.12 11.88 11.84 11.83 11.55 11.83C9.73 11.83 8.25 13.31 8.25 15.13C8.25 16.95 9.73 18.43 11.55 18.43C13.36 18.43 14.84 16.95 14.84 15.13V3H14.2Z"/>
+						</svg>
+					</a>
 				</div>
 			</div>
+
+			<!-- Cột 2: Khám phá -->
+			<div>
+				<h4 class="hmecha-footer-title">KHÁM PHÁ HMECHA</h4>
+				<ul class="hmecha-footer-links">
+					<li><a href="/" target="_top">Trang chủ</a></li>
+					<li><a href="/in-stock" target="_top">Sản phẩm có sẵn</a></li>
+					<li><a href="/preorder" target="_top">Đặt trước mô hình</a></li>
+					<li><a href="/gundam-bandai" target="_top">Gundam Bandai</a></li>
+					<li><a href="/tin-tuc" target="_top">Tin tức & hướng dẫn</a></li>
+				</ul>
+			</div>
+
+			<!-- Cột 3: Hỗ trợ -->
+			<div>
+				<h4 class="hmecha-footer-title">HỖ TRỢ KHÁCH HÀNG</h4>
+				<ul class="hmecha-footer-links hmecha-support-links">
+					<li><a href="/chinh-sach-bao-mat" target="_top">Chính sách bảo mật</a></li>
+					<li><a href="/chinh-sach-van-chuyen" target="_top">Chính sách vận chuyển</a></li>
+					<li><a href="/chinh-sach-doi-tra" target="_top">Hướng dẫn đổi trả</a></li>
+					<li><a href="/chinh-sach-thanh-toan" target="_top">Chính sách thanh toán</a></li>
+					<li><a href="/cart" target="_top">Kiểm tra giỏ hàng</a></li>
+				</ul>
+			</div>
+
+			<!-- Cột 4: Newsletter -->
+			<div>
+				<h4 class="hmecha-footer-title">NHẬN TIN TỪ HMECHA</h4>
+				<p class="hmecha-newsletter-text">
+					Đăng ký để nhận thông tin mô hình mới, lịch preorder và các ưu đãi sớm nhất từ HMECHA.
+				</p>
+
+				<form class="hmecha-newsletter-form" onsubmit="event.preventDefault(); alert('Cảm ơn bạn đã đăng ký nhận tin từ HMECHA!');">
+					<input type="email" placeholder="Email của bạn..." required>
+					<button type="submit">ĐĂNG KÝ NGAY</button>
+				</form>
+			</div>
+
 		</div>
-	</div>
-	<div class="bg-footer-bottom copyright clearfix">
-		<div class="container">
-			<div class="row tablet">
-				<div id="copyright" class="col-lg-12 col-md-12 col-xs-12 fot_copyright">
-					<span class="wsp">
-						
-						<span class="mobile">© Bản quyền thuộc về <b>HMeach</b>
-							<span class="dash"> | </span>
-						</span>
-						
-						<span class="opacity1">Cung cấp bởi</span>
-						
-						<a href="https://www.sapo.vn/?utm_campaign=cpn:kho_theme-plm:footer&utm_source=Tu_nhien&utm_medium=referral&utm_content=fm:text_link-km:-sz:&utm_term=&campaign=kho_theme-sapo" rel="nofollow" title="Sapo" target="_blank">Sapo</a>
-						
-					</span>
-				</div>
-			</div>
-			
-			<a href="#"  class="backtop"  title="Lên đầu trang">
-				<svg width="58" height="58" viewBox="0 0 58 58" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<path d="M18.5 29H39.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-					<path d="M29 18.5L39.5 29L29 39.5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+		<!-- Thanh thông tin liên hệ phía dưới -->
+		<div class="hmecha-contact-bar">
+
+			<div class="hmecha-contact-item">
+				<svg class="hmecha-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+					<path d="M12 21s7-6.1 7-12a7 7 0 1 0-14 0c0 5.9 7 12 7 12Z"/>
+					<circle cx="12" cy="9" r="2.5"/>
 				</svg>
-			</a>
-			
+				<div>
+					<strong>Cửa hàng HMECHA</strong>
+					<span>99 Hồ Đắc Di, Thành Phố Huế</span>
+				</div>
+			</div>
+
+			<div class="hmecha-contact-item">
+				<svg class="hmecha-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+					<path d="M5 4h4l2 5-2.5 1.8a15.8 15.8 0 0 0 4.7 4.7L15 13l5 2v4c0 1.1-.9 2-2 2C9.7 21 3 14.3 3 6c0-1.1.9-2 2-2Z"/>
+				</svg>
+				<div>
+					<strong>Hotline tư vấn</strong>
+					<a href="tel:0945632321">0945632321</a>
+				</div>
+			</div>
+
+			<div class="hmecha-contact-item">
+				<svg class="hmecha-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+					<rect x="3" y="5" width="18" height="14" rx="2"/>
+					<path d="m4 7 8 6 8-6"/>
+				</svg>
+				<div>
+					<strong>Email hỗ trợ</strong>
+					<a href="mailto:lehuy10012005@gmail.com">lehuy10012005@gmail.com</a>
+				</div>
+			</div>
+
+			<div class="hmecha-contact-item">
+				<svg class="hmecha-contact-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+					<circle cx="12" cy="12" r="9"/>
+					<path d="M12 7v5l3 2"/>
+				</svg>
+				<div>
+					<strong>Giờ mở cửa</strong>
+					<span>08:00 - 21:00 mỗi ngày</span>
+				</div>
+			</div>
+
 		</div>
+
+		<div class="hmecha-footer-bottom">
+			<span>© 2026 <strong>HMECHA</strong> — Gunpla & Model Kit Store.</span>
+			<span>Lắp ráp đam mê, lưu giữ huyền thoại.</span>
+		</div>
+
 	</div>
 </footer>
 <div class="fixed-bottom-mobile d-lg-none d-block">
