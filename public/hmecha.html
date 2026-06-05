@@ -1869,6 +1869,208 @@ a.backtop {
 		padding: 34px 20px 16px !important;
 	}
 }
+<style id="hmecha-fix-flash-marquee-visible">
+/* ===== HMECHA FLASH SALE MARQUEE - DARK NEON VERSION ===== */
+
+.section_flash_sale .marquee {
+	position: relative !important;
+	overflow: hidden !important;
+	margin: 18px 0 24px !important;
+	padding: 12px 0 !important;
+	border-radius: 14px !important;
+	background:
+		linear-gradient(90deg, rgba(124, 77, 255, 0.18), rgba(0, 229, 255, 0.10), rgba(255, 79, 216, 0.14)),
+		#070b1d !important;
+	border: 1px solid rgba(0, 229, 255, 0.28) !important;
+	box-shadow:
+		0 0 22px rgba(0, 229, 255, 0.12),
+		inset 0 0 22px rgba(124, 77, 255, 0.08) !important;
+}
+
+.section_flash_sale .marquee::before,
+.section_flash_sale .marquee::after {
+	content: "" !important;
+	position: absolute !important;
+	top: 0 !important;
+	bottom: 0 !important;
+	width: 70px !important;
+	z-index: 2 !important;
+	pointer-events: none !important;
+}
+
+.section_flash_sale .marquee::before {
+	left: 0 !important;
+	background: linear-gradient(90deg, #070b1d, transparent) !important;
+}
+
+.section_flash_sale .marquee::after {
+	right: 0 !important;
+	background: linear-gradient(270deg, #070b1d, transparent) !important;
+}
+
+.section_flash_sale .marquee-content {
+	display: flex !important;
+	align-items: center !important;
+	gap: 24px !important;
+	padding: 0 24px !important;
+}
+
+.section_flash_sale .marquee-item {
+	display: inline-flex !important;
+	align-items: center !important;
+	gap: 16px !important;
+	flex-shrink: 0 !important;
+	opacity: 1 !important;
+	visibility: visible !important;
+}
+
+.section_flash_sale .marquee-text,
+.section_flash_sale .marquee-text a,
+.section_flash_sale .marquee-item,
+.section_flash_sale .marquee-item a {
+	color: #eaf1ff !important;
+	-webkit-text-fill-color: #eaf1ff !important;
+	opacity: 1 !important;
+	visibility: visible !important;
+	text-shadow: 0 0 12px rgba(0, 229, 255, 0.22) !important;
+	font-size: 17px !important;
+	font-weight: 850 !important;
+	letter-spacing: 0.2px !important;
+	text-decoration: none !important;
+	white-space: nowrap !important;
+}
+
+.section_flash_sale .marquee-text::before {
+	content: "✦" !important;
+	margin-right: 10px !important;
+	color: #00e5ff !important;
+	text-shadow: 0 0 12px rgba(0, 229, 255, 0.55) !important;
+}
+
+.section_flash_sale .btn-marquee {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	min-height: 42px !important;
+	padding: 0 24px !important;
+	border-radius: 12px !important;
+	background: linear-gradient(135deg, #7c4dff, #00e5ff) !important;
+	color: #050816 !important;
+	-webkit-text-fill-color: #050816 !important;
+	font-size: 15px !important;
+	font-weight: 950 !important;
+	text-decoration: none !important;
+	box-shadow:
+		0 0 16px rgba(0, 229, 255, 0.24),
+		inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+	transition: transform 0.22s ease, box-shadow 0.22s ease !important;
+}
+
+.section_flash_sale .btn-marquee:hover {
+	transform: translateY(-2px) !important;
+	background: linear-gradient(135deg, #ff4fd8, #7c4dff) !important;
+	color: #ffffff !important;
+	-webkit-text-fill-color: #ffffff !important;
+	box-shadow: 0 0 22px rgba(255, 79, 216, 0.32) !important;
+}
+
+@media (max-width: 767px) {
+	.section_flash_sale .marquee {
+		margin: 14px 0 18px !important;
+		padding: 10px 0 !important;
+		border-radius: 12px !important;
+	}
+
+	.section_flash_sale .marquee-content {
+		gap: 18px !important;
+		padding: 0 18px !important;
+	}
+
+	.section_flash_sale .marquee-text,
+	.section_flash_sale .marquee-text a,
+	.section_flash_sale .marquee-item,
+	.section_flash_sale .marquee-item a {
+		font-size: 14px !important;
+	}
+
+	.section_flash_sale .btn-marquee {
+		min-height: 38px !important;
+		padding: 0 18px !important;
+		font-size: 14px !important;
+	}
+}
+</style>
+<style id="hmecha-force-flash-marquee-readable">
+/* ===== FORCE FIX: FLASH SALE MARQUEE TEXT LUÔN RÕ ===== */
+
+.section_flash_sale .marquee,
+.section_flash_sale [class*="marquee"] {
+	background: linear-gradient(90deg, #ffffff, #f4f8ff, #ffffff) !important;
+	border: 1px solid rgba(0, 229, 255, 0.22) !important;
+	border-radius: 10px !important;
+	box-shadow: 0 0 18px rgba(0, 229, 255, 0.08) !important;
+}
+
+/* Ép toàn bộ chữ chạy trong thanh này hiện rõ */
+.section_flash_sale .marquee *,
+.section_flash_sale [class*="marquee"] *,
+.section_flash_sale .marquee span,
+.section_flash_sale .marquee a,
+.section_flash_sale .marquee-item,
+.section_flash_sale .marquee-text {
+	opacity: 1 !important;
+	visibility: visible !important;
+	filter: none !important;
+	text-shadow: none !important;
+	color: #111827 !important;
+	-webkit-text-fill-color: #111827 !important;
+	font-weight: 900 !important;
+}
+
+/* Chữ khuyến mãi */
+.section_flash_sale .marquee-text,
+.section_flash_sale .marquee-text *,
+.section_flash_sale [class*="marquee"] span:not(.btn-marquee) {
+	color: #111827 !important;
+	-webkit-text-fill-color: #111827 !important;
+	opacity: 1 !important;
+	font-size: 18px !important;
+	font-weight: 950 !important;
+	letter-spacing: 0.2px !important;
+}
+
+/* Dấu sao phía trước chữ */
+.section_flash_sale .marquee-text::before,
+.section_flash_sale [class*="marquee"] span:not(.btn-marquee)::before {
+	color: #00a9c8 !important;
+	-webkit-text-fill-color: #00a9c8 !important;
+	opacity: 1 !important;
+}
+
+/* Nút Flash Sale giữ màu nổi bật */
+.section_flash_sale .btn-marquee,
+.section_flash_sale a.btn-marquee,
+.section_flash_sale [class*="marquee"] .btn-marquee {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	min-height: 44px !important;
+	padding: 0 28px !important;
+	border-radius: 9px !important;
+	background: linear-gradient(135deg, #7c4dff, #00cfff) !important;
+	color: #ffffff !important;
+	-webkit-text-fill-color: #ffffff !important;
+	font-size: 16px !important;
+	font-weight: 950 !important;
+	text-decoration: none !important;
+	box-shadow: 0 0 18px rgba(0, 229, 255, 0.22) !important;
+}
+
+.section_flash_sale .btn-marquee:hover {
+	background: linear-gradient(135deg, #ff4fd8, #7c4dff) !important;
+	color: #ffffff !important;
+	-webkit-text-fill-color: #ffffff !important;
+}
 </style>
 	</head>
 	<body>
