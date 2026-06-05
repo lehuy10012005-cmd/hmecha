@@ -86,7 +86,7 @@ export default function CartPage() {
           <section className="emptyBox">
             <h2>Giỏ hàng đang trống</h2>
             <p>Chọn vài mẫu Gundam/mecha trước rồi quay lại đây nha.</p>
-            <Link href="/products">Xem sản phẩm</Link>
+         <Link href="/">Xem sản phẩm</Link>
           </section>
         ) : (
           <div className="cartGrid">
@@ -152,10 +152,9 @@ export default function CartPage() {
               <Link href="/checkout" className="checkoutBtn">
                 TIẾN HÀNH THANH TOÁN
               </Link>
-
-              <Link href="/products" className="continueBtn">
-                ← Tiếp tục mua hàng
-              </Link>
+<Link href="/" className="continueBtn">
+  ← Tiếp tục mua hàng
+</Link>
             </aside>
           </div>
         )}

@@ -3574,7 +3574,11 @@ a.backtop {
 		background: rgba(255, 255, 255, 0.04);
 		border: 1px dashed rgba(0, 229, 255, 0.3);
 	}
-
+	.hmecha-added {
+		background: linear-gradient(135deg, #16f29a, #00e5ff) !important;
+		color: #061020 !important;
+		box-shadow: 0 0 18px rgba(0, 229, 255, 0.35) !important;
+	}
 	.hmecha-filter-hidden {
 		display: none !important;
 	}
@@ -12984,26 +12988,118 @@ var ajaxCart = (function(module, $) {
       applyHomeFilter();
     });
   }
-  function addToCartFromButton(button) {
-    const item = {
-      id: button.dataset.id,
-      name: button.dataset.name,
-      slug: button.dataset.slug,
-      price: Number(button.dataset.price || 0),
-      image: button.dataset.image,
+    function normalizeImageUrl(url) {
+    const value = String(url || "").trim();
+
+    if (!value) return "/logo/logo.png";
+
+    if (value.startsWith("//")) {
+      return "https:" + value;
+    }
+
+    return value;
+  }
+
+  function parsePriceFromText(text) {
+    const onlyNumber = String(text || "").replace(/[^\d]/g, "");
+    return Number(onlyNumber || 0);
+  }
+
+  function getSlugFromHref(href) {
+    const value = String(href || "").trim();
+
+    if (!value || value === "javascript:void(0)") return "";
+
+    try {
+      const url = new URL(value, window.location.origin);
+      return url.pathname.replace(/^\/+/, "").replace(/\/+$/, "");
+    } catch (error) {
+      return value.replace(/^\/+/, "").replace(/\/+$/, "");
+    }
+  }
+
+  function getCartItemFromButton(button) {
+    const card = button.closest(
+      ".item_product_main, .product-action, .swiper-slide"
+    );
+
+    const nameLink = card?.querySelector(".product-name a");
+    const imageLink = card?.querySelector(".image_thumb");
+    const imageEl = card?.querySelector(".product-thumbnail img, img");
+    const priceEl = card?.querySelector(".price, .product-price-cart");
+
+    const slug =
+      button.dataset.slug ||
+      getSlugFromHref(nameLink?.getAttribute("href")) ||
+      getSlugFromHref(imageLink?.getAttribute("href"));
+
+    const name =
+      button.dataset.name ||
+      nameLink?.getAttribute("title") ||
+      nameLink?.textContent?.trim() ||
+      "Sản phẩm HMECHA";
+
+    const image =
+      button.dataset.image ||
+      imageEl?.getAttribute("data-src") ||
+      imageEl?.getAttribute("src") ||
+      "/logo/logo.png";
+
+    const price =
+      Number(button.dataset.price || 0) ||
+      parsePriceFromText(priceEl?.textContent);
+
+    return {
+      id: button.dataset.id || slug || name,
+      name: name,
+      slug: slug,
+      price: price,
+      image: normalizeImageUrl(image),
       quantity: 1
     };
+  }
+
+  function updateCartCount(cart) {
+    const total = cart.reduce(function (sum, cartItem) {
+      return sum + Number(cartItem.quantity || 0);
+    }, 0);
+
+    document.querySelectorAll(".count_item, .count_item_pr").forEach(function (el) {
+      el.textContent = total;
+    });
+  }
+
+  function showAddCartMessage(button) {
+    const oldText = button.textContent;
+
+    button.textContent = "Đã thêm ✓";
+    button.classList.add("hmecha-added");
+
+    setTimeout(function () {
+      button.textContent = oldText || "Thêm vào giỏ";
+      button.classList.remove("hmecha-added");
+    }, 1200);
+  }
+
+  function addToCartFromButton(button) {
+    const item = getCartItemFromButton(button);
+
+    if (!item.id || !item.price) {
+      alert("Không lấy được thông tin sản phẩm. Vui lòng thử lại.");
+      return;
+    }
 
     const currentCart = JSON.parse(localStorage.getItem("hmecha-cart") || "[]");
+
     const existed = currentCart.find(function (cartItem) {
-      return cartItem.id === item.id;
+      return String(cartItem.id) === String(item.id);
     });
 
     let nextCart;
 
     if (existed) {
       nextCart = currentCart.map(function (cartItem) {
-        if (cartItem.id === item.id) {
+        if (String(cartItem.id) === String(item.id)) {
           return {
             ...cartItem,
             quantity: Number(cartItem.quantity || 1) + 1
@@ -13017,32 +13113,47 @@ var ajaxCart = (function(module, $) {
     }
 
     localStorage.setItem("hmecha-cart", JSON.stringify(nextCart));
-
-    const countEls = document.querySelectorAll(".count_item, .count_item_pr");
-    countEls.forEach(function (el) {
-      const total = nextCart.reduce(function (sum, cartItem) {
-        return sum + Number(cartItem.quantity || 0);
-      }, 0);
-
-      el.textContent = total;
-    });
-
-    alert("Đã thêm sản phẩm vào giỏ hàng.");
+    updateCartCount(nextCart);
+    showAddCartMessage(button);
   }
 
-    function bindAddToCartButtons(scope) {
-    const root = scope || document;
+  let hmechaCartClickBound = false;
 
-    root.querySelectorAll(".hmecha-add-cart").forEach(function (button) {
-      if (button.dataset.cartBound === "true") return;
+  function bindAddToCartButtons() {
+    if (hmechaCartClickBound) return;
 
-      button.dataset.cartBound = "true";
+    hmechaCartClickBound = true;
 
-      button.addEventListener("click", function () {
+    document.addEventListener(
+      "click",
+      function (event) {
+        const button = event.target.closest(
+          ".hmecha-add-cart, .product-action-bottom .add_to_cart, .btn-cart.add_to_cart"
+        );
+
+        if (!button) return;
+
+        if (
+          button.disabled ||
+          button.classList.contains("disabled") ||
+          button.textContent.toLowerCase().includes("hết hàng")
+        ) {
+          return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (typeof event.stopImmediatePropagation === "function") {
+          event.stopImmediatePropagation();
+        }
+
         addToCartFromButton(button);
-      });
-    });
+      },
+      true
+    );
   }
+    
 
   function renderSection(sectionKey, products) {
     const config = SECTION_CONFIG[sectionKey];
@@ -13960,6 +14071,234 @@ if (popularBox) popularBox.classList.add("d-none");
 
     updateHmechaAccountHeader();
   });
+</script>
+<script id="hmecha-direct-cart-fix">
+(function () {
+  const CART_KEY = "hmecha-cart";
+
+  function normalizeText(value) {
+    return String(value || "").replace(/\s+/g, " ").trim();
+  }
+
+  function normalizeImageUrl(url) {
+    const value = String(url || "").trim();
+
+    if (!value || value.startsWith("data:image")) {
+      return "/logo/logo.png";
+    }
+
+    if (value.startsWith("//")) {
+      return "https:" + value;
+    }
+
+    return value;
+  }
+
+  function parsePrice(text) {
+    return Number(String(text || "").replace(/[^\d]/g, "") || 0);
+  }
+
+  function getSlugFromHref(href) {
+    const value = String(href || "").trim();
+
+    if (!value || value === "javascript:void(0)") return "";
+
+    try {
+      const url = new URL(value, window.location.origin);
+      return url.pathname.replace(/^\/+/, "").replace(/\/+$/, "");
+    } catch (error) {
+      return value.replace(/^\/+/, "").replace(/\/+$/, "");
+    }
+  }
+
+  function readCart() {
+    try {
+      return JSON.parse(localStorage.getItem(CART_KEY) || "[]");
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function saveCart(cart) {
+    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+
+    const totalQuantity = cart.reduce(function (sum, item) {
+      return sum + Number(item.quantity || 0);
+    }, 0);
+
+    document
+      .querySelectorAll(".count_item, .count_item_pr, .js-cart-count")
+      .forEach(function (element) {
+        element.textContent = String(totalQuantity);
+      });
+  }
+
+  function getProductFromButton(button) {
+    const form = button.closest("form");
+    const card = button.closest(".product-action, .item_product_main, .swiper-slide") || form;
+
+    const nameLink =
+      card?.querySelector(".product-name a") ||
+      form?.querySelector(".product-name a");
+
+    const imageLink =
+      card?.querySelector(".image_thumb") ||
+      form?.querySelector(".image_thumb");
+
+    const imageEl =
+      card?.querySelector(".product-thumbnail img.image1") ||
+      card?.querySelector(".product-thumbnail img") ||
+      card?.querySelector("img") ||
+      form?.querySelector("img");
+
+    const priceEl =
+      card?.querySelector(".product-price-cart .price") ||
+      card?.querySelector(".price") ||
+      form?.querySelector(".price");
+
+    const variantInput =
+      form?.querySelector('input[name="variantId"]') ||
+      form?.querySelector('input[name="id"]');
+
+    const slug =
+      button.dataset.slug ||
+      getSlugFromHref(nameLink?.getAttribute("href")) ||
+      getSlugFromHref(imageLink?.getAttribute("href"));
+
+    const name =
+      normalizeText(button.dataset.name) ||
+      normalizeText(nameLink?.getAttribute("title")) ||
+      normalizeText(nameLink?.textContent) ||
+      "Sản phẩm HMECHA";
+
+    const price =
+      Number(button.dataset.price || 0) ||
+      parsePrice(priceEl?.textContent);
+
+    const image =
+      button.dataset.image ||
+      imageEl?.getAttribute("data-src") ||
+      imageEl?.getAttribute("src") ||
+      "/logo/logo.png";
+
+    const id =
+      button.dataset.id ||
+      variantInput?.value ||
+      slug ||
+      name;
+
+    return {
+      id: String(id),
+      name: name,
+      slug: slug,
+      price: price,
+      image: normalizeImageUrl(image),
+      quantity: 1
+    };
+  }
+
+  function showButtonAdded(button) {
+    const oldText = normalizeText(button.textContent) || "Thêm vào giỏ";
+
+    button.dataset.oldText = oldText;
+    button.textContent = "Đã thêm ✓";
+    button.classList.add("hmecha-added");
+
+    setTimeout(function () {
+      button.textContent = button.dataset.oldText || "Thêm vào giỏ";
+      button.classList.remove("hmecha-added");
+    }, 1200);
+  }
+
+  function addProduct(button) {
+    const item = getProductFromButton(button);
+
+    if (!item.id || !item.name || !item.price) {
+      alert("Chưa lấy được thông tin sản phẩm. Bấm vào sản phẩm để xem chi tiết rồi thử lại.");
+      return;
+    }
+
+    const cart = readCart();
+
+    const existingItem = cart.find(function (cartItem) {
+      return String(cartItem.id) === String(item.id);
+    });
+
+    let nextCart;
+
+    if (existingItem) {
+      nextCart = cart.map(function (cartItem) {
+        if (String(cartItem.id) === String(item.id)) {
+          return {
+            ...cartItem,
+            quantity: Number(cartItem.quantity || 1) + 1
+          };
+        }
+
+        return cartItem;
+      });
+    } else {
+      nextCart = cart.concat(item);
+    }
+
+    saveCart(nextCart);
+    showButtonAdded(button);
+  }
+
+  function isRealAddCartButton(button) {
+    if (!button) return false;
+
+    if (button.disabled || button.classList.contains("disabled")) {
+      return false;
+    }
+
+    const text = normalizeText(button.textContent).toLowerCase();
+    const title = normalizeText(button.getAttribute("title")).toLowerCase();
+
+    if (text.includes("hết hàng") || title.includes("hết hàng")) {
+      return false;
+    }
+
+    if (text.includes("xem chi tiết") || title.includes("xem chi tiết")) {
+      return false;
+    }
+
+    if (button.classList.contains("quick-view")) {
+      return false;
+    }
+
+    return (
+      button.classList.contains("hmecha-add-cart") ||
+      button.classList.contains("add_to_cart") ||
+      text.includes("thêm vào giỏ") ||
+      title.includes("thêm vào giỏ") ||
+      title.includes("đặt trước")
+    );
+  }
+
+  document.addEventListener(
+    "click",
+    function (event) {
+      const button = event.target.closest("button, a");
+
+      if (!isRealAddCartButton(button)) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (typeof event.stopImmediatePropagation === "function") {
+        event.stopImmediatePropagation();
+      }
+
+      addProduct(button);
+    },
+    true
+  );
+
+  document.addEventListener("DOMContentLoaded", function () {
+    saveCart(readCart());
+  });
+})();
 </script>
 	</body>
 </html>
