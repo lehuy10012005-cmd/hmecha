@@ -13908,5 +13908,58 @@ if (popularBox) popularBox.classList.add("d-none");
   toggleBackTop();
 })();
 </script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    async function updateHmechaAccountHeader() {
+      var accountLink = document.querySelector(
+        ".sudes-header-account .header-account"
+      );
+
+      if (!accountLink) return;
+
+      var titleBlock = accountLink.querySelector(".item-title");
+
+      try {
+        var response = await fetch("/api/account/profile", {
+          credentials: "include",
+          cache: "no-store",
+        });
+
+        if (!response.ok) return;
+
+        var data = await response.json();
+        var profile = data.profile || {};
+
+        var name =
+          profile.full_name ||
+          (profile.email ? profile.email.split("@")[0] : "") ||
+          "Thành viên";
+
+        accountLink.setAttribute("href", "/tai-khoan");
+        accountLink.setAttribute("target", "_top");
+        accountLink.setAttribute("title", "Tài khoản của " + name);
+        accountLink.setAttribute("aria-label", "Tài khoản của " + name);
+
+        if (titleBlock) {
+          titleBlock.innerHTML =
+            "Tài khoản <br><span>" + escapeHtml(name) + "</span>";
+        }
+      } catch (error) {
+        console.warn("Không kiểm tra được trạng thái đăng nhập.", error);
+      }
+    }
+
+    updateHmechaAccountHeader();
+  });
+</script>
 	</body>
 </html>
