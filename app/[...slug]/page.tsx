@@ -10,6 +10,7 @@ import { supabase } from "../../lib/supabase";
 import ProductGallery from "../../components/ProductGallery";
 import RelatedProducts from "../../components/RelatedProducts";
 import ProductReviews from "../../components/ProductReviews";
+import ProductEventTracker from "../../components/ProductEventTracker";
 export default async function ProductDetailPage({
   params,
 }: {
@@ -57,9 +58,16 @@ const product = dbProduct
   notFound();
 }
 
-  return (
-    <main className="page">
-      <div className="container">
+ return (
+  <main className="page">
+    <ProductEventTracker
+      productId={product.id}
+      productSlug={product.slug}
+      productName={product.name}
+      price={Number(product.price || 0)}
+    />
+
+    <div className="container">
         <div className="breadcrumb">
           <Link href="/">Trang chủ</Link>
           <span>›</span>
@@ -457,6 +465,7 @@ const product = dbProduct
           }
         }
       `}</style>
+
     </main>
   );
 }

@@ -112,10 +112,11 @@ export default function AddToCartButton({ product }: { product: Product }) {
           gap: 12,
         }}
       >
-        <button
-          type="button"
-          disabled={isOutOfStock}
-          onClick={() => saveToCart(true)}
+      <button
+  type="button"
+  disabled={isOutOfStock}
+  data-hmecha-event="buy_now"
+  onClick={() => saveToCart(true)}
           style={{
             minHeight: 64,
             border: "none",
@@ -133,10 +134,11 @@ export default function AddToCartButton({ product }: { product: Product }) {
           </div>
         </button>
 
-        <button
-          type="button"
-          disabled={isOutOfStock}
-          onClick={() => saveToCart(false)}
+       <button
+  type="button"
+  disabled={isOutOfStock}
+  data-hmecha-event="add_to_cart"
+  onClick={() => saveToCart(false)}
           style={{
             minHeight: 64,
             border: "none",
