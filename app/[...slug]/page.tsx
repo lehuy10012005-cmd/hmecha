@@ -9,6 +9,7 @@ import AddToCartButton from "../../components/AddToCartButton";
 import { supabase } from "../../lib/supabase";
 import ProductGallery from "../../components/ProductGallery";
 import RelatedProducts from "../../components/RelatedProducts";
+import ProductReviews from "../../components/ProductReviews";
 export default async function ProductDetailPage({
   params,
 }: {
@@ -161,7 +162,11 @@ const product = dbProduct
             </p>
           </div>
         </section>
-
+<ProductReviews
+  productId={product.id}
+  productSlug={product.slug}
+  productName={product.name}
+/>
         <RelatedProducts
           currentId={product.id}
           currentSlug={product.slug}
