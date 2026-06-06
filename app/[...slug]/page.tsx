@@ -3,12 +3,12 @@ import Link from "next/link";
 import {
   products as localProducts,
   getProductBySlug,
-  getRelatedProducts,
   formatPrice,
 } from "../../data/products";
 import AddToCartButton from "../../components/AddToCartButton";
 import { supabase } from "../../lib/supabase";
 import ProductGallery from "../../components/ProductGallery";
+import RelatedProducts from "../../components/RelatedProducts";
 export default async function ProductDetailPage({
   params,
 }: {
@@ -55,12 +55,6 @@ const product = dbProduct
  if (!product) {
   notFound();
 }
-
- const relatedProducts = dbProduct
-  ? localProducts
-      .filter((item) => item.category === product.category && item.slug !== product.slug)
-      .slice(0, 4)
-  : getRelatedProducts(product);
 
   return (
     <main className="page">
@@ -168,26 +162,11 @@ const product = dbProduct
           </div>
         </section>
 
-        <section className="related">
-          <h2>
-            Sản phẩm <span>liên quan</span>
-          </h2>
-
-          <div className="relatedGrid">
-            {relatedProducts.map((item) => (
-              <Link href={`/${item.slug}`} className="card" key={item.id}>
-                <div className="cardImg">
-                  <img src={item.images[0]} alt={item.name} />
-                </div>
-                <div className="cardInfo">
-                  <h3>{item.name}</h3>
-                  <p>{formatPrice(item.price)}</p>
-                  <span>Tình trạng: {item.status}</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </section>
+        <RelatedProducts
+          currentId={product.id}
+          currentSlug={product.slug}
+          category={product.category}
+        />
       </div>
 
       <style>{`
@@ -451,70 +430,6 @@ const product = dbProduct
         .tabContent h3 {
           color: #00e5ff;
           margin-top: 20px;
-        }
-
-        .related {
-          margin-top: 34px;
-        }
-
-        .related h2 {
-          font-size: 30px;
-        }
-
-        .related h2 span {
-          color: #00e5ff;
-        }
-
-        .relatedGrid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-          gap: 20px;
-        }
-
-        .card {
-          text-decoration: none;
-          color: inherit;
-          background: rgba(255,255,255,.07);
-          border: 1px solid rgba(0,229,255,.2);
-          border-radius: 18px;
-          overflow: hidden;
-          transition: .2s;
-        }
-
-        .card:hover {
-          transform: translateY(-4px);
-          border-color: rgba(0,229,255,.6);
-        }
-
-        .cardImg img {
-          width: 100%;
-          aspect-ratio: 1 / 1;
-          object-fit: cover;
-          display: block;
-        }
-
-        .cardInfo {
-          background: rgba(255,255,255,.95);
-          color: #111827;
-          padding: 14px;
-        }
-
-        .cardInfo h3 {
-          margin: 0;
-          font-size: 16px;
-          min-height: 44px;
-          line-height: 1.35;
-        }
-
-        .cardInfo p {
-          color: #ef2f72;
-          font-size: 19px;
-          font-weight: 950;
-          margin: 10px 0;
-        }
-
-        .cardInfo span {
-          color: #4b5563;
         }
 
         @media (max-width: 1100px) {
