@@ -21,14 +21,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <span>H</span>
           <div><b>HMECHA</b><small>Admin Panel</small></div>
         </div>
-        <nav>
-          <Link href="/admin">Dashboard</Link>
-          <Link href="/admin/products">Sản phẩm</Link>
-          <Link href="/admin/products/new">Thêm sản phẩm</Link>
-          <Link href="/admin/orders">Đơn hàng</Link>
-          <Link href="/">Về website</Link>
-          <AdminLogoutButton />
-        </nav>
+      <nav>
+  <Link href="/admin">Dashboard</Link>
+  <Link href="/admin/products">Sản phẩm</Link>
+  <Link href="/admin/products/new">Thêm sản phẩm</Link>
+  <Link href="/admin/orders">Đơn hàng</Link>
+  <Link href="/admin/khach-hang">Khách hàng</Link>
+  <Link href="/">Về website</Link>
+</nav>
       </aside>
       <section className="content">{children}</section>
       <style>{`
