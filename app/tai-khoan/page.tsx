@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createAuthServerClient } from "../../lib/supabase-auth/server";
-
+import CustomerVoucherPanel from "../../components/customer/CustomerVoucherPanel";
 export const dynamic = "force-dynamic";
 
 type OrderItem = {
@@ -224,6 +224,9 @@ export default async function CustomerAccountPage() {
         </section>
       </div>
 
+      <div style={{ marginTop: 28 }}>
+        <CustomerVoucherPanel />
+      </div>
       <style>{`
         .accountDashboard {
           color: #ffffff;
