@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createAuthServerClient } from "../../lib/supabase-auth/server";
 import CustomerVoucherPanel from "../../components/customer/CustomerVoucherPanel";
+import PointExchangePanel from "../../components/customer/PointExchangePanel";
 export const dynamic = "force-dynamic";
 
 type OrderItem = {
@@ -63,6 +64,15 @@ export default async function CustomerAccountPage() {
     .eq("customer_id", user!.id)
     .order("created_at", { ascending: false })
     .limit(5);
+
+  const { data: pointRow } = await supabase
+    .from("customer_points")
+    .select("points,lifetime_points,lifetime_spent,completed_orders,completed_items,tier")
+    .eq("user_id", user!.id)
+    .maybeSingle();
+
+  const memberPoints = Number(pointRow?.points || 0);
+  const memberTier = pointRow?.tier || "Rookie Builder";
 
   const orders = (ordersData || []) as Order[];
 
@@ -226,6 +236,7 @@ export default async function CustomerAccountPage() {
 
       <div style={{ marginTop: 28 }}>
         <CustomerVoucherPanel />
+        <PointExchangePanel />
       </div>
       <style>{`
         .accountDashboard {
