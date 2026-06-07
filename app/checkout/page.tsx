@@ -230,82 +230,46 @@ export default function CheckoutPage() {
       }
     }
 
-    const { data: order, error: orderError } = await supabase
-      .from("orders")
-      .insert({ customer_id: user?.id || null,
-        customer_name: customer.name,
-        customer_phone: customer.phone,
-        customer_email: customer.email || user?.email || null,
-        customer_address: fullAddress,
-        note: `${customer.note || ""}${couponNote}`,
-        payment_method: "cod",
-        payment_status: "cod",
-        subtotal,
-        shipping_fee: shippingFee,
-        total,
-        status: "Chờ xác nhận",
-      })
-      .select()
-      .single();
+    try {
+      const response = await fetch("/api/checkout/cod", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cart,
+          customer: {
+            ...customer,
+            email: customer.email || user?.email || "",
+            address: fullAddress,
+            note: `${customer.note || ""}${couponNote}`,
+            payment: "cod",
+          },
+          coupon: appliedCoupon
+            ? {
+                code: appliedCoupon.code,
+                discountAmount: appliedCoupon.discountAmount,
+              }
+            : null,
+        }),
+      });
 
-    if (orderError) {
-      setPlacing(false);
-      alert("Lỗi tạo đơn COD: " + orderError.message);
-      return;
-    }
+      const data = await response.json();
 
-    const orderItems = cart.map((item) => ({
-      order_id: order.id,
-      product_id: isUuid(item.id) ? item.id : null,
-      product_name: item.name,
-      product_price: item.price,
-      quantity: item.quantity,
-    }));
-
-    const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
-
-    if (itemsError) {
-      setPlacing(false);
-      alert("Đã tạo đơn nhưng lỗi lưu sản phẩm: " + itemsError.message);
-      return;
-    }
-
-    for (const item of cart) {
-      if (isUuid(item.id)) {
-        await supabase.rpc("decrement_product_stock", {
-          product_id_input: item.id,
-          quantity_input: item.quantity,
-        });
+      if (!response.ok) {
+        setPlacing(false);
+        alert(data.message || "Không tạo được đơn COD.");
+        return;
       }
+
+      localStorage.removeItem("hmecha-cart");
+      window.open(data.successUrl, "_top");
+      return;
+    } catch {
+      setPlacing(false);
+      alert("Lỗi kết nối khi tạo đơn COD.");
+      return;
     }
-
-    await supabase
-      .from("orders")
-      .update({
-        stock_deducted: true,
-        stock_deducted_at: new Date().toISOString(),
-      })
-      .eq("id", order.id);
-
-    await fetch("/api/orders/send-email", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        orderId: order.id,
-      }),
-    });
-
-    localStorage.removeItem("hmecha-cart");
-
-    const successUrl =
-      `/order-success?method=cod` +
-      `&total=${total}` +
-      `&order=${encodeURIComponent(order.id)}` +
-      `&content=${encodeURIComponent("COD")}`;
-
-    window.open(successUrl, "_top");
   }
 
   return (
