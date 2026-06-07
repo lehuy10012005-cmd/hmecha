@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import qs from "qs";
-import { supabase } from "../../../../lib/supabase";
+import { supabase } from "../../../../lib/supabase"; import { createAuthServerClient } from "../../../../lib/supabase-auth/server";
 
 type CartItem = {
   id: string;
@@ -50,7 +50,7 @@ function sortObject(obj: Record<string, string | number>) {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
+    const authSupabase = await createAuthServerClient(); const { data: { user } } = await authSupabase.auth.getUser(); const body = await request.json();
 
     const cart: CartItem[] = body.cart || [];
     const customer = body.customer || {};
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
       .insert({
         customer_name: customer.name,
         customer_phone: customer.phone,
-        customer_email: customer.email || null,
+        customer_email: customer.email || user?.email || null,
         customer_address: customer.address,
         note: `${customer.note || ""}${couponNote}`,
         subtotal,

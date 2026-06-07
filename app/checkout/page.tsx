@@ -182,7 +182,7 @@ export default function CheckoutPage() {
       return;
     }
 
-    setPlacing(true);
+    setPlacing(true); const { data: { user } } = await supabase.auth.getUser();
 
     const couponNote = appliedCoupon
       ? ` | Mã giảm giá: ${appliedCoupon.code} (-${formatPrice(appliedCoupon.discountAmount)})`
@@ -232,10 +232,10 @@ export default function CheckoutPage() {
 
     const { data: order, error: orderError } = await supabase
       .from("orders")
-      .insert({
+      .insert({ customer_id: user?.id || null,
         customer_name: customer.name,
         customer_phone: customer.phone,
-        customer_email: customer.email || null,
+        customer_email: customer.email || user?.email || null,
         customer_address: fullAddress,
         note: `${customer.note || ""}${couponNote}`,
         payment_method: "cod",
