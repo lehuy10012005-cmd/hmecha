@@ -26,7 +26,7 @@ type AppliedCoupon = {
 };
 
 function formatPrice(price: number) {
-  return Number(price || 0).toLocaleString("vi-VN") + "â‚«";
+  return Number(price || 0).toLocaleString("vi-VN") + "₫";
 }
 
 function isUuid(value: string) {
@@ -74,7 +74,7 @@ export default function CheckoutPage() {
           }));
         }
       } catch {
-        // KhÃ´ng cÃ³ tÃ i khoáº£n váº«n checkout bÃ¬nh thÆ°á»ng.
+        // Không có tài khoản vẫn checkout bình thường.
       }
     }
 
@@ -109,12 +109,12 @@ export default function CheckoutPage() {
 
   async function applyCoupon() {
     if (!couponCode.trim()) {
-      setCouponMessage("Vui lÃ²ng nháº­p mÃ£ giáº£m giÃ¡.");
+      setCouponMessage("Vui lòng nhập mã giảm giá.");
       return;
     }
 
     if (cart.length === 0) {
-      setCouponMessage("Giá» hÃ ng Ä‘ang trá»‘ng.");
+      setCouponMessage("Giỏ hàng đang trống.");
       return;
     }
 
@@ -139,7 +139,7 @@ export default function CheckoutPage() {
 
       if (!response.ok) {
         setAppliedCoupon(null);
-        setCouponMessage(data.error || "KhÃ´ng Ã¡p dá»¥ng Ä‘Æ°á»£c mÃ£ giáº£m giÃ¡.");
+        setCouponMessage(data.error || "Không áp dụng được mã giảm giá.");
         setCouponLoading(false);
         return;
       }
@@ -153,9 +153,9 @@ export default function CheckoutPage() {
       });
 
       setCouponCode(data.coupon.code);
-      setCouponMessage(data.message || "Ãp dá»¥ng mÃ£ thÃ nh cÃ´ng.");
+      setCouponMessage(data.message || "Áp dụng mã thành công.");
     } catch {
-      setCouponMessage("KhÃ´ng káº¿t ná»‘i Ä‘Æ°á»£c há»‡ thá»‘ng mÃ£ giáº£m giÃ¡.");
+      setCouponMessage("Không kết nối được hệ thống mã giảm giá.");
     }
 
     setCouponLoading(false);
@@ -171,21 +171,21 @@ export default function CheckoutPage() {
     if (placing) return;
 
     if (cart.length === 0) {
-      alert("Giá» hÃ ng Ä‘ang trá»‘ng.");
+      alert("Giỏ hàng đang trống.");
       return;
     }
 
     const fullAddress = getFullAddress();
 
     if (!customer.name || !customer.phone || !fullAddress) {
-      alert("Vui lÃ²ng nháº­p há» tÃªn, sá»‘ Ä‘iá»‡n thoáº¡i vÃ  Ä‘á»‹a chá»‰ nháº­n hÃ ng.");
+      alert("Vui lòng nhập họ tên, số điện thoại và địa chỉ nhận hàng.");
       return;
     }
 
     setPlacing(true); const { data: { user } } = await supabase.auth.getUser();
 
     const couponNote = appliedCoupon
-      ? ` | MÃ£ giáº£m giÃ¡: ${appliedCoupon.code} (-${formatPrice(appliedCoupon.discountAmount)})`
+      ? ` | Mã giảm giá: ${appliedCoupon.code} (-${formatPrice(appliedCoupon.discountAmount)})`
       : "";
 
     if (customer.payment === "vnpay") {
@@ -216,7 +216,7 @@ export default function CheckoutPage() {
 
         if (!response.ok) {
           setPlacing(false);
-          alert(data.message || "KhÃ´ng táº¡o Ä‘Æ°á»£c thanh toÃ¡n VNPAY.");
+          alert(data.message || "Không tạo được thanh toán VNPAY.");
           return;
         }
 
@@ -225,7 +225,7 @@ export default function CheckoutPage() {
         return;
       } catch {
         setPlacing(false);
-        alert("Lá»—i káº¿t ná»‘i tá»›i VNPAY.");
+        alert("Lỗi kết nối tới VNPAY.");
         return;
       }
     }
@@ -243,14 +243,14 @@ export default function CheckoutPage() {
         subtotal,
         shipping_fee: shippingFee,
         total,
-        status: "Chá» xÃ¡c nháº­n",
+        status: "Chờ xác nhận",
       })
       .select()
       .single();
 
     if (orderError) {
       setPlacing(false);
-      alert("Lá»—i táº¡o Ä‘Æ¡n COD: " + orderError.message);
+      alert("Lỗi tạo đơn COD: " + orderError.message);
       return;
     }
 
@@ -266,7 +266,7 @@ export default function CheckoutPage() {
 
     if (itemsError) {
       setPlacing(false);
-      alert("ÄÃ£ táº¡o Ä‘Æ¡n nhÆ°ng lá»—i lÆ°u sáº£n pháº©m: " + itemsError.message);
+      alert("Đã tạo đơn nhưng lỗi lưu sản phẩm: " + itemsError.message);
       return;
     }
 
@@ -313,21 +313,21 @@ export default function CheckoutPage() {
       <div className="checkoutShell">
         <div className="checkoutTop">
           <Link href="/" className="backLink">
-            â† Vá» trang chá»§
+            ← Về trang chủ
           </Link>
 
           <div>
             <p>HMECHA CHECKOUT</p>
-            <h1>Thanh toÃ¡n Ä‘Æ¡n hÃ ng</h1>
-            <span>Chá»‰ há»— trá»£ COD vÃ  VNPAY / QR.</span>
+            <h1>Thanh toán đơn hàng</h1>
+            <span>Chỉ hỗ trợ COD và VNPAY / QR.</span>
           </div>
         </div>
 
         <div className="checkoutLayout">
           <section className="leftPanel">
             <div className="panelHeader">
-              <h2>ThÃ´ng tin mua hÃ ng</h2>
-              <span>Äiá»n thÃ´ng tin nháº­n hÃ ng Ä‘á»ƒ HMECHA xÃ¡c nháº­n Ä‘Æ¡n.</span>
+              <h2>Thông tin mua hàng</h2>
+              <span>Điền thông tin nhận hàng để HMECHA xác nhận đơn.</span>
             </div>
 
             <div className="fieldGrid">
@@ -336,34 +336,34 @@ export default function CheckoutPage() {
                 <input
                   value={customer.email}
                   onChange={(event) => updateCustomer("email", event.target.value)}
-                  placeholder="Email cá»§a báº¡n"
+                  placeholder="Email của bạn"
                 />
               </label>
 
               <label>
-                <span>Há» vÃ  tÃªn</span>
+                <span>Họ và tên</span>
                 <input
                   value={customer.name}
                   onChange={(event) => updateCustomer("name", event.target.value)}
-                  placeholder="Nháº­p há» vÃ  tÃªn"
+                  placeholder="Nhập họ và tên"
                 />
               </label>
 
               <label>
-                <span>Sá»‘ Ä‘iá»‡n thoáº¡i</span>
+                <span>Số điện thoại</span>
                 <input
                   value={customer.phone}
                   onChange={(event) => updateCustomer("phone", event.target.value)}
-                  placeholder="Nháº­p sá»‘ Ä‘iá»‡n thoáº¡i"
+                  placeholder="Nhập số điện thoại"
                 />
               </label>
 
               <label className="full">
-                <span>Äá»‹a chá»‰</span>
+                <span>Địa chỉ</span>
                 <input
                   value={customer.address}
                   onChange={(event) => updateCustomer("address", event.target.value)}
-                  placeholder="Sá»‘ nhÃ , tÃªn Ä‘Æ°á»ng..."
+                  placeholder="Số nhà, tên đường..."
                 />
               </label>
 
@@ -375,11 +375,11 @@ export default function CheckoutPage() {
 />
 
               <label className="full">
-                <span>Ghi chÃº Ä‘Æ¡n hÃ ng</span>
+                <span>Ghi chú đơn hàng</span>
                 <textarea
                   value={customer.note}
                   onChange={(event) => updateCustomer("note", event.target.value)}
-                  placeholder="Ghi chÃº thÃªm cho HMECHA náº¿u cÃ³..."
+                  placeholder="Ghi chú thêm cho HMECHA nếu có..."
                 />
               </label>
             </div>
@@ -390,10 +390,10 @@ export default function CheckoutPage() {
               <div className="shippingOption">
                 <span className="radioDot" />
                 <div>
-                  <b>Giao hÃ ng táº­n nÆ¡i</b>
-                  <small>Miá»…n phÃ­ váº­n chuyá»ƒn cho Ä‘Æ¡n tá»« 1.000.000Ä‘.</small>
+                  <b>Giao hàng tận nơi</b>
+                  <small>Miễn phí vận chuyển cho đơn từ 1.000.000đ.</small>
                 </div>
-                <strong>{shippingFee === 0 ? "Miá»…n phÃ­" : formatPrice(shippingFee)}</strong>
+                <strong>{shippingFee === 0 ? "Miễn phí" : formatPrice(shippingFee)}</strong>
               </div>
             </div>
 
@@ -409,10 +409,10 @@ export default function CheckoutPage() {
                     onChange={() => updateCustomer("payment", "vnpay")}
                   />
                   <span>
-                    <b>Thanh toÃ¡n VNPAY / QR</b>
-                    <small>Chuyá»ƒn sang cá»•ng VNPAY Sandbox Ä‘á»ƒ quÃ©t QR hoáº·c dÃ¹ng tháº» test.</small>
+                    <b>Thanh toán VNPAY / QR</b>
+                    <small>Chuyển sang cổng VNPAY Sandbox để quét QR hoặc dùng thẻ test.</small>
                   </span>
-                  <i>ðŸ’³</i>
+                  <i>💳</i>
                 </label>
 
                 <label className={customer.payment === "cod" ? "active" : ""}>
@@ -423,22 +423,22 @@ export default function CheckoutPage() {
                     onChange={() => updateCustomer("payment", "cod")}
                   />
                   <span>
-                    <b>Thanh toÃ¡n khi nháº­n hÃ ng (COD)</b>
-                    <small>HMECHA sáº½ gá»i xÃ¡c nháº­n trÆ°á»›c khi giao.</small>
+                    <b>Thanh toán khi nhận hàng (COD)</b>
+                    <small>HMECHA sẽ gọi xác nhận trước khi giao.</small>
                   </span>
-                  <i>ðŸ’µ</i>
+                  <i>💵</i>
                 </label>
               </div>
             </div>
           </section>
 
           <aside className="orderPanel">
-            <h2>ÄÆ¡n hÃ ng ({cart.length} sáº£n pháº©m)</h2>
+            <h2>Đơn hàng ({cart.length} sản phẩm)</h2>
 
             {cart.length === 0 ? (
               <div className="emptyBox">
-                <p>Giá» hÃ ng Ä‘ang trá»‘ng.</p>
-                <Link href="/">Xem sáº£n pháº©m</Link>
+                <p>Giỏ hàng đang trống.</p>
+                <Link href="/">Xem sản phẩm</Link>
               </div>
             ) : (
               <>
@@ -463,7 +463,7 @@ export default function CheckoutPage() {
     selectedCode={couponCode}
     onPick={(code) => {
       setCouponCode(code);
-      setCouponMessage("ÄÃ£ chá»n mÃ£ " + code + ". Báº¥m Ãp dá»¥ng Ä‘á»ƒ dÃ¹ng mÃ£.");
+      setCouponMessage("Đã chọn mã " + code + ". Bấm Áp dụng để dùng mã.");
     }}
   />
 
@@ -471,10 +471,10 @@ export default function CheckoutPage() {
                     <input
                       value={couponCode}
                       onChange={(event) => setCouponCode(event.target.value.toUpperCase())}
-                      placeholder="Nháº­p mÃ£ giáº£m giÃ¡"
+                      placeholder="Nhập mã giảm giá"
                     />
                     <button type="button" onClick={applyCoupon} disabled={couponLoading}>
-                      {couponLoading ? "Äang Ã¡p dá»¥ng..." : "Ãp dá»¥ng"}
+                      {couponLoading ? "Đang áp dụng..." : "Áp dụng"}
                     </button>
                   </div>
 
@@ -485,10 +485,10 @@ export default function CheckoutPage() {
                   {appliedCoupon && (
                     <div className="appliedCoupon">
                       <span>
-                        ÄÃ£ Ã¡p dá»¥ng <b>{appliedCoupon.code}</b>
+                        Đã áp dụng <b>{appliedCoupon.code}</b>
                       </span>
                       <button type="button" onClick={removeCoupon}>
-                        Bá» mÃ£
+                        Bỏ mã
                       </button>
                     </div>
                   )}
@@ -496,29 +496,29 @@ export default function CheckoutPage() {
 
                 <div className="summary">
                   <div>
-                    <span>Táº¡m tÃ­nh</span>
+                    <span>Tạm tính</span>
                     <b>{formatPrice(subtotal)}</b>
                   </div>
 
                   <div>
-                    <span>PhÃ­ váº­n chuyá»ƒn</span>
-                    <b>{shippingFee === 0 ? "Miá»…n phÃ­" : formatPrice(shippingFee)}</b>
+                    <span>Phí vận chuyển</span>
+                    <b>{shippingFee === 0 ? "Miễn phí" : formatPrice(shippingFee)}</b>
                   </div>
 
                   {discountAmount > 0 && (
                     <div className="discount">
-                      <span>Giáº£m giÃ¡</span>
+                      <span>Giảm giá</span>
                       <b>-{formatPrice(discountAmount)}</b>
                     </div>
                   )}
 
                   <div>
-                    <span>PhÆ°Æ¡ng thá»©c</span>
+                    <span>Phương thức</span>
                     <b>{customer.payment === "vnpay" ? "VNPAY / QR" : "COD"}</b>
                   </div>
 
                   <div className="total">
-                    <span>Tá»•ng cá»™ng</span>
+                    <span>Tổng cộng</span>
                     <b>{formatPrice(total)}</b>
                   </div>
                 </div>
@@ -526,15 +526,15 @@ export default function CheckoutPage() {
                 <button className="orderBtn" onClick={placeOrder} disabled={placing}>
                   {placing
                     ? customer.payment === "vnpay"
-                      ? "ÄANG CHUYá»‚N SANG VNPAY..."
-                      : "ÄANG Táº O ÄÆ N COD..."
+                      ? "ĐANG CHUYỂN SANG VNPAY..."
+                      : "ĐANG TẠO ĐƠN COD..."
                     : customer.payment === "vnpay"
-                    ? "THANH TOÃN QUA VNPAY / QR"
-                    : "Äáº¶T HÃ€NG COD"}
+                    ? "THANH TOÁN QUA VNPAY / QR"
+                    : "ĐẶT HÀNG COD"}
                 </button>
 
                 <Link href="/cart" className="cartLink">
-                  â† Quay vá» giá» hÃ ng
+                  ← Quay về giỏ hàng
                 </Link>
               </>
             )}
