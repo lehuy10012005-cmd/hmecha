@@ -57,11 +57,11 @@ export async function POST(request: Request) {
     const coupon = body.coupon || null;
 
     if (!cart.length) {
-      return NextResponse.json({ message: "Giỏ hàng đang trống." }, { status: 400 });
+      return NextResponse.json({ message: "Giá» hÃ ng Ä‘ang trá»‘ng." }, { status: 400 });
     }
 
     if (!customer.name || !customer.phone || !customer.address) {
-      return NextResponse.json({ message: "Thiếu thông tin khách hàng." }, { status: 400 });
+      return NextResponse.json({ message: "Thiáº¿u thÃ´ng tin khÃ¡ch hÃ ng." }, { status: 400 });
     }
 
     const subtotal = cart.reduce(
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
     const total = Math.max(0, subtotal + shippingFee - discountAmount);
 
     const couponNote = coupon?.code
-      ? ` | Mã giảm giá: ${String(coupon.code).toUpperCase()} (-${discountAmount.toLocaleString("vi-VN")}đ)`
+      ? ` | MÃ£ giáº£m giÃ¡: ${String(coupon.code).toUpperCase()} (-${discountAmount.toLocaleString("vi-VN")}Ä‘)`
       : "";
 
     const txnRef = Date.now().toString();
@@ -95,7 +95,7 @@ export async function POST(request: Request) {
         subtotal,
         shipping_fee: shippingFee,
         total,
-        status: "Chờ thanh toán",
+        status: "Chá» thanh toÃ¡n",
         payment_method: "vnpay",
         payment_status: "pending",
         vnpay_txn_ref: txnRef,
@@ -131,7 +131,7 @@ export async function POST(request: Request) {
 
     if (!tmnCode || !secretKey || !vnpUrl) {
       return NextResponse.json(
-        { message: "Thiếu cấu hình VNPAY trong .env.local." },
+        { message: "Thiáº¿u cáº¥u hÃ¬nh VNPAY trong .env.local." },
         { status: 500 }
       );
     }
@@ -177,7 +177,7 @@ export async function POST(request: Request) {
     });
   } catch (error: any) {
     return NextResponse.json(
-      { message: error?.message || "Lỗi tạo thanh toán VNPAY." },
+      { message: error?.message || "Lá»—i táº¡o thanh toÃ¡n VNPAY." },
       { status: 500 }
     );
   }
