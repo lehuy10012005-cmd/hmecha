@@ -23,7 +23,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         </div>
       <nav>
   <Link href="/admin">Dashboard</Link>
-  <Link href="/admin/products">Sản phẩm</Link>
+  <Link href="/admin/products">Sản phẩm</Link> <Link href="/admin/ton-kho">Tồn kho</Link>
   <Link href="/admin/products/new">Thêm sản phẩm</Link>
   <Link href="/admin/orders">Đơn hàng</Link> <Link href="/admin/ma-giam-gia">Mã giảm giá</Link> <Link href="/admin/chatbot">Chatbot</Link>
   <Link href="/admin/khach-hang">Khách hàng</Link>
