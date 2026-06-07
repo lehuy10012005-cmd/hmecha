@@ -11,6 +11,7 @@ import ProductGallery from "../../components/ProductGallery";
 import RelatedProducts from "../../components/RelatedProducts";
 import ProductReviews from "../../components/ProductReviews";
 import ProductEventTracker from "../../components/ProductEventTracker";
+import ProductSideActions from "../../components/ProductSideActions";
 export default async function ProductDetailPage({
   params,
 }: {
@@ -145,7 +146,24 @@ const product = dbProduct
               <div>📦 Đóng gói chống sốc trước khi giao</div>
               <div>🔁 Hỗ trợ đổi với lỗi từ nhà sản xuất</div>
             </div>
-          </aside>
+          
+        <ProductSideActions
+          product={{
+            id: product.id,
+            name: product.name,
+            slug: product.slug,
+            sku: product.sku,
+            price: product.price,
+            image: product.images?.[0],
+            images: product.images,
+            status: product.status,
+            brand: product.brand,
+            category: product.category,
+            badge: product.badge,
+          }}
+        />
+
+</aside>
         </section>
 
         <section className="tabs">

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import ChatWidget from "@/components/ChatWidget";
+import CompareTray from "@/components/CompareTray";
 
 export const metadata: Metadata = {
   title: "HMecha | Mô hình Gundam chính hãng",
@@ -13,6 +14,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className="min-h-full flex flex-col">
         {children}
         <ChatWidget />
+        <CompareTray />
       </body>
     </html>
   );
