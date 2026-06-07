@@ -3,6 +3,12 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
+declare global {
+  interface Window {
+    __hmechaChatWidgetMounted?: boolean;
+  }
+}
+
 type ChatMessage = {
   id?: string;
   role: "bot" | "user" | "admin";
@@ -55,10 +61,12 @@ export default function ChatWidget() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const bodyRef = useRef<HTMLDivElement | null>(null);
 
+  const [canRender, setCanRender] = useState(false);
   const [open, setOpen] = useState(false);
   const [sessionId, setSessionId] = useState("");
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       role: "bot",
@@ -68,13 +76,34 @@ export default function ChatWidget() {
   ]);
 
   useEffect(() => {
+    if (pathname?.startsWith("/admin") || pathname === "/admin-login") {
+      setCanRender(false);
+      return;
+    }
+
+    if (window.__hmechaChatWidgetMounted) {
+      setCanRender(false);
+      return;
+    }
+
+    window.__hmechaChatWidgetMounted = true;
+    setCanRender(true);
+
+    return () => {
+      window.__hmechaChatWidgetMounted = false;
+    };
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!canRender) return;
+
     const key = "hmecha_chat_session_id";
     const existing = window.localStorage.getItem(key);
     const next = existing || makeSessionId();
 
     window.localStorage.setItem(key, next);
     setSessionId(next);
-  }, []);
+  }, [canRender]);
 
   useEffect(() => {
     if (!bodyRef.current) return;
@@ -135,7 +164,6 @@ export default function ChatWidget() {
 
     setInput("");
     setLoading(true);
-
     setMessages((prev) => [...prev, { role: "user", content: text }]);
 
     try {
@@ -197,6 +225,8 @@ export default function ChatWidget() {
     ]);
   }
 
+  if (!canRender) return null;
+
   return (
     <>
       {open ? (
@@ -204,7 +234,7 @@ export default function ChatWidget() {
           style={{
             position: "fixed",
             right: 22,
-            bottom: 92,
+            bottom: 96,
             zIndex: 60,
             width: "min(380px, calc(100vw - 28px))",
             height: "min(620px, calc(100vh - 130px))",
@@ -314,7 +344,10 @@ export default function ChatWidget() {
 
                 <div>
                   {message.content.split("\n").map((line, lineIndex) => (
-                    <p key={lineIndex} style={{ margin: lineIndex ? "7px 0 0" : 0 }}>
+                    <p
+                      key={lineIndex}
+                      style={{ margin: lineIndex ? "7px 0 0" : 0 }}
+                    >
                       {linkifyLine(line, handleInternalNavigate)}
                     </p>
                   ))}
@@ -337,8 +370,17 @@ export default function ChatWidget() {
             ) : null}
           </div>
 
-          <footer style={{ padding: 12, borderTop: "1px solid rgba(255,255,255,.1)" }}>
-            <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 10 }}>
+          <footer
+            style={{ padding: 12, borderTop: "1px solid rgba(255,255,255,.1)" }}
+          >
+            <div
+              style={{
+                display: "flex",
+                gap: 8,
+                overflowX: "auto",
+                paddingBottom: 10,
+              }}
+            >
               {suggestions.map((item) => (
                 <button
                   key={item}
@@ -407,18 +449,34 @@ export default function ChatWidget() {
           right: 22,
           bottom: 24,
           zIndex: 61,
-          width: 64,
-          height: 64,
+          width: 62,
+          height: 62,
           borderRadius: 999,
-          border: "1px solid rgba(255,255,255,.2)",
-          background: "linear-gradient(135deg,#7c4dff,#00e5ff)",
-          boxShadow: "0 18px 40px rgba(0,229,255,.28)",
+          border: "1px solid rgba(255,255,255,.24)",
+          background: "linear-gradient(135deg,#14b8ff,#00e5ff)",
           cursor: "pointer",
-          fontSize: 28,
+          display: "grid",
+          placeItems: "center",
+          color: "#061020",
+          fontWeight: 950,
+          fontSize: 30,
+          boxShadow: "none",
         }}
         aria-label="Mở chatbot"
       >
-        {open ? "×" : "💬"}
+        {open ? (
+          "×"
+        ) : (
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+            <path
+              d="M4.5 11.6C4.5 7.9 7.8 5 12 5s7.5 2.9 7.5 6.6-3.3 6.6-7.5 6.6c-.9 0-1.8-.1-2.6-.4L5.5 19l1.2-3.1c-1.4-1.1-2.2-2.6-2.2-4.3Z"
+              fill="white"
+              stroke="#061020"
+              strokeWidth="1.2"
+              strokeLinejoin="round"
+            />
+          </svg>
+        )}
       </button>
     </>
   );
