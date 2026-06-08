@@ -16,37 +16,54 @@ type ChatMessage = {
 };
 
 const suggestions = [
-  "Sản phẩm dưới 500k",
-  "Phí ship bao nhiêu?",
-  "Mã giảm giá dùng sao?",
-  "Điểm tích lũy là gì?",
-  "Tôi muốn gặp admin",
+  "Tư vấn sản phẩm",
+  "Dưới 500k",
+  "Phí ship",
+  "Mã giảm giá",
+  "Điểm tích lũy",
+  "Gặp admin",
 ];
 
 function makeSessionId() {
   return "hm_chat_" + Date.now() + "_" + Math.random().toString(16).slice(2);
 }
 
-function linkifyLine(line: string, onNavigate: (url: string) => void) {
-  const parts = line.split(/(\/[a-z0-9][a-z0-9\-_/]*)/gi);
+function makeMsgId() {
+  return "msg_" + Date.now() + "_" + Math.random().toString(16).slice(2);
+}
+
+function cleanUrl(value: string) {
+  return value.trim().replace(/[)\].,;]+$/g, "");
+}
+
+function renderTextWithLinks(text: string, onNavigate: (url: string) => void) {
+  const parts = text.split(/(\/[a-z0-9][a-z0-9\-_/]*)/gi);
 
   return parts.map((part, index) => {
-    if (/^\/[a-z0-9][a-z0-9\-_/]*$/i.test(part)) {
+    const url = cleanUrl(part);
+
+    if (/^\/[a-z0-9][a-z0-9\-_/]*$/i.test(url)) {
       return (
         <button
           key={index}
           type="button"
-          onClick={() => onNavigate(part)}
+          onClick={() => onNavigate(url)}
           style={{
+            display: "inline-flex",
+            alignItems: "center",
+            maxWidth: "100%",
             border: 0,
-            padding: 0,
-            background: "transparent",
-            color: "#00e5ff",
+            borderRadius: 999,
+            padding: "4px 9px",
+            margin: "2px 0",
+            background: "linear-gradient(135deg,#7c4dff,#00e5ff)",
+            color: "#061020",
             fontWeight: 900,
             cursor: "pointer",
+            fontSize: 12,
           }}
         >
-          {part}
+          Xem sản phẩm
         </button>
       );
     }
@@ -58,8 +75,8 @@ function linkifyLine(line: string, onNavigate: (url: string) => void) {
 export default function ChatWidget() {
   const router = useRouter();
   const pathname = usePathname();
-  const inputRef = useRef<HTMLInputElement | null>(null);
   const bodyRef = useRef<HTMLDivElement | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const [canRender, setCanRender] = useState(false);
   const [open, setOpen] = useState(false);
@@ -69,9 +86,10 @@ export default function ChatWidget() {
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
+      id: makeMsgId(),
       role: "bot",
       content:
-        "Chào bạn, mình là HMECHA Assistant. Mình có thể tư vấn sản phẩm, phí ship, mã giảm giá, điểm tích lũy hoặc chuyển câu hỏi cho admin.",
+        "Chào bạn, mình là HMECHA Assistant. Bạn cần tư vấn sản phẩm, phí ship, mã giảm giá hay gặp admin?",
     },
   ]);
 
@@ -98,11 +116,11 @@ export default function ChatWidget() {
     if (!canRender) return;
 
     const key = "hmecha_chat_session_id";
-    const existing = window.localStorage.getItem(key);
-    const next = existing || makeSessionId();
+    const oldSession = window.localStorage.getItem(key);
+    const nextSession = oldSession || makeSessionId();
 
-    window.localStorage.setItem(key, next);
-    setSessionId(next);
+    window.localStorage.setItem(key, nextSession);
+    setSessionId(nextSession);
   }, [canRender]);
 
   useEffect(() => {
@@ -112,9 +130,9 @@ export default function ChatWidget() {
       top: bodyRef.current.scrollHeight,
       behavior: "smooth",
     });
-  }, [messages, loading]);
+  }, [messages, loading, open]);
 
-  function handleInternalNavigate(url: string) {
+  function navigate(url: string) {
     setOpen(false);
     router.push(url);
   }
@@ -157,14 +175,22 @@ export default function ChatWidget() {
     return () => window.clearInterval(timer);
   }, [open, sessionId]);
 
-  async function sendMessage(customMessage?: string) {
-    const text = (customMessage || input).trim();
+  async function sendMessage(customText?: string) {
+    const text = (customText || input).trim();
 
     if (!text || loading || !sessionId) return;
 
     setInput("");
     setLoading(true);
-    setMessages((prev) => [...prev, { role: "user", content: text }]);
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: makeMsgId(),
+        role: "user",
+        content: text,
+      },
+    ]);
 
     try {
       const response = await fetch("/api/chatbot", {
@@ -185,8 +211,9 @@ export default function ChatWidget() {
         setMessages((prev) => [
           ...prev,
           {
+            id: makeMsgId(),
             role: "bot",
-            content: data.reply || "Bot đang gặp lỗi. Bạn thử gửi lại sau nhé.",
+            content: data.reply || "Bot đang lỗi. Bạn thử gửi lại sau nhé.",
           },
         ]);
         return;
@@ -197,8 +224,9 @@ export default function ChatWidget() {
       setMessages((prev) => [
         ...prev,
         {
+          id: makeMsgId(),
           role: "bot",
-          content: "Mình đang bị lỗi kết nối. Bạn thử gửi lại sau nhé.",
+          content: "Mình đang bị lỗi kết nối. Bạn thử lại sau nhé.",
         },
       ]);
     } finally {
@@ -213,14 +241,17 @@ export default function ChatWidget() {
   }
 
   function clearChat() {
-    const next = makeSessionId();
-    window.localStorage.setItem("hmecha_chat_session_id", next);
-    setSessionId(next);
+    const nextSession = makeSessionId();
+
+    window.localStorage.setItem("hmecha_chat_session_id", nextSession);
+    setSessionId(nextSession);
+
     setMessages([
       {
+        id: makeMsgId(),
         role: "bot",
         content:
-          "Mình đã mở cuộc trò chuyện mới. Bạn cần tư vấn sản phẩm hay kiểm tra thông tin mua hàng?",
+          "Mình đã mở cuộc trò chuyện mới. Bạn muốn tư vấn sản phẩm nào?",
       },
     ]);
   }
@@ -234,80 +265,82 @@ export default function ChatWidget() {
           style={{
             position: "fixed",
             right: 22,
-            bottom: 96,
-            zIndex: 60,
-            width: "min(380px, calc(100vw - 28px))",
-            height: "min(620px, calc(100vh - 130px))",
-            display: "grid",
-            gridTemplateRows: "auto 1fr auto",
+            bottom: 92,
+            zIndex: 70,
+            width: "min(360px, calc(100vw - 24px))",
+            height: "min(520px, calc(100vh - 115px))",
+            borderRadius: 22,
             overflow: "hidden",
-            borderRadius: 24,
-            border: "1px solid rgba(0,229,255,.38)",
+            display: "grid",
+            gridTemplateRows: "auto 1fr auto auto",
             background:
-              "linear-gradient(180deg, rgba(7,12,32,.96), rgba(5,8,22,.98))",
-            boxShadow: "0 24px 70px rgba(0,0,0,.5)",
+              "linear-gradient(180deg, rgba(7,12,32,.98), rgba(5,8,22,.98))",
+            border: "1px solid rgba(0,229,255,.28)",
+            boxShadow: "0 22px 60px rgba(0,0,0,.45)",
             color: "#fff",
           }}
         >
           <header
             style={{
-              padding: 16,
-              background:
-                "linear-gradient(135deg, rgba(124,77,255,.95), rgba(0,229,255,.9))",
-              color: "#061020",
+              minHeight: 68,
+              padding: "14px 16px",
               display: "flex",
-              justifyContent: "space-between",
-              gap: 12,
               alignItems: "center",
+              gap: 12,
+              borderBottom: "1px solid rgba(255,255,255,.08)",
+              background:
+                "linear-gradient(135deg, rgba(124,77,255,.16), rgba(0,229,255,.08))",
             }}
           >
-            <div>
-              <strong style={{ display: "block", fontSize: 17 }}>
+            <div
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 999,
+                display: "grid",
+                placeItems: "center",
+                background: "linear-gradient(135deg,#7c4dff,#00e5ff)",
+                color: "#061020",
+                fontWeight: 950,
+                fontSize: 22,
+                flexShrink: 0,
+              }}
+            >
+              H
+            </div>
+
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <strong style={{ display: "block", fontSize: 16 }}>
                 HMECHA Assistant
               </strong>
-              <small>Bot hỗ trợ + admin tư vấn</small>
+              <small style={{ color: "#9fb0d8" }}>Tư vấn nhanh cho khách hàng</small>
             </div>
 
-            <div style={{ display: "flex", gap: 8 }}>
-              <button
-                type="button"
-                onClick={clearChat}
-                style={{
-                  border: 0,
-                  borderRadius: 999,
-                  width: 32,
-                  height: 32,
-                  cursor: "pointer",
-                  fontWeight: 950,
-                }}
-                title="Xóa chat"
-              >
-                ↻
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                style={{
-                  border: 0,
-                  borderRadius: 999,
-                  width: 32,
-                  height: 32,
-                  cursor: "pointer",
-                  fontWeight: 950,
-                }}
-                title="Đóng"
-              >
-                ×
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              style={{
+                width: 34,
+                height: 34,
+                border: 0,
+                borderRadius: 999,
+                background: "rgba(255,255,255,.08)",
+                color: "#fff",
+                cursor: "pointer",
+                fontSize: 24,
+                lineHeight: "30px",
+              }}
+            >
+              ×
+            </button>
           </header>
 
           <div
             ref={bodyRef}
             style={{
               padding: 14,
-              overflow: "auto",
+              overflowY: "auto",
+              overflowX: "hidden",
               display: "grid",
               gap: 10,
               alignContent: "start",
@@ -317,38 +350,36 @@ export default function ChatWidget() {
               <div
                 key={message.id || index}
                 style={{
-                  justifySelf: message.role === "user" ? "end" : "start",
-                  maxWidth: "86%",
-                  borderRadius:
-                    message.role === "user"
-                      ? "18px 18px 4px 18px"
-                      : "18px 18px 18px 4px",
-                  padding: "10px 12px",
-                  background:
-                    message.role === "user"
-                      ? "linear-gradient(135deg,#7c4dff,#00e5ff)"
-                      : message.role === "admin"
-                      ? "rgba(255,79,216,.18)"
-                      : "rgba(255,255,255,.08)",
-                  color: message.role === "user" ? "#061020" : "#ffffff",
-                  fontWeight: message.role === "user" ? 850 : 650,
-                  lineHeight: 1.55,
-                  whiteSpace: "pre-wrap",
+                  display: "flex",
+                  justifyContent: message.role === "user" ? "flex-end" : "flex-start",
                 }}
               >
-                {message.role === "admin" ? (
-                  <small style={{ color: "#ff8de7", fontWeight: 950 }}>
-                    HMECHA Admin
-                  </small>
-                ) : null}
-
-                <div>
+                <div
+                  style={{
+                    maxWidth: "86%",
+                    padding: "10px 12px",
+                    borderRadius:
+                      message.role === "user"
+                        ? "16px 16px 4px 16px"
+                        : "16px 16px 16px 4px",
+                    background:
+                      message.role === "user"
+                        ? "linear-gradient(135deg,#7c4dff,#00e5ff)"
+                        : message.role === "admin"
+                        ? "rgba(255,79,216,.18)"
+                        : "rgba(255,255,255,.08)",
+                    color: message.role === "user" ? "#061020" : "#fff",
+                    fontWeight: message.role === "user" ? 850 : 600,
+                    fontSize: 14,
+                    lineHeight: 1.5,
+                    wordBreak: "break-word",
+                    overflowWrap: "anywhere",
+                    whiteSpace: "pre-wrap",
+                  }}
+                >
                   {message.content.split("\n").map((line, lineIndex) => (
-                    <p
-                      key={lineIndex}
-                      style={{ margin: lineIndex ? "7px 0 0" : 0 }}
-                    >
-                      {linkifyLine(line, handleInternalNavigate)}
+                    <p key={lineIndex} style={{ margin: lineIndex ? "6px 0 0" : 0 }}>
+                      {renderTextWithLinks(line, navigate)}
                     </p>
                   ))}
                 </div>
@@ -356,88 +387,118 @@ export default function ChatWidget() {
             ))}
 
             {loading ? (
-              <div
-                style={{
-                  justifySelf: "start",
-                  borderRadius: 16,
-                  padding: "10px 12px",
-                  background: "rgba(255,255,255,.08)",
-                  color: "#c5d2f2",
-                }}
-              >
-                Đang trả lời...
+              <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                <div
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: "16px 16px 16px 4px",
+                    background: "rgba(255,255,255,.08)",
+                    color: "#c5d2f2",
+                    fontSize: 14,
+                  }}
+                >
+                  Đang trả lời...
+                </div>
               </div>
             ) : null}
           </div>
 
-          <footer
-            style={{ padding: 12, borderTop: "1px solid rgba(255,255,255,.1)" }}
+          <div
+            style={{
+              padding: "8px 12px",
+              borderTop: "1px solid rgba(255,255,255,.08)",
+              display: "flex",
+              gap: 8,
+              overflowX: "auto",
+              overflowY: "hidden",
+            }}
           >
-            <div
-              style={{
-                display: "flex",
-                gap: 8,
-                overflowX: "auto",
-                paddingBottom: 10,
-              }}
-            >
-              {suggestions.map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  onClick={() => sendMessage(item)}
-                  disabled={loading}
-                  style={{
-                    border: "1px solid rgba(0,229,255,.28)",
-                    borderRadius: 999,
-                    padding: "8px 10px",
-                    background: "rgba(0,229,255,.08)",
-                    color: "#dce6ff",
-                    whiteSpace: "nowrap",
-                    cursor: "pointer",
-                    fontWeight: 800,
-                  }}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-
-            <form onSubmit={handleSubmit} style={{ display: "flex", gap: 8 }}>
-              <input
-                ref={inputRef}
-                value={input}
-                onChange={(event) => setInput(event.target.value)}
-                placeholder="Nhập câu hỏi cho shop..."
-                style={{
-                  flex: 1,
-                  minHeight: 44,
-                  border: "1px solid rgba(0,229,255,.24)",
-                  borderRadius: 14,
-                  background: "rgba(5,8,22,.92)",
-                  color: "#fff",
-                  padding: "0 12px",
-                  outline: "none",
-                }}
-              />
-
+            {suggestions.map((item) => (
               <button
-                type="submit"
-                disabled={loading || !input.trim()}
+                key={item}
+                type="button"
+                onClick={() => sendMessage(item)}
+                disabled={loading}
                 style={{
-                  minWidth: 68,
-                  border: 0,
-                  borderRadius: 14,
-                  background: "linear-gradient(135deg,#7c4dff,#00e5ff)",
-                  color: "#061020",
-                  fontWeight: 950,
+                  flex: "0 0 auto",
+                  minHeight: 34,
+                  border: "1px solid rgba(0,229,255,.25)",
+                  borderRadius: 999,
+                  padding: "0 11px",
+                  background: "rgba(0,229,255,.08)",
+                  color: "#dce6ff",
+                  fontWeight: 800,
                   cursor: "pointer",
+                  fontSize: 13,
                 }}
               >
-                Gửi
+                {item}
               </button>
-            </form>
-          </footer>
+            ))}
+          </div>
+
+          <form
+            onSubmit={handleSubmit}
+            style={{
+              padding: 12,
+              display: "grid",
+              gridTemplateColumns: "1fr 42px 42px",
+              gap: 8,
+              borderTop: "1px solid rgba(255,255,255,.08)",
+            }}
+          >
+            <input
+              ref={inputRef}
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              placeholder="Nhập tin nhắn..."
+              style={{
+                minHeight: 42,
+                border: "1px solid rgba(0,229,255,.22)",
+                borderRadius: 999,
+                background: "rgba(255,255,255,.06)",
+                color: "#fff",
+                padding: "0 13px",
+                outline: "none",
+                fontSize: 14,
+              }}
+            />
+
+            <button
+              type="submit"
+              disabled={loading || !input.trim()}
+              style={{
+                width: 42,
+                height: 42,
+                border: 0,
+                borderRadius: 999,
+                background: "linear-gradient(135deg,#7c4dff,#00e5ff)",
+                color: "#061020",
+                fontWeight: 950,
+                cursor: "pointer",
+              }}
+            >
+              ➤
+            </button>
+
+            <button
+              type="button"
+              onClick={clearChat}
+              title="Làm mới chat"
+              style={{
+                width: 42,
+                height: 42,
+                border: "1px solid rgba(255,255,255,.12)",
+                borderRadius: 999,
+                background: "rgba(255,255,255,.06)",
+                color: "#fff",
+                fontWeight: 950,
+                cursor: "pointer",
+              }}
+            >
+              ↻
+            </button>
+          </form>
         </section>
       ) : null}
 
@@ -448,35 +509,22 @@ export default function ChatWidget() {
           position: "fixed",
           right: 22,
           bottom: 24,
-          zIndex: 61,
-          width: 62,
-          height: 62,
+          zIndex: 71,
+          width: 58,
+          height: 58,
           borderRadius: 999,
-          border: "1px solid rgba(255,255,255,.24)",
-          background: "linear-gradient(135deg,#14b8ff,#00e5ff)",
-          cursor: "pointer",
+          border: "1px solid rgba(255,255,255,.22)",
+          background: "linear-gradient(135deg,#7c4dff,#00e5ff)",
+          color: "#061020",
           display: "grid",
           placeItems: "center",
-          color: "#061020",
+          cursor: "pointer",
+          fontSize: 25,
           fontWeight: 950,
-          fontSize: 30,
-          boxShadow: "none",
+          boxShadow: "0 16px 34px rgba(0,229,255,.25)",
         }}
-        aria-label="Mở chatbot"
       >
-        {open ? (
-          "×"
-        ) : (
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
-            <path
-              d="M4.5 11.6C4.5 7.9 7.8 5 12 5s7.5 2.9 7.5 6.6-3.3 6.6-7.5 6.6c-.9 0-1.8-.1-2.6-.4L5.5 19l1.2-3.1c-1.4-1.1-2.2-2.6-2.2-4.3Z"
-              fill="white"
-              stroke="#061020"
-              strokeWidth="1.2"
-              strokeLinejoin="round"
-            />
-          </svg>
-        )}
+        {open ? "×" : "💬"}
       </button>
     </>
   );
