@@ -61,7 +61,7 @@ export default async function CustomerAccountPage() {
     .select(
       "id,total,status,payment_method,created_at,order_items(product_name,product_price,quantity)"
     )
-    .eq("customer_id", user!.id)
+    .or(`customer_id.eq.${user!.id},customer_email.eq.${user!.email || ""}`)
     .order("created_at", { ascending: false })
     .limit(5);
 
