@@ -25,6 +25,22 @@ function formatDate(value: string) {
   return new Date(value).toLocaleDateString("vi-VN");
 }
 
+function getReviewRating(review: any) {
+  const raw =
+    review?.rating ??
+    review?.stars ??
+    review?.star ??
+    review?.review_rating ??
+    review?.score ??
+    0;
+
+  const value = Number(raw);
+
+  if (!Number.isFinite(value)) return 0;
+
+  return Math.round(value);
+}
+
 function Stars({ value, large = false }: { value: number; large?: boolean }) {
   return (
     <span className={large ? "stars large" : "stars"} aria-label={`${value} sao`}>
@@ -74,22 +90,29 @@ export default function ProductReviews({
     const total = reviews.length;
 
     const counts = [5, 4, 3, 2, 1].map((star) => {
-      const count = reviews.filter((review) => Number(review.rating) === star).length;
+      const count = reviews.filter((review) => getReviewRating(review) === star).length;
       const percent = total ? Math.round((count / total) * 100) : 0;
 
       return { star, count, percent };
     });
 
     const average = total
-      ? reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) / total
+      ? reviews.reduce((sum, review) => sum + getReviewRating(review), 0) / total
       : 0;
 
     return { total, counts, average };
   }, [reviews]);
 
   const filteredReviews = useMemo(() => {
-    if (filter === "comment") return reviews.filter((review) => review.content.trim());
-    return reviews.filter((review) => Number(review.rating) === Number(filter));
+    const comments = reviews.filter((review) =>
+      String(review.content || "").trim().length > 0
+    );
+
+    if (filter === "comment") return comments;
+
+    const selectedRating = Number(filter);
+
+    return comments.filter((review) => getReviewRating(review) === selectedRating);
   }, [filter, reviews]);
 
   async function submitReview(event: React.FormEvent<HTMLFormElement>) {
@@ -273,7 +296,7 @@ export default function ProductReviews({
                 <div>
                   <strong>{review.customer_name || "Khách hàng HMECHA"}</strong>
                   <span>
-                    <Stars value={Number(review.rating || 0)} /> · {formatDate(review.created_at)}
+                    <Stars value={getReviewRating(review)} /> · {formatDate(review.created_at)}
                   </span>
                 </div>
               </div>
