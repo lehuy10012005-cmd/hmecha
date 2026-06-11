@@ -7,9 +7,8 @@ import CompareTray from "@/components/CompareTray";
 import FeaturedImagePreviewLock from "@/components/FeaturedImagePreviewLock";
 
 export const metadata: Metadata = {
-  title: "HMecha | MÃƒÂ´ hÃƒÂ¬nh Gundam chÃƒÂ­nh hÃƒÂ£ng",
-  description:
-    "HMecha - cÃ¡Â»Â­a hÃƒÂ ng mÃƒÂ´ hÃƒÂ¬nh Gundam, model kit vÃƒÂ  phÃ¡Â»Â¥ kiÃ¡Â»â€¡n dÃƒÂ nh cho ngÃ†Â°Ã¡Â»Âi yÃƒÂªu mecha.",
+  title: "HMecha | Mo hinh Gundam chinh hang",
+  description: "HMecha - cua hang mo hinh Gundam, model kit va phu kien mecha.",
 };
 
 export default function RootLayout({

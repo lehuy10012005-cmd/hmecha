@@ -3,6 +3,7 @@
 <html lang="vi">
 	<head>
 <meta charset="UTF-8">
+
 		<meta name="google-site-verification" content="xOZTFIAMz-dHTlLenwOA-bmoNbC8o5Jz7QsvIxbjPRg" />
 		<!-- Google tag (gtag.js) -->
 		<script async src="https://www.googletagmanager.com/gtag/js?id=AW-618438761"></script>
@@ -23,7 +24,7 @@
 		<meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">	
 		<meta name="robots" content="noodp,index,follow" />
 		<meta name="description" content="HMECHA – Shop mô hình Gundam, Gunpla, Mecha, Metal Build và phụ kiện chính hãng. Giao hàng toàn quốc, nhiều dòng HG, RG, MG, PG, SD, giá tốt cho cộng đồng mê mô hình.">
-		<title>HMecha | Mô hình Gundam chính hãng</title>
+		<title>HMecha | Mo hinh Gundam chinh hang</title>
 		<meta name="keywords" content="hmecha, gundam, mô hình gundam, gunpla, mecha, metal build, hg gundam, rg gundam, mg gundam, pg gundam, mô hình robot, phụ kiện gundam"/>		
 		
 	<meta property="og:type" content="website">
@@ -2075,6 +2076,23 @@ a.backtop {
 </style>
 	
 
+
+
+<script id="hmecha-force-clean-title">
+(function () {
+  var title = "HMecha | Mo hinh Gundam chinh hang";
+
+  function setTitle() {
+    document.title = title;
+  }
+
+  setTitle();
+  document.addEventListener("DOMContentLoaded", setTitle);
+  window.addEventListener("load", setTitle);
+  setTimeout(setTitle, 500);
+  setTimeout(setTitle, 1500);
+})();
+</script>
 
 </head>
 	<body>
@@ -14631,67 +14649,7 @@ if (popularBox) popularBox.classList.add("d-none");
 </script>
 
 
-<script id="hmecha-fix-title-and-footer-links">
-(function () {
-  var correctTitle = "HMecha | Mô hình Gundam chính hãng";
-  var hiddenTexts = [
-    "Sản phẩm có sẵn",
-    "Đặt trước mô hình",
-    "Gundam Bandai"
-  ];
 
-  function clean(text) {
-    return String(text || "").replace(/\s+/g, " ").trim();
-  }
-
-  function hide(el) {
-    if (!el) return;
-    el.style.setProperty("display", "none", "important");
-  }
-
-  function fixTitle() {
-    document.title = correctTitle;
-  }
-
-  function hideFooterLinks() {
-    var blocks = Array.prototype.slice.call(document.querySelectorAll("footer, section, div"));
-    var exploreBlock = null;
-
-    for (var i = 0; i < blocks.length; i++) {
-      var text = clean(blocks[i].textContent);
-      if (text.indexOf("KHÁM PHÁ HMECHA") >= 0 || text.indexOf("Khám phá HMECHA") >= 0) {
-        exploreBlock = blocks[i];
-        break;
-      }
-    }
-
-    var scope = exploreBlock || document;
-
-    scope.querySelectorAll("a, li, span").forEach(function (el) {
-      var text = clean(el.textContent);
-
-      if (hiddenTexts.indexOf(text) >= 0) {
-        hide(el.closest("li") || el.closest("a") || el);
-      }
-    });
-  }
-
-  function run() {
-    fixTitle();
-    hideFooterLinks();
-  }
-
-  document.addEventListener("DOMContentLoaded", run);
-  window.addEventListener("load", run);
-
-  var count = 0;
-  var timer = setInterval(function () {
-    run();
-    count++;
-    if (count >= 12) clearInterval(timer);
-  }, 400);
-})();
-</script>
 
 </body>
 </html>
