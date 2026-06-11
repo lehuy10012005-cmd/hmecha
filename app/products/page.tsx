@@ -19,9 +19,9 @@ type DbProduct = {
   brand: string;
   category: string;
   status: string;
-  badge: string;
+  badge: string | null;
   stock_quantity: number;
-  product_images: DbProductImage[];
+  product_images: DbProductImage[] | null;
 };
 
 export default async function ProductsPage() {
@@ -36,12 +36,14 @@ export default async function ProductsPage() {
     `)
     .order("created_at", { ascending: false });
 
-   const databaseProducts: FilterProduct[] =
+  const databaseProducts: FilterProduct[] =
     dbProducts?.map((product: DbProduct) => {
-      const image =
-        product.product_images
-          ?.sort((a, b) => a.sort_order - b.sort_order)[0]?.image_url ||
-        "/logo/logo.png";
+      const sortedImages = [...(product.product_images || [])].sort(
+        (a, b) => a.sort_order - b.sort_order
+      );
+
+      const image = sortedImages[0]?.image_url || "/logo/logo.png";
+      const image2 = sortedImages[1]?.image_url || image;
 
       return {
         id: product.id,
@@ -52,6 +54,7 @@ export default async function ProductsPage() {
         status: product.status || "Đang cập nhật",
         badge: product.badge,
         image,
+        image2,
         source: "database",
       };
     }) || [];
@@ -65,14 +68,11 @@ export default async function ProductsPage() {
     status: product.status || "Đang cập nhật",
     badge: product.badge,
     image: product.images[0] || "/logo/logo.png",
+    image2: product.images[1] || product.images[0] || "/logo/logo.png",
     source: "demo",
   }));
 
-  const allProducts: FilterProduct[] = [
-    ...databaseProducts,
-    ...demoProducts,
-  ];
-
+  const allProducts: FilterProduct[] = [...databaseProducts, ...demoProducts];
 
   return (
     <main className="page">
@@ -83,30 +83,45 @@ export default async function ProductsPage() {
           <strong>Tất cả sản phẩm</strong>
         </div>
 
-        <div className="heading">
-          <p>HMECHA COLLECTION</p>
-          <h1>Tất cả sản phẩm</h1>
-          <span>
-            Gồm sản phẩm admin thêm từ database và các mẫu demo cũ để web nhìn đầy đủ hơn.
-          </span>
-        </div>
+        <section className="hero">
+          <div className="heroText">
+            <p>HMECHA COLLECTION</p>
+            <h1>Tất cả sản phẩm</h1>
+            <span>
+              Tổng hợp đầy đủ mô hình Gundam, Gunpla, Mecha và phụ kiện đang có
+              tại HMECHA.
+            </span>
+          </div>
 
-              <ProductFilterGrid products={allProducts} />
+          <div className="heroStats">
+            <div>
+              <strong>{allProducts.length}</strong>
+              <span>Sản phẩm</span>
+            </div>
+
+            <div>
+              <strong>HMECHA</strong>
+              <span>Gunpla & Model Kit</span>
+            </div>
+          </div>
+        </section>
+
+        <ProductFilterGrid products={allProducts} />
       </div>
 
       <style>{`
         .page {
           min-height: 100vh;
+          padding: 34px 20px 80px;
+          color: #ffffff;
           background:
-            radial-gradient(circle at top left, rgba(124,77,255,.24), transparent 34%),
-            radial-gradient(circle at top right, rgba(0,229,255,.16), transparent 28%),
-            linear-gradient(180deg, #050816 0%, #0b1026 45%, #050816 100%);
-          color: white;
-          padding: 34px 20px 70px;
+            radial-gradient(circle at 10% 0%, rgba(124, 77, 255, 0.28), transparent 32%),
+            radial-gradient(circle at 88% 8%, rgba(0, 229, 255, 0.18), transparent 30%),
+            linear-gradient(180deg, #050816 0%, #0b1434 44%, #050816 100%);
         }
 
         .container {
-          max-width: 1280px;
+          max-width: 1480px;
           margin: 0 auto;
         }
 
@@ -114,230 +129,137 @@ export default async function ProductsPage() {
           display: flex;
           gap: 10px;
           align-items: center;
+          margin-bottom: 26px;
           color: #9fb0d8;
-          margin-bottom: 28px;
+          font-size: 15px;
         }
 
         .breadcrumb a {
-          color: #9fb0d8;
+          color: #b9c8ed;
           text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+          color: #00e5ff;
         }
 
         .breadcrumb strong {
           color: #00e5ff;
         }
 
-        .heading {
-          margin-bottom: 28px;
-        }
-
-        .heading p {
-          margin: 0;
-          color: #00e5ff;
-          font-weight: 900;
-          letter-spacing: 2px;
-        }
-
-        .heading h1 {
-          margin: 8px 0;
-          font-size: 42px;
-          line-height: 1.1;
-        }
-
-        .heading span {
-          color: #b8c4e6;
-        }
-        .filters {
-          display: flex;
-          align-items: flex-end;
-          flex-wrap: wrap;
-          gap: 16px;
-          margin-bottom: 28px;
-          padding: 20px;
-          border-radius: 18px;
-          background: rgba(11, 16, 38, 0.8);
-          border: 1px solid rgba(0, 229, 255, 0.2);
-          box-shadow: 0 0 28px rgba(124, 77, 255, 0.1);
-        }
-
-        .filterGroup {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          min-width: 230px;
-        }
-
-        .filterGroup label {
-          color: #c5d2f2;
-          font-size: 14px;
-          font-weight: 700;
-        }
-
-        .filterGroup select {
-          height: 48px;
-          padding: 0 14px;
-          border-radius: 12px;
-          background: rgba(5, 8, 22, 0.9);
-          border: 1px solid rgba(0, 229, 255, 0.28);
-          color: #ffffff;
-          outline: none;
-          cursor: pointer;
-        }
-
-        .filterGroup select:focus {
-          border-color: #00e5ff;
-          box-shadow: 0 0 14px rgba(0, 229, 255, 0.18);
-        }
-
-        .resetFilter {
-          height: 48px;
-          padding: 0 20px;
-          border-radius: 12px;
-          font-weight: 800;
-          cursor: pointer;
-        }
-
-        .filterCount {
-          margin: 0 0 14px auto;
-          color: #b8c4e6;
-          font-size: 14px;
-        }
-
-        .filterCount strong {
-          color: #00e5ff;
-          font-size: 17px;
-        }
-
-        .emptyFilter {
-          padding: 46px 20px;
-          text-align: center;
-          border-radius: 18px;
-          color: #bac8ea;
-          border: 1px dashed rgba(0, 229, 255, 0.28);
-          background: rgba(11, 16, 38, 0.55);
-        }
-
-        .info .category {
-          margin: 0 0 7px;
-          color: #00e5ff;
-          font-size: 12px;
-          font-weight: 800;
-          letter-spacing: 0.7px;
-          text-transform: uppercase;
-        }
-
-        @media (max-width: 720px) {
-          .filterGroup {
-            width: 100%;
-          }
-
-          .filterCount {
-            width: 100%;
-            margin: 4px 0 0;
-          }
-        }
-        .grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-          gap: 22px;
-        }
-
-        .card {
-          display: block;
-          text-decoration: none;
-          color: inherit;
-          background: rgba(255,255,255,.06);
-          border: 1px solid rgba(0,229,255,.22);
-          border-radius: 18px;
-          overflow: hidden;
-          box-shadow: 0 0 30px rgba(124,77,255,.12);
-          transition: .22s;
-        }
-
-        .card:hover {
-          transform: translateY(-5px);
-          border-color: rgba(0,229,255,.65);
-          box-shadow: 0 0 36px rgba(0,229,255,.18);
-        }
-
-        .thumb {
+        .hero {
           position: relative;
-          aspect-ratio: 1 / 1;
-          background: #02040d;
           overflow: hidden;
+          display: flex;
+          justify-content: space-between;
+          gap: 28px;
+          margin-bottom: 30px;
+          padding: 42px;
+          border-radius: 28px;
+          background:
+            radial-gradient(circle at 88% 18%, rgba(0, 229, 255, 0.16), transparent 34%),
+            radial-gradient(circle at 12% 0%, rgba(255, 79, 216, 0.13), transparent 30%),
+            rgba(7, 12, 32, 0.78);
+          border: 1px solid rgba(0, 229, 255, 0.22);
+          box-shadow:
+            0 22px 50px rgba(0, 0, 0, 0.28),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
         }
 
-        .thumb img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-        }
-
-        .badge {
+        .hero::after {
+          content: "";
           position: absolute;
-          left: 12px;
-          bottom: 12px;
-          background: linear-gradient(135deg,#ff3d8b,#7c4dff);
-          color: white;
-          padding: 7px 11px;
-          border-radius: 8px;
-          font-weight: 900;
-          font-size: 13px;
-        }
-
-        .dbBadge {
-          position: absolute;
-          left: 12px;
-          top: 12px;
-          background: linear-gradient(135deg,#00e5ff,#7c4dff);
-          color: #050816;
-          padding: 7px 11px;
-          border-radius: 8px;
-          font-weight: 950;
-          font-size: 13px;
-        }
-
-        .heart {
-          position: absolute;
-          top: 12px;
-          right: 12px;
-          width: 42px;
-          height: 42px;
+          right: -90px;
+          top: -90px;
+          width: 260px;
+          height: 260px;
           border-radius: 999px;
-          border: none;
-          background: white;
-          font-size: 24px;
-          cursor: pointer;
+          background: rgba(0, 229, 255, 0.11);
+          filter: blur(10px);
         }
 
-        .info {
-          padding: 16px;
-          background: rgba(255,255,255,.94);
-          color: #111827;
+        .heroText {
+          position: relative;
+          z-index: 1;
         }
 
-        .info h2 {
+        .heroText p {
+          margin: 0 0 12px;
+          color: #00e5ff;
+          font-size: 13px;
+          font-weight: 950;
+          letter-spacing: 4px;
+        }
+
+        .heroText h1 {
           margin: 0;
-          min-height: 48px;
-          font-size: 17px;
-          line-height: 1.35;
+          font-size: clamp(40px, 5vw, 68px);
+          line-height: 1.04;
+          font-weight: 950;
+          letter-spacing: -1.7px;
+          text-shadow: 0 0 24px rgba(0, 229, 255, 0.13);
         }
 
-        .price {
-          margin: 13px 0;
-          color: #ef2f72;
-          font-size: 21px;
+        .heroText span {
+          display: block;
+          max-width: 760px;
+          margin-top: 18px;
+          color: #c5d2f2;
+          font-size: 17px;
+          line-height: 1.75;
+        }
+
+        .heroStats {
+          position: relative;
+          z-index: 1;
+          display: grid;
+          grid-template-columns: repeat(2, minmax(150px, 1fr));
+          gap: 14px;
+          min-width: 340px;
+          align-self: flex-end;
+        }
+
+        .heroStats div {
+          padding: 18px;
+          border-radius: 18px;
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(0, 229, 255, 0.16);
+        }
+
+        .heroStats strong {
+          display: block;
+          color: #00e5ff;
+          font-size: 24px;
           font-weight: 950;
         }
 
-        .stock {
-          margin: 0;
-          color: #4b5563;
+        .heroStats span {
+          display: block;
+          margin-top: 4px;
+          color: #aebce4;
+          font-size: 13px;
         }
 
-        .stock b {
-          color: #111827;
+        @media (max-width: 980px) {
+          .hero {
+            flex-direction: column;
+            padding: 30px 22px;
+          }
+
+          .heroStats {
+            min-width: 0;
+            width: 100%;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .page {
+            padding: 24px 14px 60px;
+          }
+
+          .heroStats {
+            grid-template-columns: 1fr;
+          }
         }
       `}</style>
     </main>

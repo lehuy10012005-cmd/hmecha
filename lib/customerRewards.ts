@@ -7,6 +7,7 @@ type OrderItem = {
 type Order = {
   id: string;
   customer_id: string | null;
+  customer_email: string | null;
   total: number | null;
   status: string | null;
   points_awarded: boolean | null;
@@ -29,19 +30,35 @@ function calculateTier(points: number, completedOrders: number, lifetimeSpent: n
   return "Rookie Builder";
 }
 
+async function resolveCustomerId(order: Order) {
+  if (order.customer_id) return order.customer_id;
+
+  const email = order.customer_email?.trim().toLowerCase();
+
+  if (!email) return null;
+
+  const { data: profile } = await supabaseAdmin
+    .from("profiles")
+    .select("id,email")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (profile?.id) {
+    await supabaseAdmin
+      .from("orders")
+      .update({ customer_id: profile.id })
+      .eq("id", order.id);
+
+    return profile.id as string;
+  }
+
+  return null;
+}
+
 export async function awardPointsForCompletedOrder(orderId: string) {
   const { data: orderData, error: orderError } = await supabaseAdmin
     .from("orders")
-    .select(`
-      id,
-      customer_id,
-      total,
-      status,
-      points_awarded,
-      order_items (
-        quantity
-      )
-    `)
+    .select("id,customer_id,customer_email,total,status,points_awarded,order_items(quantity)")
     .eq("id", orderId)
     .single();
 
@@ -53,13 +70,6 @@ export async function awardPointsForCompletedOrder(orderId: string) {
   }
 
   const order = orderData as Order;
-
-  if (!order.customer_id) {
-    return {
-      awarded: false,
-      message: "Đơn này chưa gắn customer_id nên không cộng điểm.",
-    };
-  }
 
   if (order.points_awarded) {
     return {
@@ -75,6 +85,15 @@ export async function awardPointsForCompletedOrder(orderId: string) {
     };
   }
 
+  const customerId = await resolveCustomerId(order);
+
+  if (!customerId) {
+    return {
+      awarded: false,
+      message: "Không tìm được tài khoản khách để cộng điểm.",
+    };
+  }
+
   const total = Number(order.total || 0);
   const earnedPoints = Math.floor(total / 10000);
   const completedItems =
@@ -83,7 +102,7 @@ export async function awardPointsForCompletedOrder(orderId: string) {
   const { data: currentPointRow } = await supabaseAdmin
     .from("customer_points")
     .select("*")
-    .eq("user_id", order.customer_id)
+    .eq("user_id", customerId)
     .maybeSingle();
 
   const currentPoints = Number(currentPointRow?.points || 0);
@@ -99,49 +118,40 @@ export async function awardPointsForCompletedOrder(orderId: string) {
   const nextCompletedItems = currentCompletedItems + completedItems;
   const nextTier = calculateTier(nextPoints, nextCompletedOrders, nextLifetimeSpent);
 
-  if (currentPointRow?.id) {
-    const { error: updateError } = await supabaseAdmin
-      .from("customer_points")
-      .update({
-        points: nextPoints,
-        lifetime_points: nextLifetimePoints,
-        lifetime_spent: nextLifetimeSpent,
-        completed_orders: nextCompletedOrders,
-        completed_items: nextCompletedItems,
-        tier: nextTier,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("user_id", order.customer_id);
+  const payload = {
+    user_id: customerId,
+    points: nextPoints,
+    lifetime_points: nextLifetimePoints,
+    lifetime_spent: nextLifetimeSpent,
+    completed_orders: nextCompletedOrders,
+    completed_items: nextCompletedItems,
+    tier: nextTier,
+    updated_at: new Date().toISOString(),
+  };
 
-    if (updateError) {
-      return {
-        awarded: false,
-        message: updateError.message,
-      };
+  if (currentPointRow?.id) {
+    const { error } = await supabaseAdmin
+      .from("customer_points")
+      .update(payload)
+      .eq("user_id", customerId);
+
+    if (error) {
+      return { awarded: false, message: error.message };
     }
   } else {
-    const { error: insertError } = await supabaseAdmin.from("customer_points").insert({
-      user_id: order.customer_id,
-      points: nextPoints,
-      lifetime_points: nextLifetimePoints,
-      lifetime_spent: nextLifetimeSpent,
-      completed_orders: nextCompletedOrders,
-      completed_items: nextCompletedItems,
-      tier: nextTier,
-      updated_at: new Date().toISOString(),
-    });
+    const { error } = await supabaseAdmin
+      .from("customer_points")
+      .insert(payload);
 
-    if (insertError) {
-      return {
-        awarded: false,
-        message: insertError.message,
-      };
+    if (error) {
+      return { awarded: false, message: error.message };
     }
   }
 
   await supabaseAdmin
     .from("orders")
     .update({
+      customer_id: customerId,
       points_awarded: true,
       points_awarded_at: new Date().toISOString(),
     })
@@ -152,6 +162,6 @@ export async function awardPointsForCompletedOrder(orderId: string) {
     earnedPoints,
     completedItems,
     tier: nextTier,
-    message: `Đã cộng ${earnedPoints} điểm cho khách.`,
+    message: "Đã cộng " + earnedPoints + " điểm cho khách.",
   };
 }

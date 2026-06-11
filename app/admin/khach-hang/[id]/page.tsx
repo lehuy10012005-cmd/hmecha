@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createAuthServerClient } from "../../../../lib/supabase-auth/server";
 import { supabaseAdmin } from "../../../../lib/supabase-admin";
@@ -44,27 +44,15 @@ function date(value?: string | null) {
   return new Date(value).toLocaleDateString("vi-VN");
 }
 
-function paymentMethod(value?: string | null) {
-  if (!value) return "Chưa cập nhật";
-
-  const text = value.toLowerCase();
-
-  if (text === "cod") return "COD";
-  if (text.includes("vnpay")) return "VNPAY";
-  if (text.includes("bank")) return "Chuyển khoản";
-
-  return value;
-}
-
 export default async function AdminCustomerDetailPage({ params }: PageProps) {
   await requireAdmin();
 
   const { id } = await params;
 
-  const { data: authUserData, error: authUserError } =
+  const { data: authUserData, error } =
     await supabaseAdmin.auth.admin.getUserById(id);
 
-  if (authUserError || !authUserData.user) {
+  if (error || !authUserData.user) {
     redirect("/admin/khach-hang");
   }
 
@@ -110,14 +98,13 @@ export default async function AdminCustomerDetailPage({ params }: PageProps) {
           <Link href="/admin/khach-hang">← Danh sách khách hàng</Link>
         </div>
 
-        <section className="profileGrid">
-          <div className="profileCard">
+        <section className="grid">
+          <div className="card profile">
             <div className="avatar">{customerName.slice(0, 1).toUpperCase()}</div>
-
             <h2>{customerName}</h2>
             <p>{customerEmail}</p>
 
-            <div className="infoRows">
+            <div className="rows">
               <div>
                 <span>Số điện thoại</span>
                 <strong>{customerPhone}</strong>
@@ -140,7 +127,7 @@ export default async function AdminCustomerDetailPage({ params }: PageProps) {
             </div>
           </div>
 
-          <div className="summaryGrid">
+          <div className="summary">
             <div>
               <span>Tổng đơn hàng</span>
               <strong>{orders.length}</strong>
@@ -163,16 +150,16 @@ export default async function AdminCustomerDetailPage({ params }: PageProps) {
           </div>
         </section>
 
-        <section className="ordersCard">
+        <section className="card orders">
           <div className="ordersHead">
             <h2>Lịch sử đơn hàng</h2>
             <p>Toàn bộ đơn hàng được ghi nhận theo tài khoản khách hàng này.</p>
           </div>
 
           {orders.length === 0 ? (
-            <div className="emptyBox">Khách hàng này chưa có đơn hàng.</div>
+            <div className="empty">Khách hàng này chưa có đơn hàng.</div>
           ) : (
-            <div className="ordersList">
+            <div className="orderList">
               {orders.map((order) => (
                 <div className="orderItem" key={order.id}>
                   <div>
@@ -182,7 +169,7 @@ export default async function AdminCustomerDetailPage({ params }: PageProps) {
 
                   <div>
                     <span>Thanh toán</span>
-                    <strong>{paymentMethod(order.payment_method)}</strong>
+                    <strong>{order.payment_method || "Chưa cập nhật"}</strong>
                   </div>
 
                   <div>
@@ -255,22 +242,22 @@ export default async function AdminCustomerDetailPage({ params }: PageProps) {
           white-space: nowrap;
         }
 
-        .profileGrid {
+        .grid {
           display: grid;
           grid-template-columns: 360px 1fr;
           gap: 22px;
           margin-bottom: 24px;
         }
 
-        .profileCard,
-        .summaryGrid div,
-        .ordersCard {
+        .card,
+        .summary div {
           border: 1px solid rgba(0, 229, 255, 0.2);
           background: rgba(7, 12, 32, 0.84);
           box-shadow: 0 20px 48px rgba(0, 0, 0, 0.24);
         }
 
-        .profileCard {
+        .profile,
+        .orders {
           border-radius: 24px;
           padding: 26px;
         }
@@ -287,17 +274,17 @@ export default async function AdminCustomerDetailPage({ params }: PageProps) {
           background: linear-gradient(135deg, #7c4dff, #00e5ff);
         }
 
-        .profileCard h2 {
+        .profile h2 {
           margin: 18px 0 8px;
           font-size: 28px;
         }
 
-        .profileCard p {
+        .profile p {
           margin: 0 0 20px;
           color: #9fb0d8;
         }
 
-        .infoRows div {
+        .rows div {
           display: flex;
           justify-content: space-between;
           gap: 16px;
@@ -305,38 +292,40 @@ export default async function AdminCustomerDetailPage({ params }: PageProps) {
           border-bottom: 1px solid rgba(255,255,255,0.08);
         }
 
-        .infoRows span {
+        .rows span,
+        .orderItem span,
+        .ordersHead p {
           color: #9fb0d8;
         }
 
-        .infoRows strong {
+        .rows strong {
           text-align: right;
         }
 
-        .summaryGrid {
+        .summary {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 16px;
         }
 
-        .summaryGrid div {
+        .summary div {
           border-radius: 22px;
           padding: 24px;
         }
 
-        .summaryGrid span {
+        .summary span {
           display: block;
           color: #9fb0d8;
           margin-bottom: 12px;
         }
 
-        .summaryGrid strong {
+        .summary strong {
           color: #00e5ff;
           font-size: 28px;
         }
 
-        .ordersCard {
-          border-radius: 24px;
+        .orders {
+          padding: 0;
           overflow: hidden;
         }
 
@@ -350,11 +339,6 @@ export default async function AdminCustomerDetailPage({ params }: PageProps) {
           font-size: 26px;
         }
 
-        .ordersHead p {
-          margin: 0;
-          color: #9fb0d8;
-        }
-
         .orderItem {
           display: grid;
           grid-template-columns: 1.4fr 1fr 1fr 1fr;
@@ -365,7 +349,6 @@ export default async function AdminCustomerDetailPage({ params }: PageProps) {
 
         .orderItem span {
           display: block;
-          color: #9fb0d8;
           font-size: 13px;
           margin-bottom: 6px;
         }
@@ -374,7 +357,7 @@ export default async function AdminCustomerDetailPage({ params }: PageProps) {
           color: #00e5ff !important;
         }
 
-        .emptyBox {
+        .empty {
           margin: 24px;
           padding: 42px 20px;
           text-align: center;
@@ -389,8 +372,8 @@ export default async function AdminCustomerDetailPage({ params }: PageProps) {
             flex-direction: column;
           }
 
-          .profileGrid,
-          .summaryGrid,
+          .grid,
+          .summary,
           .orderItem {
             grid-template-columns: 1fr;
           }

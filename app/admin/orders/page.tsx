@@ -51,18 +51,34 @@ export default function AdminOrdersPage() {
   }
 
   async function updateStatus(orderId: string, status: string) {
+  try {
     const response = await fetch("/api/admin/orders", {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ orderId, status }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        orderId,
+        status,
+      }),
     });
+
     const result = await response.json();
+
     if (!response.ok) {
       alert("Lỗi cập nhật trạng thái: " + (result.message || "Không rõ lỗi."));
       return;
     }
+
+    if (result.reward?.awarded) {
+      alert(result.reward.message);
+    }
+
     loadOrders();
+  } catch (error) {
+    alert("Lỗi kết nối khi cập nhật trạng thái đơn hàng.");
   }
+}
 
   useEffect(() => {
     loadOrders();

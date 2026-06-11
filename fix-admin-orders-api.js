@@ -1,4 +1,6 @@
-import { NextResponse } from "next/server";
+const fs = require("fs");
+
+const content = `import { NextResponse } from "next/server";
 import { createAuthServerClient } from "../../../../lib/supabase-auth/server";
 import { supabaseAdmin } from "../../../../lib/supabase-admin";
 import { awardPointsForCompletedOrder } from "../../../../lib/customerRewards";
@@ -91,3 +93,7 @@ export async function PATCH(request: Request) {
       : "Đã cập nhật trạng thái đơn hàng.",
   });
 }
+`;
+
+fs.writeFileSync("app/api/admin/orders/route.ts", content, "utf8");
+console.log("Updated app/api/admin/orders/route.ts");
