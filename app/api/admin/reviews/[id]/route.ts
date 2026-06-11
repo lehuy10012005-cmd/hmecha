@@ -56,3 +56,31 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
   return NextResponse.json({ review: data });
 }
+
+export async function DELETE(_request: NextRequest, context: RouteContext) {
+  const admin = await getAdminUser();
+
+  if (!admin) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await context.params;
+
+  if (!id) {
+    return NextResponse.json({ error: "Thiếu ID bình luận." }, { status: 400 });
+  }
+
+  const { error } = await supabaseAdmin
+    .from("product_reviews")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({
+    success: true,
+    message: "Đã xóa bình luận.",
+  });
+}

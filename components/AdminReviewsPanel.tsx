@@ -18,13 +18,18 @@ type Review = {
 };
 
 function formatDate(value: string) {
-  return new Date(value).toLocaleDateString("vi-VN");
+  try {
+    return new Date(value).toLocaleDateString("vi-VN");
+  } catch {
+    return value;
+  }
 }
 
 export default function AdminReviewsPanel() {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState("");
+  const [deletingId, setDeletingId] = useState("");
   const [error, setError] = useState("");
   const [filter, setFilter] = useState<"all" | "unanswered" | "answered">("all");
   const [draftReplies, setDraftReplies] = useState<Record<string, string>>({});
@@ -33,7 +38,10 @@ export default function AdminReviewsPanel() {
     setLoading(true);
     setError("");
 
-    const response = await fetch("/api/admin/reviews", { cache: "no-store" });
+    const response = await fetch("/api/admin/reviews", {
+      cache: "no-store",
+    });
+
     const data = await response.json();
 
     if (!response.ok) {
@@ -43,11 +51,11 @@ export default function AdminReviewsPanel() {
       return;
     }
 
-    const reviewList = data.reviews || [];
+    const reviewList: Review[] = data.reviews || [];
     setReviews(reviewList);
 
     const nextDrafts: Record<string, string> = {};
-    reviewList.forEach((review: Review) => {
+    reviewList.forEach((review) => {
       nextDrafts[review.id] = review.admin_reply || "";
     });
 
@@ -60,8 +68,14 @@ export default function AdminReviewsPanel() {
   }, []);
 
   const filteredReviews = useMemo(() => {
-    if (filter === "unanswered") return reviews.filter((review) => !review.admin_reply);
-    if (filter === "answered") return reviews.filter((review) => Boolean(review.admin_reply));
+    if (filter === "unanswered") {
+      return reviews.filter((review) => !review.admin_reply);
+    }
+
+    if (filter === "answered") {
+      return reviews.filter((review) => Boolean(review.admin_reply));
+    }
+
     return reviews;
   }, [reviews, filter]);
 
@@ -100,6 +114,37 @@ export default function AdminReviewsPanel() {
     await loadReviews();
   }
 
+  async function deleteReview(review: Review) {
+    const ok = window.confirm(
+      `Xóa bình luận của "${review.customer_name || "Khách hàng"}" về sản phẩm "${
+        review.product_name || review.product_slug
+      }"?\n\nSau khi xóa, bình luận sẽ không còn hiện trên website.`
+    );
+
+    if (!ok) return;
+
+    setDeletingId(review.id);
+
+    const response = await fetch(`/api/admin/reviews/${review.id}`, {
+      method: "DELETE",
+    });
+
+    setDeletingId("");
+
+    if (!response.ok) {
+      const data = await response.json();
+      alert(data.error || "Không thể xóa bình luận.");
+      return;
+    }
+
+    setReviews((current) => current.filter((item) => item.id !== review.id));
+    setDraftReplies((current) => {
+      const next = { ...current };
+      delete next[review.id];
+      return next;
+    });
+  }
+
   return (
     <div className="adminReviewsPanel">
       <section className="statsGrid">
@@ -123,17 +168,31 @@ export default function AdminReviewsPanel() {
         <div className="boardHead">
           <div>
             <h2>Danh sách đánh giá</h2>
-            <p>Admin có thể xem bình luận khách hàng và trả lời trực tiếp.</p>
+            <p>Admin có thể xem bình luận khách hàng, phản hồi hoặc xóa bình luận không phù hợp.</p>
           </div>
 
           <div className="filters">
-            <button className={filter === "all" ? "active" : ""} onClick={() => setFilter("all")}>
+            <button
+              type="button"
+              className={filter === "all" ? "active" : ""}
+              onClick={() => setFilter("all")}
+            >
               Tất cả
             </button>
-            <button className={filter === "unanswered" ? "active" : ""} onClick={() => setFilter("unanswered")}>
+
+            <button
+              type="button"
+              className={filter === "unanswered" ? "active" : ""}
+              onClick={() => setFilter("unanswered")}
+            >
               Chưa trả lời
             </button>
-            <button className={filter === "answered" ? "active" : ""} onClick={() => setFilter("answered")}>
+
+            <button
+              type="button"
+              className={filter === "answered" ? "active" : ""}
+              onClick={() => setFilter("answered")}
+            >
               Đã trả lời
             </button>
           </div>
@@ -175,7 +234,7 @@ export default function AdminReviewsPanel() {
                 <div className="replyBox">
                   <label>Phản hồi admin</label>
                   <textarea
-                    rows={4}
+                    rows={3}
                     value={draftReplies[review.id] || ""}
                     onChange={(event) =>
                       setDraftReplies((current) => ({
@@ -186,13 +245,24 @@ export default function AdminReviewsPanel() {
                     placeholder="Nhập phản hồi của HMECHA cho khách hàng..."
                   />
 
-                  <button
-                    type="button"
-                    onClick={() => saveReply(review.id)}
-                    disabled={savingId === review.id}
-                  >
-                    {savingId === review.id ? "Đang lưu..." : "Lưu phản hồi"}
-                  </button>
+                  <div className="actionRow">
+                    <button
+                      type="button"
+                      onClick={() => saveReply(review.id)}
+                      disabled={savingId === review.id || deletingId === review.id}
+                    >
+                      {savingId === review.id ? "Đang lưu..." : "Lưu phản hồi"}
+                    </button>
+
+                    <button
+                      type="button"
+                      className="deleteButton"
+                      onClick={() => deleteReview(review)}
+                      disabled={deletingId === review.id || savingId === review.id}
+                    >
+                      {deletingId === review.id ? "Đang xóa..." : "Xóa bình luận"}
+                    </button>
+                  </div>
                 </div>
               </article>
             ))}
@@ -248,7 +318,7 @@ export default function AdminReviewsPanel() {
           gap: 18px;
           align-items: flex-start;
           padding: 24px;
-          border-bottom: 1px solid rgba(255,255,255,.08);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .boardHead h2 {
@@ -271,8 +341,8 @@ export default function AdminReviewsPanel() {
           min-height: 38px;
           padding: 0 14px;
           border-radius: 999px;
-          border: 1px solid rgba(0,229,255,.22);
-          background: rgba(255,255,255,.06);
+          border: 1px solid rgba(0, 229, 255, 0.22);
+          background: rgba(255, 255, 255, 0.06);
           color: #dce6ff;
           font-weight: 800;
           cursor: pointer;
@@ -294,8 +364,8 @@ export default function AdminReviewsPanel() {
         .emptyBox {
           padding: 18px;
           border-radius: 18px;
-          background: rgba(255,255,255,.055);
-          border: 1px solid rgba(255,255,255,.08);
+          background: rgba(255, 255, 255, 0.055);
+          border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .emptyBox {
@@ -340,7 +410,7 @@ export default function AdminReviewsPanel() {
           border-radius: 999px;
           text-decoration: none;
           color: #fff;
-          background: rgba(255,255,255,.08);
+          background: rgba(255, 255, 255, 0.08);
           font-size: 13px;
         }
 
@@ -363,7 +433,7 @@ export default function AdminReviewsPanel() {
           border-radius: 14px;
           color: #dce6ff;
           line-height: 1.7;
-          background: rgba(0,0,0,.18);
+          background: rgba(0, 0, 0, 0.18);
           margin-bottom: 14px;
         }
 
@@ -381,16 +451,21 @@ export default function AdminReviewsPanel() {
           width: 100%;
           resize: vertical;
           border-radius: 14px;
-          border: 1px solid rgba(0,229,255,.22);
-          background: rgba(5,8,22,.94);
+          border: 1px solid rgba(0, 229, 255, 0.22);
+          background: rgba(5, 8, 22, 0.94);
           color: #fff;
           padding: 14px;
           font: inherit;
           outline: none;
         }
 
-        .replyBox button {
-          justify-self: start;
+        .actionRow {
+          display: flex;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
+
+        .actionRow button {
           min-height: 42px;
           padding: 0 18px;
           border: 0;
@@ -399,6 +474,17 @@ export default function AdminReviewsPanel() {
           font-weight: 950;
           background: linear-gradient(135deg, #7c4dff, #00e5ff);
           cursor: pointer;
+        }
+
+        .actionRow button:disabled {
+          opacity: 0.55;
+          cursor: not-allowed;
+        }
+
+        .actionRow .deleteButton {
+          color: #fff;
+          background: linear-gradient(135deg, #ff477e, #d90429);
+          box-shadow: 0 12px 28px rgba(217, 4, 41, 0.25);
         }
 
         @media (max-width: 850px) {
