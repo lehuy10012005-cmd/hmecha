@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html lang="vi">
 	<head>
+<meta charset="UTF-8">
 		<meta name="google-site-verification" content="xOZTFIAMz-dHTlLenwOA-bmoNbC8o5Jz7QsvIxbjPRg" />
 		<!-- Google tag (gtag.js) -->
 		<script async src="https://www.googletagmanager.com/gtag/js?id=AW-618438761"></script>
@@ -15,7 +16,7 @@
 		<script>
   		gtag('event', 'conversion', {'send_to': 'AW-618438761/ShZ8CIjDj7UbEOnA8qYC'});
 		</script>
-		<meta charset="UTF-8" />
+		
 		<meta name="theme-color" content="#0b1026" />
 		<link rel="canonical" href="/"/>
 		<meta name='revisit-after' content='2 days' />
@@ -14615,6 +14616,69 @@ if (popularBox) popularBox.classList.add("d-none");
   function run() {
     hideExactButtons();
     hideChipBars();
+  }
+
+  document.addEventListener("DOMContentLoaded", run);
+  window.addEventListener("load", run);
+
+  var count = 0;
+  var timer = setInterval(function () {
+    run();
+    count++;
+    if (count >= 12) clearInterval(timer);
+  }, 400);
+})();
+</script>
+
+
+<script id="hmecha-fix-title-and-footer-links">
+(function () {
+  var correctTitle = "HMecha | Mô hình Gundam chính hãng";
+  var hiddenTexts = [
+    "Sản phẩm có sẵn",
+    "Đặt trước mô hình",
+    "Gundam Bandai"
+  ];
+
+  function clean(text) {
+    return String(text || "").replace(/\s+/g, " ").trim();
+  }
+
+  function hide(el) {
+    if (!el) return;
+    el.style.setProperty("display", "none", "important");
+  }
+
+  function fixTitle() {
+    document.title = correctTitle;
+  }
+
+  function hideFooterLinks() {
+    var blocks = Array.prototype.slice.call(document.querySelectorAll("footer, section, div"));
+    var exploreBlock = null;
+
+    for (var i = 0; i < blocks.length; i++) {
+      var text = clean(blocks[i].textContent);
+      if (text.indexOf("KHÁM PHÁ HMECHA") >= 0 || text.indexOf("Khám phá HMECHA") >= 0) {
+        exploreBlock = blocks[i];
+        break;
+      }
+    }
+
+    var scope = exploreBlock || document;
+
+    scope.querySelectorAll("a, li, span").forEach(function (el) {
+      var text = clean(el.textContent);
+
+      if (hiddenTexts.indexOf(text) >= 0) {
+        hide(el.closest("li") || el.closest("a") || el);
+      }
+    });
+  }
+
+  function run() {
+    fixTitle();
+    hideFooterLinks();
   }
 
   document.addEventListener("DOMContentLoaded", run);
