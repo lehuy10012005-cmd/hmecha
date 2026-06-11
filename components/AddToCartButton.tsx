@@ -128,10 +128,7 @@ export default function AddToCartButton({ product }: { product: Product }) {
             boxShadow: "0 0 24px rgba(229,72,91,.35)",
           }}
         >
-          <div style={{ fontSize: 18 }}>🛒 MUA NGAY</div>
-          <div style={{ fontSize: 13, fontWeight: 600, marginTop: 4 }}>
-            Giao hàng tận nơi hoặc nhận tại cửa hàng
-          </div>
+          🛒 MUA NGAY
         </button>
 
        <button

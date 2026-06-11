@@ -275,18 +275,6 @@ export default function CheckoutPage() {
   return (
     <main className="checkoutPage">
       <div className="checkoutShell">
-        <div className="checkoutTop">
-          <Link href="/" className="backLink">
-            ← Về trang chủ
-          </Link>
-
-          <div>
-            <p>HMECHA CHECKOUT</p>
-            <h1>Thanh toán đơn hàng</h1>
-            <span>Chỉ hỗ trợ COD và VNPAY / QR.</span>
-          </div>
-        </div>
-
         <div className="checkoutLayout">
           <section className="leftPanel">
             <div className="panelHeader">

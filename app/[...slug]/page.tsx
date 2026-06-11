@@ -117,12 +117,6 @@ const product = dbProduct
             </div>
 
             <div className="coupons">
-              <strong>Các mã giảm giá có thể áp dụng:</strong>
-              <div>
-                <span>HMECHA</span>
-                <span>FREESHIP</span>
-                <span>MECHA10</span>
-              </div>
             </div>
 
             <AddToCartButton product={product} />
