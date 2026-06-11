@@ -103,3 +103,14 @@ button:hover,
 .section-title h2 span {
   color: #00e5ff !important;
 }
+.featured-lines-locked,
+[data-featured-lines-lock="true"] {
+  cursor: default !important;
+}
+
+.featured-lines-locked *,
+[data-featured-lines-lock="true"] * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-user-drag: none !important;
+}
