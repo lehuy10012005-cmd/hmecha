@@ -3,7 +3,7 @@ import "./globals.css";
 import ChatWidget from "@/components/ChatWidget";
 
 
-import CompareTray from "@/components/CompareTray";
+
 import FeaturedImagePreviewLock from "@/components/FeaturedImagePreviewLock";
 
 export const metadata: Metadata = {
@@ -21,7 +21,7 @@ export default function RootLayout({
         
         
         {children}
-        <CompareTray />
+        
         <ChatWidget />
       </body>
     </html>
