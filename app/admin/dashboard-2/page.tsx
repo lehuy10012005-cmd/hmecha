@@ -565,41 +565,7 @@ export default async function AdminDashboard2Page() {
 
   return (
     <main className="dashboard2">
-      <aside className="dashSidebar">
-        <div className="brand">
-          <h1>HMECHA</h1>
-          <span>GUNPLA & MECHA STORE</span>
-        </div>
-
-        <nav>
-          <Link className="active" href="/admin/dashboard-2">▣ Dashboard 2</Link>
-          <Link href="/admin">▧ Dashboard cũ</Link>
-          <Link href="/admin/products">▤ Sản phẩm</Link>
-          <Link href="/admin/orders">▥ Đơn hàng</Link>
-          <Link href="/admin/customers">◎ Khách hàng</Link>
-          <Link href="/admin/reviews">☆ Đánh giá</Link>
-          <Link href="/admin/coupons">◇ Mã giảm giá</Link>
-          <Link href="/admin/chatbot">☏ Chatbot</Link>
-          <Link href="/admin/phan-tich-san-pham">↗ Phân tích sản phẩm</Link>
-        </nav>
-
-        <div className="sideFooter">
-          <div className="gundamBox" />
-          <strong>HMECHA</strong>
-          <p>Gundam & Mecha Model Store</p>
-          <Link href="/">Xem storefront ↗</Link>
-        </div>
-
-        <div className="adminMini">
-          <span>👤</span>
-          <div>
-            <b>Admin HMECHA</b>
-            <small>Quản trị viên</small>
-          </div>
-        </div>
-      </aside>
-
-      <section className="dashContent">
+<section className="dashContent">
         <header className="dashHeader">
           <div>
             <h2>Dashboard doanh thu</h2>
@@ -1513,6 +1479,35 @@ export default async function AdminDashboard2Page() {
             justify-items: center;
           }
         }
+
+        /* dashboard2-admin-layout-fix */
+        .dashboard2 {
+          min-height: auto !important;
+          display: block !important;
+          grid-template-columns: 1fr !important;
+          background: transparent !important;
+        }
+
+        .dashContent {
+          max-width: 1600px;
+          margin: 0 auto;
+          padding: 28px 24px 48px !important;
+        }
+
+        .dashHeader {
+          margin-top: 0 !important;
+        }
+
+        @media (max-width: 980px) {
+          .dashboard2 {
+            grid-template-columns: 1fr !important;
+          }
+
+          .dashContent {
+            padding: 20px 12px 36px !important;
+          }
+        }
+
       `}</style>
     </main>
   );
