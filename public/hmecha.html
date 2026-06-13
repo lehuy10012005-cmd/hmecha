@@ -14795,5 +14795,139 @@ if (popularBox) popularBox.classList.add("d-none");
   }, 400);
 })();
 </script>
+\n
+<style id="hmecha-product-card-action-cleanup">
+  .hmecha-hidden-card-action {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  .hmecha-cart-action-wide {
+    width: 100% !important;
+    min-width: 100% !important;
+    flex: 1 1 100% !important;
+    justify-content: center !important;
+  }
+
+  .hmecha-card-action-row-clean {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+</style>
+
+<script id="hmecha-product-card-action-cleanup-script">
+(function () {
+  function clean(text) {
+    return String(text || "").replace(/\s+/g, " ").trim();
+  }
+
+  function isIconOnly(el) {
+    var text = clean(el.textContent);
+    var rect = el.getBoundingClientRect();
+
+    return (
+      text.length <= 3 &&
+      rect.width <= 62 &&
+      rect.height <= 62
+    );
+  }
+
+  function findActionRow(el) {
+    var node = el.parentElement;
+
+    while (node && node !== document.body) {
+      var rect = node.getBoundingClientRect();
+
+      if (rect.width > 120 && rect.width < 520 && rect.height < 120) {
+        return node;
+      }
+
+      node = node.parentElement;
+    }
+
+    return null;
+  }
+
+  function isProductCardArea(el) {
+    var node = el;
+
+    while (node && node !== document.body) {
+      var text = clean(node.textContent);
+      var rect = node.getBoundingClientRect();
+
+      if (
+        rect.width >= 160 &&
+        rect.width <= 420 &&
+        text.indexOf("Thêm vào giỏ") >= 0
+      ) {
+        return true;
+      }
+
+      node = node.parentElement;
+    }
+
+    return false;
+  }
+
+  function cleanupProductButtons() {
+    document.querySelectorAll("button, a").forEach(function (el) {
+      var text = clean(el.textContent);
+      var title = clean(el.getAttribute("title"));
+      var aria = clean(el.getAttribute("aria-label"));
+      var allText = text + " " + title + " " + aria;
+
+      if (text.indexOf("Thêm vào giỏ") >= 0) {
+        el.classList.add("hmecha-cart-action-wide");
+
+        var row = findActionRow(el);
+        if (row) {
+          row.classList.add("hmecha-card-action-row-clean");
+        }
+
+        return;
+      }
+
+      var shouldHide =
+        allText.indexOf("So sánh") >= 0 ||
+        allText.indexOf("Xem nhanh") >= 0 ||
+        allText.indexOf("Tìm") >= 0 ||
+        allText.indexOf("Search") >= 0 ||
+        allText.indexOf("Quick") >= 0;
+
+      if (shouldHide && isProductCardArea(el)) {
+        el.classList.add("hmecha-hidden-card-action");
+        return;
+      }
+
+      if (isIconOnly(el) && isProductCardArea(el)) {
+        var html = String(el.innerHTML || "").toLowerCase();
+
+        if (
+          html.indexOf("svg") >= 0 ||
+          html.indexOf("search") >= 0 ||
+          html.indexOf("shuffle") >= 0 ||
+          html.indexOf("compare") >= 0 ||
+          html.indexOf("magnifier") >= 0
+        ) {
+          el.classList.add("hmecha-hidden-card-action");
+        }
+      }
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", cleanupProductButtons);
+  window.addEventListener("load", cleanupProductButtons);
+  window.addEventListener("resize", cleanupProductButtons);
+
+  var count = 0;
+  var timer = setInterval(function () {
+    cleanupProductButtons();
+    count += 1;
+    if (count >= 18) clearInterval(timer);
+  }, 350);
+})();
+</script>
 \n</body>
 </html>
