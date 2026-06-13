@@ -14718,5 +14718,82 @@ if (popularBox) popularBox.classList.add("d-none");
 })();
 </script>
 
-</body>
+
+<style id="hmecha-hide-floating-compare">
+  .compareTrayFixed,
+  .compare-tray,
+  .compare-floating,
+  .floating-compare,
+  [class*="CompareTray"],
+  [class*="compareTray"] {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+</style>
+
+<script id="hmecha-hide-floating-compare-script">
+(function () {
+  try {
+    localStorage.removeItem("hmecha-compare");
+  } catch (e) {}
+
+  function clean(text) {
+    return String(text || "").replace(/\s+/g, " ").trim();
+  }
+
+  function isFloating(el) {
+    var node = el;
+
+    while (node && node !== document.body) {
+      var style = window.getComputedStyle(node);
+      var rect = node.getBoundingClientRect();
+
+      if (
+        (style.position === "fixed" || style.position === "sticky") &&
+        rect.left > window.innerWidth * 0.55
+      ) {
+        return node;
+      }
+
+      node = node.parentElement;
+    }
+
+    return null;
+  }
+
+  function hideFloatingCompare() {
+    document.querySelectorAll("a, button, div, span").forEach(function (el) {
+      var text = clean(el.textContent);
+
+      if (
+        text === "So sánh" ||
+        text.indexOf("So sánh") >= 0 ||
+        text.indexOf("Xem so sánh") >= 0 ||
+        text.indexOf("So sánh ngay") >= 0
+      ) {
+        var floating = isFloating(el);
+
+        if (floating) {
+          floating.style.setProperty("display", "none", "important");
+          floating.style.setProperty("opacity", "0", "important");
+          floating.style.setProperty("pointer-events", "none", "important");
+        }
+      }
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", hideFloatingCompare);
+  window.addEventListener("load", hideFloatingCompare);
+  window.addEventListener("resize", hideFloatingCompare);
+
+  var count = 0;
+  var timer = setInterval(function () {
+    hideFloatingCompare();
+    count++;
+    if (count >= 15) clearInterval(timer);
+  }, 400);
+})();
+</script>
+\n</body>
 </html>
