@@ -31,7 +31,12 @@ type ProductStats = {
   revenueIntent: number;
   avgRating: number;
   reviewCount: number;
+  cartRate: number;
+  buyRate: number;
+  lostCart: number;
   score: number;
+  action: string;
+  actionTone: "good" | "warning" | "danger" | "info";
 };
 
 async function requireAdmin() {
@@ -56,28 +61,59 @@ function money(value: number) {
   return Number(value || 0).toLocaleString("vi-VN") + "₫";
 }
 
-function getAdvice(item: ProductStats) {
-  if (item.views >= 10 && item.addToCart === 0 && item.buyNow === 0) {
-    return "Nhiều người xem nhưng chưa chuyển đổi. Nên xem lại giá, ảnh sản phẩm hoặc mô tả.";
+function pct(value: number) {
+  if (!Number.isFinite(value)) return "0.0%";
+  return value.toFixed(1) + "%";
+}
+
+function getAction(item: ProductStats): {
+  action: string;
+  tone: ProductStats["actionTone"];
+} {
+  if (item.views >= 8 && item.addToCart === 0 && item.buyNow === 0) {
+    return {
+      action:
+        "View cao nhưng chưa có hành động mua. Nên đổi ảnh đại diện, thêm ưu đãi hoặc viết lại mô tả ngắn ở đầu trang.",
+      tone: "danger",
+    };
   }
 
-  if (item.addToCart >= 3 && item.buyNow === 0) {
-    return "Khách có quan tâm nhưng chưa chốt mua. Có thể thêm mã giảm giá hoặc freeship.";
+  if (item.addToCart >= 2 && item.buyNow === 0) {
+    return {
+      action:
+        "Khách đã thêm giỏ nhưng chưa chốt. Nên dùng mã giảm giá, freeship hoặc nhắc lại cam kết chính hãng.",
+      tone: "warning",
+    };
   }
 
-  if (item.buyNow >= 3) {
-    return "Sản phẩm có tín hiệu mua tốt. Nên ưu tiên hiển thị ở trang chủ hoặc flash sale.";
+  if (item.buyNow >= 3 || item.buyRate >= 20) {
+    return {
+      action:
+        "Tỷ lệ mua tốt. Nên ghim sản phẩm ở trang chủ, đưa vào Flash Sale hoặc đề xuất trong chatbot.",
+      tone: "good",
+    };
   }
 
-  if (item.views <= 1) {
-    return "Sản phẩm ít được xem. Nên tăng hiển thị, đổi ảnh đại diện hoặc đưa vào mục gợi ý.";
+  if (item.views <= 2) {
+    return {
+      action:
+        "Sản phẩm ít được tiếp cận. Nên đưa vào khu nổi bật, đổi vị trí hiển thị hoặc thêm vào bộ sưu tập gợi ý.",
+      tone: "info",
+    };
   }
 
   if (item.avgRating > 0 && item.avgRating < 4) {
-    return "Điểm đánh giá chưa cao. Nên kiểm tra phản hồi khách và chất lượng sản phẩm.";
+    return {
+      action:
+        "Đánh giá chưa cao. Nên kiểm tra phản hồi khách, ảnh sản phẩm và chính sách hỗ trợ.",
+      tone: "warning",
+    };
   }
 
-  return "Sản phẩm đang ở mức ổn. Tiếp tục theo dõi thêm dữ liệu.";
+  return {
+    action: "Sản phẩm đang ổn. Tiếp tục theo dõi thêm dữ liệu trước khi ra quyết định.",
+    tone: "info",
+  };
 }
 
 function buildStats(events: ProductEvent[], reviews: ProductReview[]) {
@@ -90,7 +126,7 @@ function buildStats(events: ProductEvent[], reviews: ProductReview[]) {
 
     const current =
       map.get(slug) ||
-      {
+      ({
         productSlug: slug,
         productName: event.product_name || slug,
         views: 0,
@@ -100,14 +136,22 @@ function buildStats(events: ProductEvent[], reviews: ProductReview[]) {
         revenueIntent: 0,
         avgRating: 0,
         reviewCount: 0,
+        cartRate: 0,
+        buyRate: 0,
+        lostCart: 0,
         score: 0,
-      };
+        action: "",
+        actionTone: "info",
+      } satisfies ProductStats);
 
     current.productName = event.product_name || current.productName;
 
     if (event.event_type === "product_view") current.views += 1;
-    if (event.event_type === "product_click" || event.event_type === "quick_view") current.clicks += 1;
+    if (event.event_type === "product_click" || event.event_type === "quick_view") {
+      current.clicks += 1;
+    }
     if (event.event_type === "add_to_cart") current.addToCart += 1;
+
     if (event.event_type === "buy_now") {
       current.buyNow += 1;
       current.revenueIntent += Number(event.price || 0) * Number(event.quantity || 1);
@@ -129,7 +173,7 @@ function buildStats(events: ProductEvent[], reviews: ProductReview[]) {
   for (const [slug, ratings] of reviewsBySlug.entries()) {
     const current =
       map.get(slug) ||
-      {
+      ({
         productSlug: slug,
         productName: slug,
         views: 0,
@@ -139,30 +183,156 @@ function buildStats(events: ProductEvent[], reviews: ProductReview[]) {
         revenueIntent: 0,
         avgRating: 0,
         reviewCount: 0,
+        cartRate: 0,
+        buyRate: 0,
+        lostCart: 0,
         score: 0,
-      };
+        action: "",
+        actionTone: "info",
+      } satisfies ProductStats);
 
     current.reviewCount = ratings.length;
-    current.avgRating =
-      ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length;
+    current.avgRating = ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length;
 
     map.set(slug, current);
   }
 
   return Array.from(map.values()).map((item) => {
+    const cartRate = item.views > 0 ? (item.addToCart / item.views) * 100 : 0;
+    const buyRate = item.views > 0 ? (item.buyNow / item.views) * 100 : 0;
+    const lostCart = Math.max(0, item.addToCart - item.buyNow);
+    const action = getAction({
+      ...item,
+      cartRate,
+      buyRate,
+      lostCart,
+    });
+
     const score =
       item.views * 1 +
       item.clicks * 1.5 +
       item.addToCart * 4 +
-      item.buyNow * 8 +
+      item.buyNow * 10 +
       item.reviewCount * 2 +
-      item.avgRating * 2;
+      item.avgRating * 2 -
+      lostCart * 0.8;
 
     return {
       ...item,
+      cartRate,
+      buyRate,
+      lostCart,
       score,
+      action: action.action,
+      actionTone: action.tone,
     };
   });
+}
+
+function MetricCard({
+  title,
+  value,
+  caption,
+}: {
+  title: string;
+  value: string | number;
+  caption: string;
+}) {
+  return (
+    <div className="metricCard">
+      <span>{title}</span>
+      <strong>{value}</strong>
+      <small>{caption}</small>
+    </div>
+  );
+}
+
+function FunnelBar({
+  label,
+  value,
+  max,
+}: {
+  label: string;
+  value: number;
+  max: number;
+}) {
+  const width = Math.max(4, Math.round((value / Math.max(max, 1)) * 100));
+
+  return (
+    <div className="funnelBar">
+      <div>
+        <b>{label}</b>
+        <span>{value}</span>
+      </div>
+      <i>
+        <em style={{ width: `${width}%` }} />
+      </i>
+    </div>
+  );
+}
+
+function ProductRow({
+  item,
+  metric,
+  max,
+}: {
+  item: ProductStats;
+  metric: keyof Pick<ProductStats, "views" | "addToCart" | "buyNow" | "revenueIntent" | "lostCart">;
+  max: number;
+}) {
+  const rawValue = Number(item[metric] || 0);
+  const width = Math.max(4, Math.round((rawValue / Math.max(max, 1)) * 100));
+
+  return (
+    <div className="productRow">
+      <div>
+        <Link href={`/${item.productSlug}`}>{item.productName}</Link>
+        <span>
+          Xem {item.views} · Click {item.clicks} · Giỏ {item.addToCart} · Mua ngay{" "}
+          {item.buyNow} · Đánh giá {item.avgRating ? item.avgRating.toFixed(1) : "0.0"}★
+        </span>
+      </div>
+
+      <div className="rowBar">
+        <i style={{ width: `${width}%` }} />
+      </div>
+
+      <b>{metric === "revenueIntent" ? money(rawValue) : rawValue}</b>
+    </div>
+  );
+}
+
+function AnalyticsPanel({
+  title,
+  subtitle,
+  items,
+  metric,
+}: {
+  title: string;
+  subtitle: string;
+  items: ProductStats[];
+  metric: keyof Pick<ProductStats, "views" | "addToCart" | "buyNow" | "revenueIntent" | "lostCart">;
+}) {
+  const max = Math.max(...items.map((item) => Number(item[metric] || 0)), 1);
+
+  return (
+    <section className="panel">
+      <div className="panelHead">
+        <p>{subtitle}</p>
+        <h2>{title}</h2>
+      </div>
+
+      <div className="productList">
+        {items.length ? (
+          items.map((item) => (
+            <ProductRow key={item.productSlug} item={item} metric={metric} max={max} />
+          ))
+        ) : (
+          <div className="emptyBox">Chưa có dữ liệu.</div>
+        )}
+      </div>
+    </section>
+  );
 }
 
 export default async function AdminProductAnalyticsPage() {
@@ -180,331 +350,573 @@ export default async function AdminProductAnalyticsPage() {
 
   const events = (eventsData || []) as ProductEvent[];
   const reviews = (reviewsData || []) as ProductReview[];
-
   const stats = buildStats(events, reviews);
 
   const mostViewed = [...stats].sort((a, b) => b.views - a.views).slice(0, 8);
   const mostAdded = [...stats].sort((a, b) => b.addToCart - a.addToCart).slice(0, 8);
   const mostBuyNow = [...stats].sort((a, b) => b.buyNow - a.buyNow).slice(0, 8);
-  const lowInteraction = [...stats]
+  const topRevenueIntent = [...stats]
+    .sort((a, b) => b.revenueIntent - a.revenueIntent)
+    .slice(0, 8);
+
+  const lostCartProducts = [...stats]
+    .filter((item) => item.lostCart > 0)
+    .sort((a, b) => b.lostCart - a.lostCart)
+    .slice(0, 8);
+
+  const shouldPush = [...stats]
+    .filter((item) => item.buyNow >= 1 || item.buyRate >= 12)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 8);
+
+  const shouldDiscount = [...stats]
+    .filter((item) => item.addToCart >= 1 && item.buyNow === 0)
+    .sort((a, b) => b.addToCart - a.addToCart)
+    .slice(0, 8);
+
+  const weakProducts = [...stats]
     .filter((item) => item.views <= 2 && item.addToCart === 0 && item.buyNow === 0)
     .sort((a, b) => a.views - b.views)
     .slice(0, 8);
 
   const totalViews = stats.reduce((sum, item) => sum + item.views, 0);
+  const totalClicks = stats.reduce((sum, item) => sum + item.clicks, 0);
   const totalAddToCart = stats.reduce((sum, item) => sum + item.addToCart, 0);
   const totalBuyNow = stats.reduce((sum, item) => sum + item.buyNow, 0);
   const totalIntent = stats.reduce((sum, item) => sum + item.revenueIntent, 0);
+  const avgCartRate = totalViews ? (totalAddToCart / totalViews) * 100 : 0;
+  const avgBuyRate = totalViews ? (totalBuyNow / totalViews) * 100 : 0;
+  const maxFunnel = Math.max(totalViews, totalClicks, totalAddToCart, totalBuyNow, 1);
+
+  const topAdvice = [...stats].sort((a, b) => b.score - a.score).slice(0, 12);
 
   return (
     <main className="analyticsPage">
-      <div className="topbar">
+      <section className="analyticsHero">
         <div>
           <p>HMECHA INTELLIGENCE</p>
           <h1>Phân tích sản phẩm</h1>
           <span>
-            Theo dõi sản phẩm xem nhiều, thêm giỏ nhiều, mua ngay nhiều và các mẫu ít tương tác.
+            Theo dõi lượt xem, thêm giỏ, mua ngay, đánh giá và gợi ý hành động cho từng mẫu.
           </span>
         </div>
 
         <Link href="/admin">← Quay lại Admin</Link>
-      </div>
-
-      <section className="statsGrid">
-        <div>
-          <span>Tổng lượt xem</span>
-          <strong>{totalViews}</strong>
-        </div>
-
-        <div>
-          <span>Thêm vào giỏ</span>
-          <strong>{totalAddToCart}</strong>
-        </div>
-
-        <div>
-          <span>Mua ngay</span>
-          <strong>{totalBuyNow}</strong>
-        </div>
-
-        <div>
-          <span>Doanh thu dự kiến</span>
-          <strong>{money(totalIntent)}</strong>
-        </div>
       </section>
 
-      <section className="boardGrid">
-        <AnalyticsCard title="Sản phẩm xem nhiều" items={mostViewed} metric="views" />
-        <AnalyticsCard title="Thêm giỏ nhiều" items={mostAdded} metric="addToCart" />
-        <AnalyticsCard title="Mua ngay nhiều" items={mostBuyNow} metric="buyNow" />
-        <AnalyticsCard title="Ít tương tác" items={lowInteraction} metric="views" />
+      <section className="metricGrid">
+        <MetricCard title="Tổng lượt xem" value={totalViews} caption="Tất cả sản phẩm được tracking" />
+        <MetricCard title="Click / xem nhanh" value={totalClicks} caption="Tín hiệu khách quan tâm" />
+        <MetricCard title="Thêm vào giỏ" value={totalAddToCart} caption={`${pct(avgCartRate)} trên lượt xem`} />
+        <MetricCard title="Mua ngay" value={totalBuyNow} caption={`${pct(avgBuyRate)} trên lượt xem`} />
+        <MetricCard title="Doanh thu dự kiến" value={money(totalIntent)} caption="Tính theo hành động mua ngay" />
+        <MetricCard title="Sản phẩm có dữ liệu" value={stats.length} caption="Có view, giỏ, mua hoặc review" />
       </section>
 
-      <section className="insightBoard">
-        <div className="boardHead">
-          <h2>Lời khuyên vận hành</h2>
-          <p>Gợi ý nhanh dựa trên lượt xem, thêm giỏ, mua ngay và đánh giá.</p>
-        </div>
-
-        {stats.length === 0 ? (
-          <div className="emptyBox">
-            Chưa có dữ liệu tracking. Hãy mở vài sản phẩm, bấm thêm giỏ hoặc mua ngay để bắt đầu ghi nhận.
+      <section className="analyticsGrid">
+        <section className="panel">
+          <div className="panelHead">
+            <p>FUNNEL</p>
+            <h2>Hành trình khách hàng</h2>
           </div>
-        ) : (
-          <div className="insightList">
+
+          <div className="funnelBox">
+            <FunnelBar label="Xem sản phẩm" value={totalViews} max={maxFunnel} />
+            <FunnelBar label="Click / xem nhanh" value={totalClicks} max={maxFunnel} />
+            <FunnelBar label="Thêm vào giỏ" value={totalAddToCart} max={maxFunnel} />
+            <FunnelBar label="Mua ngay" value={totalBuyNow} max={maxFunnel} />
+          </div>
+        </section>
+
+        <section className="panel">
+          <div className="panelHead">
+            <p>GỢI Ý NHANH</p>
+            <h2>Admin nên làm gì?</h2>
+          </div>
+
+          <div className="adviceList">
+            {topAdvice.length ? (
+              topAdvice.map((item) => (
+                <article className={`adviceCard ${item.actionTone}`} key={item.productSlug}>
+                  <div>
+                    <Link href={`/${item.productSlug}`}>{item.productName}</Link>
+                    <span>
+                      View {item.views} · Giỏ {item.addToCart} · Mua {item.buyNow} · CVR{" "}
+                      {pct(item.buyRate)}
+                    </span>
+                  </div>
+                  <p>{item.action}</p>
+                </article>
+              ))
+            ) : (
+              <div className="emptyBox">Chưa có dữ liệu để tạo gợi ý.</div>
+            )}
+          </div>
+        </section>
+      </section>
+
+      <section className="decisionGrid">
+        <section className="decisionCard good">
+          <h2>Nên đẩy bán</h2>
+          <p>Sản phẩm có tín hiệu mua tốt, nên ghim trang chủ hoặc đưa vào Flash Sale.</p>
+          {shouldPush.length ? (
+            shouldPush.slice(0, 5).map((item) => (
+              <Link key={item.productSlug} href={`/${item.productSlug}`}>
+                {item.productName}
+                <span>{pct(item.buyRate)} mua / view</span>
+              </Link>
+            ))
+          ) : (
+            <small>Chưa có sản phẩm nổi bật.</small>
+          )}
+        </section>
+
+        <section className="decisionCard warning">
+          <h2>Nên giảm giá / freeship</h2>
+          <p>Khách thêm giỏ nhưng chưa mua, nên thử mã giảm hoặc ưu đãi vận chuyển.</p>
+          {shouldDiscount.length ? (
+            shouldDiscount.slice(0, 5).map((item) => (
+              <Link key={item.productSlug} href={`/${item.productSlug}`}>
+                {item.productName}
+                <span>{item.addToCart} lượt thêm giỏ</span>
+              </Link>
+            ))
+          ) : (
+            <small>Chưa có sản phẩm cần giảm giá.</small>
+          )}
+        </section>
+
+        <section className="decisionCard danger">
+          <h2>Nên tối ưu lại</h2>
+          <p>Sản phẩm ít tương tác, nên đổi ảnh, đổi vị trí hoặc bổ sung mô tả hấp dẫn hơn.</p>
+          {weakProducts.length ? (
+            weakProducts.slice(0, 5).map((item) => (
+              <Link key={item.productSlug} href={`/${item.productSlug}`}>
+                {item.productName}
+                <span>{item.views} lượt xem</span>
+              </Link>
+            ))
+          ) : (
+            <small>Không có sản phẩm quá yếu.</small>
+          )}
+        </section>
+      </section>
+
+      <section className="analyticsGrid">
+        <AnalyticsPanel
+          title="Sản phẩm xem nhiều"
+          subtitle="AWARENESS"
+          items={mostViewed}
+          metric="views"
+        />
+
+        <AnalyticsPanel
+          title="Thêm giỏ nhiều"
+          subtitle="INTEREST"
+          items={mostAdded}
+          metric="addToCart"
+        />
+      </section>
+
+      <section className="analyticsGrid">
+        <AnalyticsPanel
+          title="Mua ngay nhiều"
+          subtitle="CONVERSION"
+          items={mostBuyNow}
+          metric="buyNow"
+        />
+
+        <AnalyticsPanel
+          title="Doanh thu dự kiến cao"
+          subtitle="REVENUE INTENT"
+          items={topRevenueIntent}
+          metric="revenueIntent"
+        />
+      </section>
+
+      <section className="analyticsGrid">
+        <AnalyticsPanel
+          title="Bị bỏ giỏ nhiều"
+          subtitle="CART DROP"
+          items={lostCartProducts}
+          metric="lostCart"
+        />
+
+        <section className="panel">
+          <div className="panelHead">
+            <p>HIỆU SUẤT CHI TIẾT</p>
+            <h2>Bảng tỷ lệ chuyển đổi</h2>
+          </div>
+
+          <div className="detailTable">
+            <div className="detailHead">
+              <span>Sản phẩm</span>
+              <span>View</span>
+              <span>Giỏ</span>
+              <span>Mua</span>
+              <span>Giỏ/View</span>
+              <span>Mua/View</span>
+              <span>Rating</span>
+            </div>
+
             {[...stats]
               .sort((a, b) => b.score - a.score)
               .slice(0, 12)
               .map((item) => (
-                <div className="insightItem" key={item.productSlug}>
-                  <div>
-                    <Link href={`/${item.productSlug}`}>{item.productName}</Link>
-                    <span>
-                      Xem {item.views} · Thêm giỏ {item.addToCart} · Mua ngay {item.buyNow} · Đánh giá{" "}
-                      {item.avgRating ? item.avgRating.toFixed(1) : "0.0"}★
-                    </span>
-                  </div>
-
-                  <p>{getAdvice(item)}</p>
+                <div className="detailRow" key={item.productSlug}>
+                  <Link href={`/${item.productSlug}`}>{item.productName}</Link>
+                  <span>{item.views}</span>
+                  <span>{item.addToCart}</span>
+                  <span>{item.buyNow}</span>
+                  <span>{pct(item.cartRate)}</span>
+                  <span>{pct(item.buyRate)}</span>
+                  <span>{item.avgRating ? item.avgRating.toFixed(1) : "0.0"}★</span>
                 </div>
               ))}
           </div>
-        )}
+        </section>
       </section>
 
       <style>{`
         .analyticsPage {
-          min-height: 100vh;
-          padding: 36px 24px 80px;
-          color: #ffffff;
-          background:
-            radial-gradient(circle at 8% 0%, rgba(124, 77, 255, 0.24), transparent 34%),
-            radial-gradient(circle at 92% 8%, rgba(0, 229, 255, 0.16), transparent 30%),
-            linear-gradient(180deg, #050816 0%, #0b1434 48%, #050816 100%);
+          max-width: 1520px;
+          margin: 0 auto;
+          padding: 28px 0 50px;
+          color: #fff;
+          display: grid;
+          gap: 22px;
         }
 
-        .topbar {
+        .analyticsHero {
           display: flex;
           justify-content: space-between;
-          gap: 24px;
+          gap: 20px;
           align-items: flex-start;
-          max-width: 1480px;
-          margin: 0 auto 28px;
+          padding: 40px 0 18px;
         }
 
-        .topbar p {
+        .analyticsHero p,
+        .panelHead p {
           margin: 0 0 10px;
           color: #00e5ff;
+          font-size: 12px;
           font-weight: 950;
-          letter-spacing: 4px;
-          font-size: 13px;
+          letter-spacing: 3px;
         }
 
-        .topbar h1 {
+        .analyticsHero h1 {
           margin: 0;
-          font-size: clamp(38px, 5vw, 60px);
-          line-height: 1.05;
+          font-size: clamp(42px, 6vw, 74px);
+          line-height: 1.02;
         }
 
-        .topbar span {
+        .analyticsHero span {
           display: block;
           margin-top: 14px;
           color: #c5d2f2;
-          line-height: 1.7;
+          font-size: 18px;
         }
 
-        .topbar a {
-          text-decoration: none;
+        .analyticsHero > a {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 52px;
+          padding: 0 24px;
+          border-radius: 14px;
           color: #061020;
-          background: linear-gradient(135deg, #7c4dff, #00e5ff);
           font-weight: 950;
-          border-radius: 13px;
-          padding: 13px 18px;
-          white-space: nowrap;
+          text-decoration: none;
+          background: linear-gradient(135deg, #7c4dff, #00e5ff);
         }
 
-        .statsGrid {
-          max-width: 1480px;
-          margin: 0 auto 24px;
+        .metricGrid {
           display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 16px;
+          grid-template-columns: repeat(6, minmax(0, 1fr));
+          gap: 14px;
         }
 
-        .statsGrid div,
-        .analyticsCard,
-        .insightBoard {
+        .metricCard,
+        .panel,
+        .decisionCard {
           border: 1px solid rgba(0, 229, 255, 0.2);
-          background: rgba(7, 12, 32, 0.84);
-          box-shadow: 0 20px 48px rgba(0, 0, 0, 0.24);
+          background:
+            radial-gradient(circle at 0% 0%, rgba(124, 77, 255, 0.12), transparent 34%),
+            rgba(7, 12, 32, 0.86);
+          box-shadow: 0 20px 48px rgba(0, 0, 0, 0.22);
         }
 
-        .statsGrid div {
-          padding: 22px;
-          border-radius: 22px;
+        .metricCard {
+          min-height: 118px;
+          border-radius: 18px;
+          padding: 18px;
+          display: grid;
+          align-content: center;
+          gap: 8px;
         }
 
-        .statsGrid span {
-          display: block;
-          color: #9fb0d8;
-          margin-bottom: 10px;
+        .metricCard span {
+          color: #c5d2f2;
+          font-weight: 850;
         }
 
-        .statsGrid strong {
+        .metricCard strong {
           color: #00e5ff;
-          font-size: 28px;
+          font-size: 30px;
+          line-height: 1;
         }
 
-        .boardGrid {
-          max-width: 1480px;
-          margin: 0 auto 24px;
+        .metricCard small {
+          color: #9fb0d8;
+          line-height: 1.4;
+        }
+
+        .analyticsGrid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 18px;
         }
 
-        .analyticsCard,
-        .insightBoard {
-          border-radius: 24px;
+        .panel,
+        .decisionCard {
+          border-radius: 22px;
           overflow: hidden;
         }
 
-        .cardHead,
-        .boardHead {
-          padding: 22px;
-          border-bottom: 1px solid rgba(255,255,255,.08);
+        .panelHead {
+          padding: 22px 22px 12px;
         }
 
-        .cardHead h2,
-        .boardHead h2 {
+        .panelHead h2 {
           margin: 0;
-          font-size: 25px;
+          font-size: 28px;
         }
 
-        .boardHead p {
-          margin: 8px 0 0;
+        .funnelBox,
+        .adviceList,
+        .productList {
+          display: grid;
+          gap: 12px;
+          padding: 18px 22px 22px;
+          border-top: 1px solid rgba(255,255,255,.08);
+        }
+
+        .funnelBar {
+          display: grid;
+          gap: 10px;
+          padding: 14px;
+          border-radius: 16px;
+          background: rgba(255,255,255,.055);
+        }
+
+        .funnelBar div {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+        }
+
+        .funnelBar b {
+          color: #fff;
+        }
+
+        .funnelBar span {
+          color: #00e5ff;
+          font-weight: 950;
+        }
+
+        .funnelBar i,
+        .rowBar {
+          height: 12px;
+          border-radius: 999px;
+          overflow: hidden;
+          background: rgba(255,255,255,.1);
+        }
+
+        .funnelBar em,
+        .rowBar i {
+          display: block;
+          height: 100%;
+          border-radius: 999px;
+          background: linear-gradient(90deg, #7c4dff, #00e5ff);
+        }
+
+        .adviceCard {
+          padding: 16px;
+          border-radius: 16px;
+          background: rgba(255,255,255,.055);
+          border: 1px solid rgba(255,255,255,.08);
+        }
+
+        .adviceCard.good {
+          border-color: rgba(0, 229, 255, 0.35);
+        }
+
+        .adviceCard.warning {
+          border-color: rgba(255, 199, 0, 0.35);
+        }
+
+        .adviceCard.danger {
+          border-color: rgba(255, 71, 126, 0.35);
+        }
+
+        .adviceCard a {
+          display: block;
+          color: #fff;
+          font-size: 17px;
+          font-weight: 950;
+          text-decoration: none;
+          margin-bottom: 6px;
+        }
+
+        .adviceCard span {
           color: #9fb0d8;
         }
 
-        .rankList,
-        .insightList {
-          display: grid;
+        .adviceCard p {
+          color: #dce6ff;
+          line-height: 1.65;
+          margin: 12px 0 0;
         }
 
-        .rankItem,
-        .insightItem {
+        .decisionGrid {
           display: grid;
-          grid-template-columns: 1fr auto;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 18px;
+        }
+
+        .decisionCard {
+          padding: 22px;
+          display: grid;
+          gap: 12px;
+        }
+
+        .decisionCard h2 {
+          margin: 0;
+          font-size: 26px;
+        }
+
+        .decisionCard p {
+          margin: 0 0 8px;
+          color: #c5d2f2;
+          line-height: 1.6;
+        }
+
+        .decisionCard a {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          color: #fff;
+          text-decoration: none;
+          padding: 12px;
+          border-radius: 14px;
+          background: rgba(255,255,255,.055);
+        }
+
+        .decisionCard span {
+          color: #00e5ff;
+          font-weight: 900;
+        }
+
+        .decisionCard small {
+          color: #9fb0d8;
+        }
+
+        .productRow {
+          display: grid;
+          grid-template-columns: minmax(260px, 0.8fr) 1fr auto;
           gap: 14px;
           align-items: center;
-          padding: 16px 22px;
-          border-bottom: 1px solid rgba(255,255,255,.08);
+          padding: 14px;
+          border-radius: 16px;
+          background: rgba(255,255,255,.055);
         }
 
-        .rankItem:last-child,
-        .insightItem:last-child {
-          border-bottom: 0;
-        }
-
-        .rankItem a,
-        .insightItem a {
-          color: #ffffff;
-          font-weight: 900;
-          text-decoration: none;
-        }
-
-        .rankItem a:hover,
-        .insightItem a:hover {
-          color: #00e5ff;
-        }
-
-        .rankItem span,
-        .insightItem span {
+        .productRow a {
           display: block;
-          margin-top: 6px;
+          color: #fff;
+          text-decoration: none;
+          font-weight: 950;
+          line-height: 1.35;
+          margin-bottom: 6px;
+        }
+
+        .productRow span {
           color: #9fb0d8;
           font-size: 13px;
         }
 
-        .metric {
+        .productRow b {
           color: #00e5ff;
-          font-size: 24px;
-          font-weight: 950;
+          white-space: nowrap;
         }
 
-        .insightBoard {
-          max-width: 1480px;
-          margin: 0 auto;
+        .detailTable {
+          padding: 18px 22px 22px;
+          border-top: 1px solid rgba(255,255,255,.08);
+          overflow-x: auto;
         }
 
-        .insightItem {
-          grid-template-columns: 1fr 1.3fr;
+        .detailHead,
+        .detailRow {
+          min-width: 900px;
+          display: grid;
+          grid-template-columns: 2fr repeat(6, 0.7fr);
+          gap: 12px;
+          align-items: center;
         }
 
-        .insightItem p {
-          margin: 0;
+        .detailHead {
+          color: #9fb0d8;
+          font-size: 12px;
+          text-transform: uppercase;
+          padding-bottom: 14px;
+        }
+
+        .detailRow {
+          padding: 14px 0;
+          border-top: 1px solid rgba(255,255,255,.08);
+        }
+
+        .detailRow a {
+          color: #fff;
+          font-weight: 900;
+          text-decoration: none;
+        }
+
+        .detailRow span {
           color: #dce6ff;
-          line-height: 1.6;
         }
 
         .emptyBox {
-          margin: 20px;
-          padding: 24px;
-          color: #b9c8ed;
-          border-radius: 18px;
-          background: rgba(255,255,255,.055);
+          padding: 16px;
+          color: #9fb0d8;
         }
 
-        @media (max-width: 1000px) {
-          .statsGrid,
-          .boardGrid,
-          .insightItem {
+        @media (max-width: 1180px) {
+          .metricGrid {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+
+          .analyticsGrid,
+          .decisionGrid {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 760px) {
+          .analyticsHero {
+            display: grid;
+          }
+
+          .metricGrid {
             grid-template-columns: 1fr;
           }
 
-          .topbar {
-            flex-direction: column;
+          .productRow {
+            grid-template-columns: 1fr;
           }
         }
       `}</style>
     </main>
-  );
-}
-
-function AnalyticsCard({
-  title,
-  items,
-  metric,
-}: {
-  title: string;
-  items: ProductStats[];
-  metric: "views" | "addToCart" | "buyNow";
-}) {
-  return (
-    <section className="analyticsCard">
-      <div className="cardHead">
-        <h2>{title}</h2>
-      </div>
-
-      {items.length === 0 ? (
-        <div className="emptyBox">Chưa có dữ liệu.</div>
-      ) : (
-        <div className="rankList">
-          {items.map((item, index) => (
-            <div className="rankItem" key={`${title}-${item.productSlug}`}>
-              <div>
-                <Link href={`/${item.productSlug}`}>
-                  #{index + 1} {item.productName}
-                </Link>
-                <span>
-                  Xem {item.views} · Click {item.clicks} · Giỏ {item.addToCart} · Mua ngay {item.buyNow}
-                </span>
-              </div>
-
-              <strong className="metric">{item[metric]}</strong>
-            </div>
-          ))}
-        </div>
-      )}
-    </section>
   );
 }
