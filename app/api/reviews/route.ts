@@ -1,8 +1,87 @@
-﻿import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createAuthServerClient } from "../../../lib/supabase-auth/server";
 import { supabaseAdmin } from "../../../lib/supabase-admin";
 
 export const dynamic = "force-dynamic";
+
+function normalizeText(value: unknown) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function isBadOrder(order: any) {
+  const status = normalizeText(order?.status);
+  const paymentStatus = normalizeText(order?.payment_status);
+
+  return (
+    status.includes("huy") ||
+    status.includes("that bai") ||
+    status.includes("cancel") ||
+    paymentStatus.includes("that bai") ||
+    paymentStatus.includes("failed")
+  );
+}
+
+function orderHasProduct(order: any, productSlug: string, productName: string) {
+  const items = Array.isArray(order?.order_items) ? order.order_items : [];
+
+  const targetName = normalizeText(productName);
+  const targetSlug = normalizeText(productSlug).replace(/-/g, " ");
+
+  return items.some((item: any) => {
+    const itemName = normalizeText(item?.product_name);
+
+    if (!itemName) return false;
+
+    return (
+      itemName === targetName ||
+      itemName.includes(targetName) ||
+      targetName.includes(itemName) ||
+      itemName.includes(targetSlug)
+    );
+  });
+}
+
+async function userPurchasedProduct(user: any, productSlug: string, productName: string) {
+  const email = String(user?.email || "").trim();
+
+  const { data: idOrders, error: idError } = await supabaseAdmin
+    .from("orders")
+    .select("id,status,payment_status,customer_id,customer_email,order_items(product_name)")
+    .eq("customer_id", user.id)
+    .order("created_at", { ascending: false });
+
+  if (idError) {
+    throw new Error(idError.message);
+  }
+
+  let emailOrders: any[] = [];
+
+  if (email) {
+    const { data, error } = await supabaseAdmin
+      .from("orders")
+      .select("id,status,payment_status,customer_id,customer_email,order_items(product_name)")
+      .ilike("customer_email", email)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    emailOrders = data || [];
+  }
+
+  const orders = [...(idOrders || []), ...emailOrders];
+
+  return orders.some((order) => {
+    if (isBadOrder(order)) return false;
+    return orderHasProduct(order, productSlug, productName);
+  });
+}
 
 export async function GET(request: NextRequest) {
   const productSlug = request.nextUrl.searchParams.get("productSlug");
@@ -35,6 +114,13 @@ export async function POST(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  if (!user) {
+    return NextResponse.json(
+      { error: "Bạn cần đăng nhập và mua sản phẩm này trước khi bình luận." },
+      { status: 401 }
+    );
+  }
+
   const body = await request.json();
 
   const productSlug = String(body.productSlug || "").trim();
@@ -58,20 +144,6 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (!customerName || customerName.length < 2) {
-    return NextResponse.json(
-      { error: "Vui lòng nhập họ tên." },
-      { status: 400 }
-    );
-  }
-
-  if (!customerPhone || customerPhone.length < 8) {
-    return NextResponse.json(
-      { error: "Vui lòng nhập số điện thoại hợp lệ." },
-      { status: 400 }
-    );
-  }
-
   if (content.length < 5) {
     return NextResponse.json(
       { error: "Nội dung bình luận nên có ít nhất 5 ký tự." },
@@ -79,27 +151,47 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  let userId = null;
+  const hasPurchased = await userPurchasedProduct(user, productSlug, productName);
 
-  if (user) {
-    userId = user.id;
-
-    const { data: profile } = await supabaseAdmin
-      .from("profiles")
-      .select("full_name, email, phone")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    customerName =
-      customerName ||
-      profile?.full_name ||
-      user.user_metadata?.full_name ||
-      user.email?.split("@")[0] ||
-      "Khách hàng HMECHA";
-
-    customerEmail = customerEmail || profile?.email || user.email || "";
-    customerPhone = customerPhone || profile?.phone || "";
+  if (!hasPurchased) {
+    return NextResponse.json(
+      {
+        error:
+          "Bạn chỉ có thể bình luận sau khi đã mua sản phẩm này bằng tài khoản hiện tại.",
+      },
+      { status: 403 }
+    );
   }
+
+  const { data: oldReview } = await supabaseAdmin
+    .from("product_reviews")
+    .select("id")
+    .eq("product_slug", productSlug)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (oldReview) {
+    return NextResponse.json(
+      { error: "Bạn đã bình luận sản phẩm này rồi." },
+      { status: 409 }
+    );
+  }
+
+  const { data: profile } = await supabaseAdmin
+    .from("profiles")
+    .select("full_name, email, phone")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  customerName =
+    customerName ||
+    profile?.full_name ||
+    user.user_metadata?.full_name ||
+    user.email?.split("@")[0] ||
+    "Khách hàng HMECHA";
+
+  customerEmail = customerEmail || profile?.email || user.email || "";
+  customerPhone = customerPhone || profile?.phone || "";
 
   const { data, error } = await supabaseAdmin
     .from("product_reviews")
@@ -107,7 +199,7 @@ export async function POST(request: NextRequest) {
       product_id: productId,
       product_slug: productSlug,
       product_name: productName,
-      user_id: userId,
+      user_id: user.id,
       customer_name: customerName,
       customer_email: customerEmail,
       customer_phone: customerPhone,
