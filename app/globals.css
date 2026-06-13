@@ -114,3 +114,21 @@ button:hover,
   -webkit-user-select: none !important;
   -webkit-user-drag: none !important;
 }
+
+/* hmecha-chat-mobile-position */
+@media (max-width: 768px) {
+  button[aria-label="Mở chatbot"] {
+    right: 18px !important;
+    bottom: 112px !important;
+    z-index: 90 !important;
+  }
+}
+
+@media (min-width: 769px) {
+  button[aria-label="Mở chatbot"] {
+    right: 28px !important;
+    bottom: 58px !important;
+    z-index: 90 !important;
+  }
+}
+/* end-hmecha-chat-mobile-position */

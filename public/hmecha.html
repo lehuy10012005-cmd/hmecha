@@ -14651,5 +14651,72 @@ if (popularBox) popularBox.classList.add("d-none");
 
 
 
+
+<style id="hmecha-mobile-bottom-fix">
+  @media (max-width: 768px) {
+    .hmecha-hide-mobile-category {
+      display: none !important;
+    }
+  }
+</style>
+
+<script id="hmecha-mobile-bottom-fix-script">
+(function () {
+  function clean(text) {
+    return String(text || "").replace(/\s+/g, " ").trim();
+  }
+
+  function isBottomMobileNav(el) {
+    var node = el;
+
+    while (node && node !== document.body) {
+      var style = window.getComputedStyle(node);
+      var rect = node.getBoundingClientRect();
+
+      if (
+        style.position === "fixed" &&
+        rect.top > window.innerHeight * 0.55 &&
+        rect.height < 140
+      ) {
+        return true;
+      }
+
+      node = node.parentElement;
+    }
+
+    return false;
+  }
+
+  function hideDanhMuc() {
+    if (window.innerWidth > 768) return;
+
+    document.querySelectorAll("a, button, li, div, span").forEach(function (el) {
+      var text = clean(el.textContent);
+
+      if (text === "Danh mục" && isBottomMobileNav(el)) {
+        var target =
+          el.closest("a") ||
+          el.closest("button") ||
+          el.closest("li") ||
+          el;
+
+        target.classList.add("hmecha-hide-mobile-category");
+      }
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", hideDanhMuc);
+  window.addEventListener("load", hideDanhMuc);
+  window.addEventListener("resize", hideDanhMuc);
+
+  var count = 0;
+  var timer = setInterval(function () {
+    hideDanhMuc();
+    count += 1;
+    if (count >= 12) clearInterval(timer);
+  }, 400);
+})();
+</script>
+
 </body>
 </html>
