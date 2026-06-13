@@ -12,6 +12,131 @@ import RelatedProducts from "../../components/RelatedProducts";
 import ProductReviews from "../../components/ProductReviews";
 import ProductEventTracker from "../../components/ProductEventTracker";
 import ProductSideActions from "../../components/ProductSideActions";
+
+function normalizeProductText(value: unknown) {
+  return String(value || "").toLowerCase();
+}
+
+function detectProductLine(product: any) {
+  const name = normalizeProductText(product?.name);
+  const category = normalizeProductText(product?.category);
+  const combined = name + " " + category;
+
+  if (combined.includes("re/100") || combined.includes(" re ")) return "RE/100";
+  if (combined.includes("mg ") || combined.includes("master grade")) return "MG - Master Grade";
+  if (combined.includes("rg ") || combined.includes("real grade")) return "RG - Real Grade";
+  if (combined.includes("hg ") || combined.includes("high grade") || combined.includes("hggq") || combined.includes("hguc")) return "HG - High Grade";
+  if (combined.includes("sd ")) return "SD - Super Deformed";
+  if (combined.includes("30mm")) return "30MM - 30 Minutes Missions";
+  if (combined.includes("30ms")) return "30MS - 30 Minutes Sisters";
+  if (combined.includes("30mf")) return "30MF - 30 Minutes Fantasy";
+  if (combined.includes("metal build")) return "Metal Build";
+  if (combined.includes("onepiece") || combined.includes("one piece")) return "One Piece Collectible";
+  if (combined.includes("figure-rise")) return "Figure-rise Standard";
+
+  return product?.category || "Mô hình lắp ráp / sưu tầm";
+}
+
+function detectScale(product: any) {
+  const name = String(product?.name || "");
+  const category = String(product?.category || "");
+  const text = name + " " + category;
+
+  const scaleMatch = text.match(/1\/\d+/);
+
+  if (scaleMatch) return scaleMatch[0];
+  if (/mg|master grade/i.test(text)) return "1/100";
+  if (/rg|hg|high grade|real grade|hggq|hguc/i.test(text)) return "1/144";
+  if (/pg|perfect grade/i.test(text)) return "1/60";
+  if (/sd/i.test(text)) return "SD scale";
+
+  return "Theo thiết kế của từng dòng sản phẩm";
+}
+
+function getProductDescription(product: any) {
+  const raw = String(product?.fullDescription || product?.shortDescription || "").trim();
+
+  const badDescription =
+    !raw ||
+    /supabase|database|nhập từ danh sách trang chủ|dong bo database|đồng bộ database/i.test(raw);
+
+  if (!badDescription) {
+    return raw;
+  }
+
+  const name = product?.name || "Sản phẩm";
+  const brand = product?.brand || "Bandai";
+  const line = detectProductLine(product);
+  const scale = detectScale(product);
+  const status = product?.status || "Còn hàng";
+
+  return `${name} là mẫu ${line} tỉ lệ ${scale}, phù hợp cho người chơi mô hình, người sưu tầm Gundam và các bạn yêu thích mecha. Sản phẩm thuộc thương hiệu ${brand}, tình trạng hiện tại: ${status}. Bộ kit phù hợp để lắp ráp, tạo dáng và trưng bày trên bàn làm việc, kệ sưu tầm hoặc góc decor cá nhân. HMECHA đóng gói sản phẩm cẩn thận trước khi giao và hỗ trợ kiểm tra đơn trước khi xử lý vận chuyển.`;
+}
+
+function getProductSpecs(product: any) {
+  const dbSpecs = Array.isArray(product?.specs)
+    ? product.specs
+        .map((item: unknown) => String(item || "").trim())
+        .filter(Boolean)
+    : [];
+
+  if (dbSpecs.length > 0) {
+    return dbSpecs;
+  }
+
+  const name = product?.name || "Sản phẩm";
+  const brand = product?.brand || "Bandai";
+  const line = detectProductLine(product);
+  const scale = detectScale(product);
+  const category = product?.category || "Mô hình lắp ráp";
+  const status = product?.status || "Còn hàng";
+  const sku = product?.sku || "Đang cập nhật";
+  const price = Number(product?.price || 0).toLocaleString("vi-VN") + "đ";
+
+  const text = normalizeProductText(name + " " + category);
+  let difficulty = "Trung bình, phù hợp người đã từng lắp model kit cơ bản";
+  let displayNote = "Phù hợp trưng bày trên kệ sưu tầm, bàn làm việc hoặc góc decor cá nhân";
+  let material = "Nhựa PS/ABS/PVC tùy từng dòng sản phẩm";
+
+  if (text.includes("sd")) {
+    difficulty = "Dễ lắp, phù hợp người mới bắt đầu hoặc sưu tầm mẫu nhỏ gọn";
+    displayNote = "Thiết kế chibi nhỏ gọn, dễ trưng bày và phù hợp làm quà tặng";
+  } else if (text.includes("hg") || text.includes("hggq") || text.includes("hguc")) {
+    difficulty = "Dễ đến trung bình, phù hợp người mới chơi Gunpla";
+    displayNote = "Kích thước gọn, dễ tạo dáng và phù hợp sưu tầm nhiều mẫu";
+  } else if (text.includes("rg")) {
+    difficulty = "Trung bình đến khá, nhiều chi tiết nhỏ và độ hoàn thiện cao";
+    displayNote = "Độ chi tiết tốt trong tỉ lệ 1/144, phù hợp người thích pose dáng đẹp";
+  } else if (text.includes("mg") || text.includes("re/100")) {
+    difficulty = "Khá, kích thước lớn hơn và nhiều chi tiết hơn dòng HG/RG";
+    displayNote = "Form lớn, nổi bật khi trưng bày riêng hoặc trong tủ sưu tầm";
+  } else if (text.includes("30mm") || text.includes("30ms") || text.includes("30mf")) {
+    difficulty = "Dễ đến trung bình, mạnh về tùy biến và thay phụ kiện";
+    displayNote = "Phù hợp kitbash, đổi phụ kiện, tùy chỉnh màu sắc và tạo concept riêng";
+  } else if (text.includes("metal build")) {
+    material = "Mô hình hoàn thiện sẵn, thường kết hợp nhựa ABS/PVC và chi tiết kim loại";
+    difficulty = "Không cần lắp ráp phức tạp, tập trung vào trưng bày và tạo dáng";
+    displayNote = "Phù hợp sưu tầm cao cấp, trưng bày nổi bật trong tủ kính";
+  }
+
+  return [
+    `Tên sản phẩm: ${name}`,
+    `Mã sản phẩm/SKU: ${sku}`,
+    `Dòng sản phẩm: ${line}`,
+    `Tỉ lệ/Kích thước: ${scale}`,
+    `Thương hiệu: ${brand}`,
+    `Phân loại: ${category}`,
+    `Tình trạng: ${status}`,
+    `Giá bán: ${price}`,
+    `Chất liệu tham khảo: ${material}`,
+    `Độ khó lắp ráp: ${difficulty}`,
+    `Ứng dụng: lắp ráp, tạo dáng, chụp ảnh sản phẩm và sưu tầm mô hình`,
+    `Gợi ý trưng bày: ${displayNote}`,
+    `Lưu ý: sản phẩm dạng model kit/mô hình sưu tầm, một số chi tiết nhỏ cần thao tác cẩn thận khi lắp`,
+    `Dịch vụ HMECHA: đóng gói chống sốc, kiểm tra đơn trước khi giao và hỗ trợ nếu có lỗi từ nhà sản xuất`,
+  ];
+}
+
 export default async function ProductDetailPage({
   params,
 }: {
@@ -166,13 +291,13 @@ const product = dbProduct
           </div>
 
           <div className="tabContent">
-            <p>{product.fullDescription}</p>
+            <p>{getProductDescription(product)}</p>
 
             <h3>Thông tin sản phẩm</h3>
             <ul>
-             {((product.specs || []) as string[]).map((spec: string) => (
-  <li key={spec}>{spec}</li>
-))}
+             {getProductSpecs(product).map((spec: string) => (
+              <li key={spec}>{spec}</li>
+            ))}
             </ul>
 
             <h3>Hướng dẫn mua hàng</h3>
