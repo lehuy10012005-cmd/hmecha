@@ -1,50 +1,39 @@
 "use client";
 
-import CompareButton from "./CompareButton";
 import WishlistButton from "./WishlistButton";
 
 type ProductLike = {
   id?: string;
-  name: string;
-  slug: string;
+  name?: string;
+  slug?: string;
   sku?: string;
-  price: number;
-  image?: string;
+  price?: number | null;
+  image?: string | null;
   images?: string[];
-  status?: string;
-  brand?: string;
-  category?: string;
+  status?: string | null;
+  brand?: string | null;
+  category?: string | null;
   badge?: string | null;
 };
 
 export default function ProductSideActions({ product }: { product: ProductLike }) {
-  return (
-    <div
-      style={{
-        display: "grid",
-        gap: 12,
-        marginTop: 16,
-      }}
-    >
-      <WishlistButton product={product} />
-      <CompareButton product={product} />
+  const wishlistProduct = {
+    id: product.id,
+    name: product.name || "Sản phẩm HMECHA",
+    slug: product.slug || "",
+    sku: product.sku,
+    price: Number(product.price || 0),
+    image: product.image || undefined,
+    images: product.images || [],
+    status: product.status || undefined,
+    brand: product.brand || undefined,
+    category: product.category || undefined,
+    badge: product.badge || null,
+  };
 
-      <a
-        href="/so-sanh"
-        style={{
-          display: "grid",
-          placeItems: "center",
-          minHeight: 46,
-          borderRadius: 14,
-          border: "1px dashed rgba(0,229,255,.28)",
-          color: "#00e5ff",
-          textDecoration: "none",
-          fontWeight: 900,
-          background: "rgba(0,229,255,.06)",
-        }}
-      >
-        Xem bảng so sánh
-      </a>
+  return (
+    <div className="product-side-actions">
+      <WishlistButton product={wishlistProduct} />
     </div>
   );
 }
