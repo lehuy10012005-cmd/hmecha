@@ -14929,5 +14929,266 @@ if (popularBox) popularBox.classList.add("d-none");
   }, 350);
 })();
 </script>
+\n
+<style id="hmecha-final-cleanup">
+  .hmecha-force-hide {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .hmecha-card-action-row-clean {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .hmecha-cart-button-wide {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    flex: 1 1 100% !important;
+    justify-content: center !important;
+  }
+
+  .hmecha-cart-button-wide button,
+  .hmecha-cart-button-wide a {
+    width: 100% !important;
+  }
+</style>
+
+<script id="hmecha-final-cleanup-script">
+(function () {
+  function clean(text) {
+    return String(text || "").replace(/\s+/g, " ").trim();
+  }
+
+  function textOf(el) {
+    return clean(
+      (el.textContent || "") + " " +
+      (el.getAttribute && el.getAttribute("title") || "") + " " +
+      (el.getAttribute && el.getAttribute("aria-label") || "") + " " +
+      (el.className || "")
+    );
+  }
+
+  function hide(el) {
+    if (!el) return;
+    el.classList.add("hmecha-force-hide");
+    el.style.setProperty("display", "none", "important");
+    el.style.setProperty("opacity", "0", "important");
+    el.style.setProperty("visibility", "hidden", "important");
+    el.style.setProperty("pointer-events", "none", "important");
+  }
+
+  function findFooterRoot() {
+    var candidates = Array.from(document.querySelectorAll("footer, .footer, .bg-footer, section, div"));
+    return candidates.find(function (el) {
+      return clean(el.textContent).includes("KHÁM PHÁ HMECHA");
+    });
+  }
+
+  function removeFooterLinks() {
+    var footer = findFooterRoot();
+    if (!footer) return;
+
+    var removeTexts = [
+      "Sản phẩm có sẵn",
+      "Đặt trước mô hình",
+      "Gundam Bandai"
+    ];
+
+    footer.querySelectorAll("a, li, div, span, p").forEach(function (el) {
+      var text = clean(el.textContent);
+
+      if (removeTexts.includes(text)) {
+        var target = el.closest("a") || el.closest("li") || el;
+        hide(target);
+      }
+    });
+  }
+
+  function findSmallActionRow(el) {
+    var node = el.parentElement;
+
+    while (node && node !== document.body) {
+      var rect = node.getBoundingClientRect();
+      var style = window.getComputedStyle(node);
+
+      if (
+        rect.width >= 120 &&
+        rect.width <= 420 &&
+        rect.height <= 90 &&
+        (style.display === "flex" || style.display === "grid" || node.children.length <= 5)
+      ) {
+        return node;
+      }
+
+      node = node.parentElement;
+    }
+
+    return el.parentElement;
+  }
+
+  function isProductCardContext(el) {
+    var node = el;
+
+    while (node && node !== document.body) {
+      var text = clean(node.textContent);
+      var rect = node.getBoundingClientRect();
+
+      if (
+        rect.width >= 160 &&
+        rect.width <= 430 &&
+        (
+          text.includes("Thêm vào giỏ") ||
+          text.includes("Hết hàng") ||
+          text.includes("Tình trạng:") ||
+          text.includes("Còn hàng")
+        )
+      ) {
+        return true;
+      }
+
+      node = node.parentElement;
+    }
+
+    return false;
+  }
+
+  function cleanupProductCardActions() {
+    document.querySelectorAll("button, a").forEach(function (el) {
+      var text = clean(el.textContent);
+
+      if (
+        isProductCardContext(el) &&
+        (
+          text.includes("Thêm vào giỏ") ||
+          text === "Hết hàng"
+        )
+      ) {
+        var row = findSmallActionRow(el);
+        if (row) {
+          row.classList.add("hmecha-card-action-row-clean");
+
+          Array.from(row.children).forEach(function (child) {
+            if (child === el || child.contains(el)) {
+              child.classList.add("hmecha-cart-button-wide");
+              return;
+            }
+
+            var childText = textOf(child).toLowerCase();
+
+            if (
+              childText.includes("so sánh") ||
+              childText.includes("compare") ||
+              childText.includes("xem nhanh") ||
+              childText.includes("quick") ||
+              childText.includes("search") ||
+              childText.includes("tìm") ||
+              childText.includes("shuffle") ||
+              childText.includes("magnifier") ||
+              clean(child.textContent).length <= 3
+            ) {
+              hide(child);
+            }
+          });
+        }
+      }
+    });
+
+    document.querySelectorAll("button, a").forEach(function (el) {
+      if (!isProductCardContext(el)) return;
+
+      var info = textOf(el).toLowerCase();
+      var visibleText = clean(el.textContent);
+      var rect = el.getBoundingClientRect();
+
+      var isSmallIconButton =
+        rect.width <= 70 &&
+        rect.height <= 70 &&
+        visibleText.length <= 3;
+
+      var shouldHide =
+        info.includes("so sánh") ||
+        info.includes("compare") ||
+        info.includes("xem nhanh") ||
+        info.includes("quick") ||
+        info.includes("search") ||
+        info.includes("tìm") ||
+        info.includes("shuffle") ||
+        info.includes("magnifier");
+
+      if (isSmallIconButton && shouldHide) {
+        hide(el);
+      }
+    });
+  }
+
+  function removeFloatingCompare() {
+    try {
+      localStorage.removeItem("hmecha-compare");
+    } catch (e) {}
+
+    document.querySelectorAll("a, button, div, span").forEach(function (el) {
+      var info = textOf(el).toLowerCase();
+      var text = clean(el.textContent);
+      var rect = el.getBoundingClientRect();
+      var style = window.getComputedStyle(el);
+
+      var looksFloating =
+        (style.position === "fixed" || style.position === "sticky") &&
+        rect.left > window.innerWidth * 0.55 &&
+        rect.width <= 180 &&
+        rect.height <= 120;
+
+      var parent = el.parentElement;
+      var parentStyle = parent ? window.getComputedStyle(parent) : null;
+      var parentRect = parent ? parent.getBoundingClientRect() : null;
+
+      var parentLooksFloating =
+        parent &&
+        parentStyle &&
+        (parentStyle.position === "fixed" || parentStyle.position === "sticky") &&
+        parentRect.left > window.innerWidth * 0.55 &&
+        parentRect.width <= 220 &&
+        parentRect.height <= 160;
+
+      var shouldHide =
+        info.includes("so sánh") ||
+        info.includes("compare") ||
+        info.includes("shuffle") ||
+        info.includes("hmecha-compare") ||
+        text === "↻" ||
+        text === "⇄" ||
+        text.includes("↻") ||
+        text.includes("⇄");
+
+      if (shouldHide && (looksFloating || parentLooksFloating)) {
+        hide(parentLooksFloating ? parent : el);
+      }
+    });
+  }
+
+  function runCleanup() {
+    removeFooterLinks();
+    cleanupProductCardActions();
+    removeFloatingCompare();
+  }
+
+  document.addEventListener("DOMContentLoaded", runCleanup);
+  window.addEventListener("load", runCleanup);
+  window.addEventListener("resize", runCleanup);
+  window.addEventListener("scroll", runCleanup, { passive: true });
+
+  var count = 0;
+  var timer = setInterval(function () {
+    runCleanup();
+    count += 1;
+    if (count >= 25) clearInterval(timer);
+  }, 300);
+})();
+</script>
 \n</body>
 </html>

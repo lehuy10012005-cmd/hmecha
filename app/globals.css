@@ -180,3 +180,46 @@ button:hover,
 }
 
 /* end-hmecha-product-card-action-cleanup */
+
+
+/* hmecha-final-component-cleanup */
+
+/* Ẩn compare tray / nút compare nổi */
+.compareTrayFixed,
+.compare-tray,
+.compare-floating,
+.floating-compare,
+[class*="CompareTray"],
+[class*="compareTray"],
+[class*="compare-floating"],
+[class*="floating-compare"] {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Ẩn nút so sánh / xem nhanh trên product card nếu component React có class rõ */
+.product-card button[title*="So sánh"],
+.product-card button[aria-label*="So sánh"],
+.product-card a[title*="So sánh"],
+.product-card a[aria-label*="So sánh"],
+.product-card button[title*="Xem nhanh"],
+.product-card button[aria-label*="Xem nhanh"],
+.product-card a[title*="Xem nhanh"],
+.product-card a[aria-label*="Xem nhanh"],
+.product-card button[title*="Tìm"],
+.product-card button[aria-label*="Tìm"],
+.product-card a[title*="Tìm"],
+.product-card a[aria-label*="Tìm"],
+.productCard button[title*="So sánh"],
+.productCard button[aria-label*="So sánh"],
+.productCard a[title*="So sánh"],
+.productCard a[aria-label*="So sánh"],
+.productCard button[title*="Xem nhanh"],
+.productCard button[aria-label*="Xem nhanh"],
+.productCard a[title*="Xem nhanh"],
+.productCard a[aria-label*="Xem nhanh"] {
+  display: none !important;
+}
+
+/* end-hmecha-final-component-cleanup */
