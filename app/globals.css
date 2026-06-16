@@ -219,3 +219,45 @@ a[aria-label*="Quick"] {
 }
 
 /* end-hmecha-cart-button-final-fix */
+
+
+/* hmecha-final-no-lag-cart-clean */
+
+/* Ẩn toàn bộ UI so sánh */
+a[href*="/so-sanh"],
+.compareTrayFixed,
+.compare-tray,
+.compare-floating,
+.floating-compare,
+[class*="CompareTray"],
+[class*="compareTray"],
+[class*="compare-floating"],
+[class*="floating-compare"] {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Class do script nhẹ gắn vào */
+.hmecha-hide-side-action {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.hmecha-cart-row-clean {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 8px !important;
+}
+
+.hmecha-cart-wide {
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  flex: 1 1 100% !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+/* end-hmecha-final-no-lag-cart-clean */

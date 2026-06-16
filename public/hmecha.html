@@ -14770,5 +14770,142 @@ if (popularBox) popularBox.classList.add("d-none");
   }, 500);
 })();
 </script>
+\n
+<script id="hmecha-final-no-lag-cart-clean">
+(function () {
+  function clean(text) {
+    return String(text || "").replace(/\s+/g, " ").trim();
+  }
+
+  function hide(el) {
+    if (!el) return;
+    el.classList.add("hmecha-hide-side-action");
+    el.style.setProperty("display", "none", "important");
+    el.style.setProperty("opacity", "0", "important");
+    el.style.setProperty("pointer-events", "none", "important");
+  }
+
+  function removeCompare() {
+    try {
+      localStorage.removeItem("hmecha-compare");
+    } catch (e) {}
+
+    document.querySelectorAll('a[href*="/so-sanh"]').forEach(function (el) {
+      hide(el.closest("li") || el);
+    });
+
+    document.querySelectorAll("a, button, div, span").forEach(function (el) {
+      var text = clean(el.textContent);
+      var cls = String(el.className || "").toLowerCase();
+      var title = clean(el.getAttribute && el.getAttribute("title"));
+      var aria = clean(el.getAttribute && el.getAttribute("aria-label"));
+      var info = (text + " " + cls + " " + title + " " + aria).toLowerCase();
+
+      if (
+        info.includes("so sánh") ||
+        info.includes("so sanh") ||
+        info.includes("compare") ||
+        info.includes("xem so sánh") ||
+        info.includes("ẩn so sánh") ||
+        info.includes("hmecha-compare")
+      ) {
+        var rect = el.getBoundingClientRect();
+        var style = window.getComputedStyle(el);
+        var floatingRight =
+          (style.position === "fixed" || style.position === "sticky") &&
+          rect.left > window.innerWidth * 0.45;
+
+        if (floatingRight || text.includes("So sánh") || text.includes("Ẩn so sánh")) {
+          hide(el.closest("li") || el.closest("a") || el.closest("button") || el);
+        }
+      }
+    });
+  }
+
+  function findActionRow(mainButton) {
+    var node = mainButton.parentElement;
+
+    while (node && node !== document.body) {
+      var rect = node.getBoundingClientRect();
+      var text = clean(node.textContent);
+
+      if (
+        rect.width >= 120 &&
+        rect.width <= 560 &&
+        rect.height <= 130 &&
+        (text.includes("Thêm vào giỏ") || text.includes("Hết hàng"))
+      ) {
+        return node;
+      }
+
+      node = node.parentElement;
+    }
+
+    return mainButton.parentElement;
+  }
+
+  function cleanCartRows() {
+    document.querySelectorAll("a, button").forEach(function (el) {
+      var text = clean(el.textContent);
+
+      if (!text.includes("Thêm vào giỏ") && text !== "Hết hàng") return;
+
+      var row = findActionRow(el);
+      if (!row) return;
+
+      row.classList.add("hmecha-cart-row-clean");
+      el.classList.add("hmecha-cart-wide");
+
+      Array.from(row.children).forEach(function (child) {
+        if (child === el || child.contains(el)) {
+          child.classList.add("hmecha-cart-wide");
+          return;
+        }
+
+        var childText = clean(child.textContent);
+        var childInfo = (
+          childText + " " +
+          String(child.className || "") + " " +
+          String(child.innerHTML || "")
+        ).toLowerCase();
+
+        var childRect = child.getBoundingClientRect();
+        var isSmallIcon = childRect.width <= 78 && childRect.height <= 78;
+
+        if (
+          isSmallIcon ||
+          childInfo.includes("so sánh") ||
+          childInfo.includes("compare") ||
+          childInfo.includes("search") ||
+          childInfo.includes("tìm") ||
+          childInfo.includes("xem nhanh") ||
+          childInfo.includes("quick") ||
+          childInfo.includes("shuffle") ||
+          childInfo.includes("magnifier") ||
+          childInfo.includes("svg")
+        ) {
+          hide(child);
+        }
+      });
+    });
+  }
+
+  function run() {
+    removeCompare();
+    cleanCartRows();
+  }
+
+  document.addEventListener("DOMContentLoaded", run);
+  window.addEventListener("load", run);
+
+  /* Chạy vài lần lúc sản phẩm vừa render xong, rồi dừng hẳn */
+  var count = 0;
+  var timer = setInterval(function () {
+    run();
+    count += 1;
+    if (count >= 6) clearInterval(timer);
+  }, 500);
+})();
+</script>
 \n</body>
 </html>
