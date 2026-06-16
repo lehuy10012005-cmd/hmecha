@@ -1,5 +1,9 @@
 "use client";
 
-export default function CompareButton() {
+type CompareButtonProps = {
+  product?: unknown;
+};
+
+export default function CompareButton(_props: CompareButtonProps) {
   return null;
 }
