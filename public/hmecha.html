@@ -14666,5 +14666,109 @@ if (popularBox) popularBox.classList.add("d-none");
 
 
 
+\n
+<script id="hmecha-cart-button-final-fix-script">
+(function () {
+  function clean(text) {
+    return String(text || "").replace(/\s+/g, " ").trim();
+  }
+
+  function isMainCartButton(el) {
+    var text = clean(el.textContent);
+    return text.indexOf("Thêm vào giỏ") >= 0 || text === "Hết hàng";
+  }
+
+  function findActionRow(cartButton) {
+    var node = cartButton.parentElement;
+
+    while (node && node !== document.body) {
+      var rect = node.getBoundingClientRect();
+      var text = clean(node.textContent);
+
+      if (
+        rect.width >= 120 &&
+        rect.width <= 520 &&
+        rect.height <= 120 &&
+        (text.indexOf("Thêm vào giỏ") >= 0 || text.indexOf("Hết hàng") >= 0)
+      ) {
+        return node;
+      }
+
+      node = node.parentElement;
+    }
+
+    return cartButton.parentElement;
+  }
+
+  function cleanupCardButtons() {
+    document.querySelectorAll("button, a").forEach(function (el) {
+      if (!isMainCartButton(el)) return;
+
+      var row = findActionRow(el);
+      if (!row) return;
+
+      row.classList.add("hmecha-card-actions-wide");
+
+      Array.from(row.children).forEach(function (child) {
+        if (child === el || child.contains(el)) {
+          child.classList.add("hmecha-card-cart-wide");
+          return;
+        }
+
+        // Mấy nút nhỏ cạnh thêm giỏ thường là icon so sánh / kính lúp
+        child.classList.add("hmecha-hide-side-action");
+      });
+
+      el.classList.add("hmecha-card-cart-wide");
+    });
+  }
+
+  function removeFloatingCompareText() {
+    try {
+      localStorage.removeItem("hmecha-compare");
+    } catch (e) {}
+
+    document.querySelectorAll("a, button, div, span").forEach(function (el) {
+      var text = clean(el.textContent);
+      var rect = el.getBoundingClientRect();
+      var style = window.getComputedStyle(el);
+
+      var isFloatingRight =
+        (style.position === "fixed" || style.position === "sticky") &&
+        rect.left > window.innerWidth * 0.55 &&
+        rect.width <= 240;
+
+      if (
+        isFloatingRight &&
+        (
+          text.indexOf("So sánh") >= 0 ||
+          text.indexOf("Xem so sánh") >= 0 ||
+          text.indexOf("Ẩn so sánh") >= 0 ||
+          text.indexOf("↻") >= 0 ||
+          text.indexOf("⇄") >= 0
+        )
+      ) {
+        el.style.setProperty("display", "none", "important");
+      }
+    });
+  }
+
+  function run() {
+    cleanupCardButtons();
+    removeFloatingCompareText();
+  }
+
+  document.addEventListener("DOMContentLoaded", run);
+  window.addEventListener("load", run);
+
+  // Chỉ chạy vài lần lúc trang vừa render sản phẩm, không chạy vô hạn nên không lag
+  var tries = 0;
+  var timer = setInterval(function () {
+    run();
+    tries += 1;
+    if (tries >= 8) clearInterval(timer);
+  }, 500);
+})();
+</script>
 \n</body>
 </html>

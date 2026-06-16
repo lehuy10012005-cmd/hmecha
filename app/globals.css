@@ -173,3 +173,49 @@ a[aria-label*="Quick"] {
 }
 
 /* end-hmecha-no-lag-cleanup */
+
+
+/* hmecha-cart-button-final-fix */
+
+/* Tắt toàn bộ UI so sánh nếu còn sót */
+.compareTrayFixed,
+.compare-tray,
+.compare-floating,
+.floating-compare,
+[class*="CompareTray"],
+[class*="compareTray"],
+[class*="compare-floating"],
+[class*="floating-compare"] {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Class do script 1-lần gắn vào */
+.hmecha-hide-side-action {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.hmecha-card-actions-wide {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 8px !important;
+}
+
+.hmecha-card-cart-wide {
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  flex: 1 1 100% !important;
+  justify-content: center !important;
+  text-align: center !important;
+}
+
+.hmecha-card-cart-wide button,
+.hmecha-card-cart-wide a {
+  width: 100% !important;
+}
+
+/* end-hmecha-cart-button-final-fix */
