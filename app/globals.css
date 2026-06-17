@@ -133,38 +133,4 @@ button:hover,
 
 
 
-/* hmecha-static-card-action-fix */
 
-/* Ẩn toàn bộ UI so sánh / xem nhanh còn sót từ template cũ */
-.product-button .setCompare,
-.product-button .js-compare-product-add,
-.product-button .quick-view,
-.product-button .quick-view-option,
-.site-header__compare,
-.js-open-compare,
-.btn-show-popup-compare,
-.compare-sidebar,
-.box_poly_hea,
-a[href="/so-sanh-san-pham"] {
-  display: none !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-}
-
-/* Làm nút Thêm vào giỏ / Hết hàng ngang full card */
-.product-button {
-  display: grid !important;
-  grid-template-columns: 1fr !important;
-  gap: 8px !important;
-}
-
-.product-button .add_to_cart,
-.product-button .disabled {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 100% !important;
-  justify-content: center !important;
-  text-align: center !important;
-}
-
-/* end-hmecha-static-card-action-fix */
