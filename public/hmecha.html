@@ -14101,5 +14101,53 @@ if (popularBox) popularBox.classList.add("d-none");
 
 
 
+
+<script id="hmecha-wishlist-storage-bridge">
+(function () {
+  var KEY = "hmecha-wishlist";
+
+  function readList() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      var arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr.map(String).filter(Boolean) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function writeList(list) {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(Array.from(new Set(list))));
+      window.dispatchEvent(new Event("hmecha-wishlist-updated"));
+    } catch (e) {}
+  }
+
+  document.addEventListener("click", function (event) {
+    var btn = event.target && event.target.closest ? event.target.closest(".setWishlist") : null;
+    if (!btn) return;
+
+    var slug = btn.getAttribute("data-wish");
+    if (!slug) return;
+
+    /* Chờ script wishlist gốc đổi class active xong rồi mới lưu */
+    setTimeout(function () {
+      var list = readList();
+      var isActive = btn.classList.contains("active");
+
+      if (isActive) {
+        if (list.indexOf(slug) === -1) list.unshift(slug);
+      } else {
+        list = list.filter(function (item) {
+          return item !== slug;
+        });
+      }
+
+      writeList(list);
+    }, 0);
+  });
+})();
+</script>
+
 </body>
 </html>

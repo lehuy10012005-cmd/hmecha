@@ -3,17 +3,6 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-type ApiWishlistItem = {
-  id?: string;
-  product_slug: string;
-  product_name: string;
-  product_price: number;
-  product_image?: string | null;
-  product_status?: string | null;
-  product_brand?: string | null;
-  product_category?: string | null;
-};
-
 type ProductImage = {
   image_url: string;
   sort_order: number | null;
@@ -28,6 +17,7 @@ type HomeProduct = {
   brand?: string | null;
   category?: string | null;
   status?: string | null;
+  stock_quantity?: number | null;
   product_images?: ProductImage[];
 };
 
@@ -38,52 +28,83 @@ type WishlistViewItem = {
   product_image?: string | null;
   product_status?: string | null;
   product_brand?: string | null;
-  product_category?: string | null;
-  source: "account" | "browser";
 };
 
 function money(value: number) {
   return Number(value || 0).toLocaleString("vi-VN") + "đ";
 }
 
-function getCookie(name: string) {
-  if (typeof document === "undefined") return "";
-
-  const value = document.cookie
-    .split("; ")
-    .find((row) => row.startsWith(name + "="));
-
-  return value ? value.split("=").slice(1).join("=") : "";
+function unique(list: string[]) {
+  return Array.from(new Set(list.map(String).map((item) => item.trim()).filter(Boolean)));
 }
 
-function parseCookieWishlist() {
-  const raw = getCookie("sudes_wishlist_products");
-
-  if (!raw) return [];
+function readLocalStorageList(key: string) {
+  if (typeof window === "undefined") return [];
 
   try {
-    const decoded = decodeURIComponent(raw);
-    const parsed = JSON.parse(decoded);
+    const raw = localStorage.getItem(key);
+    if (!raw) return [];
 
-    if (Array.isArray(parsed)) {
-      return parsed.map(String).filter(Boolean);
-    }
-  } catch {}
-
-  try {
     const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return parsed.map(String).filter(Boolean);
 
-    if (Array.isArray(parsed)) {
-      return parsed.map(String).filter(Boolean);
-    }
-  } catch {}
+    if (typeof parsed === "string") return parsed.split(",").map((x) => x.trim()).filter(Boolean);
+  } catch {
+    try {
+      const raw = localStorage.getItem(key) || "";
+      return raw.split(",").map((x) => x.trim()).filter(Boolean);
+    } catch {}
+  }
 
   return [];
 }
 
-function setCookieWishlist(slugs: string[]) {
-  const value = encodeURIComponent(JSON.stringify(slugs));
-  document.cookie = `sudes_wishlist_products=${value}; path=/; max-age=${60 * 60 * 24 * 365}`;
+function getCookie(name: string) {
+  if (typeof document === "undefined") return "";
+
+  const row = document.cookie
+    .split("; ")
+    .find((item) => item.startsWith(name + "="));
+
+  return row ? row.split("=").slice(1).join("=") : "";
+}
+
+function readCookieList(name: string) {
+  const raw = getCookie(name);
+  if (!raw) return [];
+
+  const tries = [raw];
+
+  try {
+    tries.push(decodeURIComponent(raw));
+  } catch {}
+
+  for (const value of tries) {
+    try {
+      const parsed = JSON.parse(value);
+
+      if (Array.isArray(parsed)) return parsed.map(String).filter(Boolean);
+      if (typeof parsed === "string") return parsed.split(",").map((x) => x.trim()).filter(Boolean);
+    } catch {}
+  }
+
+  return tries[tries.length - 1]
+    .split(",")
+    .map((x) => x.trim())
+    .filter(Boolean);
+}
+
+function readAllWishlistSlugs() {
+  return unique([
+    ...readLocalStorageList("hmecha-wishlist"),
+    ...readLocalStorageList("sudes_wishlist_products"),
+    ...readCookieList("sudes_wishlist_products"),
+  ]);
+}
+
+function writeLocalWishlist(slugs: string[]) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem("hmecha-wishlist", JSON.stringify(unique(slugs)));
 }
 
 function getProductImage(product: HomeProduct) {
@@ -95,56 +116,26 @@ function getProductImage(product: HomeProduct) {
 }
 
 export default function WishlistPageClient() {
-  const [accountItems, setAccountItems] = useState<ApiWishlistItem[]>([]);
-  const [browserSlugs, setBrowserSlugs] = useState<string[]>([]);
+  const [slugs, setSlugs] = useState<string[]>([]);
   const [products, setProducts] = useState<HomeProduct[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const [message, setMessage] = useState("");
 
   async function loadData() {
     setLoading(true);
-    setMessage("");
 
-    const cookieSlugs = parseCookieWishlist();
-    setBrowserSlugs(cookieSlugs);
+    const currentSlugs = readAllWishlistSlugs();
+    setSlugs(currentSlugs);
+    writeLocalWishlist(currentSlugs);
 
-    const [wishlistResponse, productsResponse] = await Promise.all([
-      fetch("/api/account/wishlist", { cache: "no-store" }).catch(() => null),
-      fetch("/api/home-products", { cache: "no-store" }).catch(() => null),
-    ]);
+    try {
+      const response = await fetch("/api/home-products", { cache: "no-store" });
+      const data = await response.json().catch(() => ({}));
 
-    if (productsResponse?.ok) {
-      const data = await productsResponse.json().catch(() => ({}));
-      setProducts(data.products || []);
-    }
+      if (response.ok) {
+        setProducts(data.products || []);
+      }
+    } catch {}
 
-    if (!wishlistResponse) {
-      setIsLoggedIn(false);
-      setAccountItems([]);
-      setLoading(false);
-      return;
-    }
-
-    const wishlistData = await wishlistResponse.json().catch(() => ({}));
-
-    if (wishlistResponse.status === 401) {
-      setIsLoggedIn(false);
-      setAccountItems([]);
-      setMessage("Bạn chưa đăng nhập. Trang này vẫn hiển thị các sản phẩm yêu thích đã lưu trên trình duyệt.");
-      setLoading(false);
-      return;
-    }
-
-    if (!wishlistResponse.ok) {
-      setAccountItems([]);
-      setMessage(wishlistData.message || "Không tải được danh sách yêu thích.");
-      setLoading(false);
-      return;
-    }
-
-    setIsLoggedIn(true);
-    setAccountItems(wishlistData.items || []);
     setLoading(false);
   }
 
@@ -155,91 +146,50 @@ export default function WishlistPageClient() {
       loadData();
     }
 
+    window.addEventListener("storage", refresh);
     window.addEventListener("hmecha-wishlist-updated", refresh);
 
     return () => {
+      window.removeEventListener("storage", refresh);
       window.removeEventListener("hmecha-wishlist-updated", refresh);
     };
   }, []);
 
-  const mergedItems = useMemo(() => {
-    const map = new Map<string, WishlistViewItem>();
-
-    for (const item of accountItems) {
-      if (!item.product_slug) continue;
-
-      map.set(item.product_slug, {
-        product_slug: item.product_slug,
-        product_name: item.product_name,
-        product_price: Number(item.product_price || 0),
-        product_image: item.product_image || null,
-        product_status: item.product_status || null,
-        product_brand: item.product_brand || null,
-        product_category: item.product_category || null,
-        source: "account",
-      });
-    }
-
-    for (const slug of browserSlugs) {
-      if (map.has(slug)) continue;
-
+  const items = useMemo<WishlistViewItem[]>(() => {
+    return slugs.map((slug) => {
       const product = products.find((item) => item.slug === slug);
 
       if (product) {
-        map.set(slug, {
+        return {
           product_slug: product.slug,
           product_name: product.name,
           product_price: Number(product.price || 0),
           product_image: getProductImage(product),
           product_status: product.status || null,
           product_brand: product.brand || null,
-          product_category: product.category || null,
-          source: "browser",
-        });
-      } else {
-        map.set(slug, {
-          product_slug: slug,
-          product_name: slug,
-          product_price: 0,
-          product_image: null,
-          product_status: "Đã lưu trên trình duyệt",
-          product_brand: "HMECHA",
-          product_category: null,
-          source: "browser",
-        });
+        };
       }
-    }
 
-    return Array.from(map.values());
-  }, [accountItems, browserSlugs, products]);
+      return {
+        product_slug: slug,
+        product_name: slug,
+        product_price: 0,
+        product_image: null,
+        product_status: "Đã lưu",
+        product_brand: "HMECHA",
+      };
+    });
+  }, [slugs, products]);
 
-  async function removeItem(item: WishlistViewItem) {
-    if (item.source === "account") {
-      const response = await fetch("/api/account/wishlist", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          productSlug: item.product_slug,
-        }),
-      });
+  function removeItem(slug: string) {
+    const next = slugs.filter((item) => item !== slug);
 
-      const data = await response.json().catch(() => ({}));
+    setSlugs(next);
+    writeLocalWishlist(next);
 
-      if (!response.ok) {
-        alert(data.message || "Không xóa được sản phẩm yêu thích.");
-        return;
-      }
-    }
-
-    const nextSlugs = parseCookieWishlist().filter((slug) => slug !== item.product_slug);
-    setCookieWishlist(nextSlugs);
-    setBrowserSlugs(nextSlugs);
-
-    setAccountItems((current) =>
-      current.filter((row) => row.product_slug !== item.product_slug)
-    );
+    try {
+      document.cookie = `sudes_wishlist_products=${encodeURIComponent(JSON.stringify(next))}; path=/; max-age=${60 * 60 * 24 * 365}`;
+    } catch {}
 
     window.dispatchEvent(new Event("hmecha-wishlist-updated"));
   }
@@ -253,24 +203,13 @@ export default function WishlistPageClient() {
       <section className="wishlistHero">
         <p>HMECHA WISHLIST</p>
         <h1>Sản phẩm yêu thích</h1>
-        <span>
-          Danh sách những mẫu bạn đã bấm trái tim hoặc thêm vào yêu thích.
-        </span>
+        <span>Danh sách những mẫu bạn đã bấm trái tim hoặc thêm vào yêu thích.</span>
       </section>
-
-      {message ? <div className="notice">{message}</div> : null}
-
-      {!isLoggedIn ? (
-        <div className="notice">
-          Muốn lưu yêu thích theo tài khoản, bạn nên đăng nhập trước khi bấm trái tim.
-          <Link href="/dang-nhap">Đăng nhập ngay</Link>
-        </div>
-      ) : null}
 
       <section className="wishlistBox">
         {loading ? (
           <div className="emptyBox">Đang tải sản phẩm yêu thích...</div>
-        ) : mergedItems.length === 0 ? (
+        ) : items.length === 0 ? (
           <div className="emptyBox">
             <h2>Chưa có sản phẩm yêu thích</h2>
             <p>
@@ -280,7 +219,7 @@ export default function WishlistPageClient() {
           </div>
         ) : (
           <div className="wishlistGrid">
-            {mergedItems.map((item) => (
+            {items.map((item) => (
               <article className="wishCard" key={item.product_slug}>
                 <Link href={`/${item.product_slug}`} className="imageBox">
                   {item.product_image ? (
@@ -304,7 +243,7 @@ export default function WishlistPageClient() {
 
                 <div className="wishActions">
                   <Link href={`/${item.product_slug}`}>Xem chi tiết</Link>
-                  <button type="button" onClick={() => removeItem(item)}>
+                  <button type="button" onClick={() => removeItem(item.product_slug)}>
                     Bỏ yêu thích
                   </button>
                 </div>
@@ -327,8 +266,7 @@ export default function WishlistPageClient() {
 
         .backLink,
         .wishlistHero,
-        .wishlistBox,
-        .notice {
+        .wishlistBox {
           max-width: 1320px;
           margin-left: auto;
           margin-right: auto;
@@ -343,8 +281,7 @@ export default function WishlistPageClient() {
         }
 
         .wishlistHero,
-        .wishlistBox,
-        .notice {
+        .wishlistBox {
           border: 1px solid rgba(0, 229, 255, 0.22);
           background: rgba(7, 12, 32, 0.88);
           box-shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
@@ -374,27 +311,6 @@ export default function WishlistPageClient() {
           margin-top: 12px;
           color: #cbd8ff;
           line-height: 1.6;
-        }
-
-        .notice {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 14px;
-          padding: 16px 20px;
-          border-radius: 18px;
-          margin-bottom: 18px;
-          color: #dbe7ff;
-        }
-
-        .notice a {
-          color: #061020;
-          background: linear-gradient(135deg, #7c4dff, #00e5ff);
-          padding: 10px 16px;
-          border-radius: 999px;
-          text-decoration: none;
-          font-weight: 950;
-          white-space: nowrap;
         }
 
         .wishlistBox {
@@ -522,10 +438,6 @@ export default function WishlistPageClient() {
         @media (max-width: 820px) {
           .wishlistGrid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
-          }
-
-          .notice {
-            display: grid;
           }
         }
 
