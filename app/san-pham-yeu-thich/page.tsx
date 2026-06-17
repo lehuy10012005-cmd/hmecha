@@ -3,10 +3,10 @@ import WishlistPageClient from "../../components/WishlistPageClient";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Yêu thích | HMECHA",
+  title: "Sản phẩm yêu thích | HMECHA",
   description: "Danh sách sản phẩm yêu thích của khách hàng HMECHA.",
 };
 
-export default function WishlistAliasPage() {
+export default function WishlistPage() {
   return <WishlistPageClient />;
 }

@@ -25,7 +25,7 @@ export default async function CustomerAccountLayout({
     .maybeSingle();
 
   const customerName =
-    profile?.full_name || profile?.email || user.email || "Thành viên HMECHA";
+    profile?.full_name || profile?.email || user.email || "ThÃ nh viÃªn HMECHA";
 
   return (
     <main className="shell">
@@ -37,15 +37,15 @@ export default async function CustomerAccountLayout({
         <p className="accountName">{customerName}</p>
 
         <Link className="shopBack" href="/">
-          ← Tiếp tục mua sắm
+          â† Tiáº¿p tá»¥c mua sáº¯m
         </Link>
 
         <nav>
-          <Link href="/tai-khoan">Tổng quan</Link>
-          <Link href="/tai-khoan/don-hang">Đơn hàng của tôi</Link>
-          <span>Thẻ tích điểm — sắp có</span>
-          <span>Voucher — sắp có</span>
-          <span>Yêu thích — sắp có</span>
+          <Link href="/tai-khoan">Tá»•ng quan</Link>
+          <Link href="/tai-khoan/don-hang">ÄÆ¡n hÃ ng cá»§a tÃ´i</Link>
+          <span>Tháº» tÃ­ch Ä‘iá»ƒm â€” sáº¯p cÃ³</span>
+          <span>Voucher â€” sáº¯p cÃ³</span>
+          <span>YÃªu thÃ­ch â€” sáº¯p cÃ³</span>
         </nav>
 
         <CustomerLogoutButton />
