@@ -134,3 +134,22 @@ button:hover,
 
 
 
+
+
+/* hmecha-hide-old-template-chat */
+
+/* Ẩn widget liên hệ/chat cũ của template, chỉ giữ ChatWidget React */
+.main-widget,
+.def-content,
+.floating-contact,
+.float-contact,
+.contact-widget,
+.sapo-contact,
+[class*="phone-vr"],
+[class*="zalo-chat"] {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* end-hmecha-hide-old-template-chat */

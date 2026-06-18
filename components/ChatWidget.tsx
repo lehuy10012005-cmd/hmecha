@@ -3,12 +3,6 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
-declare global {
-  interface Window {
-    __hmechaChatWidgetMounted?: boolean;
-  }
-}
-
 type ChatMessage = {
   id?: string;
   role: "bot" | "user" | "admin";
@@ -99,18 +93,24 @@ export default function ChatWidget() {
       return;
     }
 
-    if (window.__hmechaChatWidgetMounted) {
-      setCanRender(false);
-      return;
-    }
-
-    window.__hmechaChatWidgetMounted = true;
     setCanRender(true);
-
-    return () => {
-      window.__hmechaChatWidgetMounted = false;
-    };
   }, [pathname]);
+
+  useEffect(() => {
+    if (!canRender) return;
+
+    const timer = window.setTimeout(() => {
+      const widgets = Array.from(
+        document.querySelectorAll('[data-hmecha-chat-widget="true"]')
+      );
+
+      widgets.slice(0, -1).forEach((node) => {
+        node.remove();
+      });
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [canRender, pathname]);
 
   useEffect(() => {
     if (!canRender) return;
