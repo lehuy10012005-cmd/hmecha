@@ -25,7 +25,7 @@ export default async function CustomerAccountLayout({
     .maybeSingle();
 
   const customerName =
-    profile?.full_name || profile?.email || user.email || "ThÃ nh viÃªn HMECHA";
+    profile?.full_name || profile?.email || user.email || "Thành viên HMECHA";
 
   return (
     <main className="shell">
@@ -37,15 +37,12 @@ export default async function CustomerAccountLayout({
         <p className="accountName">{customerName}</p>
 
         <Link className="shopBack" href="/">
-          â† Tiáº¿p tá»¥c mua sáº¯m
+          ← Tiếp tục mua sắm
         </Link>
 
         <nav>
-          <Link href="/tai-khoan">Tá»•ng quan</Link>
-          <Link href="/tai-khoan/don-hang">ÄÆ¡n hÃ ng cá»§a tÃ´i</Link>
-          <span>Tháº» tÃ­ch Ä‘iá»ƒm â€” sáº¯p cÃ³</span>
-          <span>Voucher â€” sáº¯p cÃ³</span>
-          <span>YÃªu thÃ­ch â€” sáº¯p cÃ³</span>
+          <Link href="/tai-khoan">Tổng quan</Link>
+          <Link href="/tai-khoan/don-hang">Đơn hàng của tôi</Link>
         </nav>
 
         <CustomerLogoutButton />
@@ -113,8 +110,7 @@ export default async function CustomerAccountLayout({
           gap: 10px;
         }
 
-        nav a,
-        nav span {
+        nav a {
           padding: 15px 16px;
           border-radius: 14px;
           color: #dce6ff;
@@ -126,10 +122,6 @@ export default async function CustomerAccountLayout({
         nav a:hover {
           color: #071020;
           background: linear-gradient(135deg, #7c4dff, #00e5ff);
-        }
-
-        nav span {
-          color: #7281a7;
         }
 
         .customerLogout {
