@@ -26,7 +26,6 @@ type RelatedProduct = {
   price: number;
   category: string;
   status: string;
-  badge?: string | null;
   image1: string;
   image2: string;
   stockQuantity?: number | null;
@@ -104,7 +103,6 @@ export default async function RelatedProducts({
         price: Number(product.price || 0),
         category: product.category || "Khác",
         status: product.status || "Còn hàng",
-        badge: product.badge,
         stockQuantity: product.stock_quantity,
         image1: images[0]?.image_url || fallback,
         image2: images[1]?.image_url || images[0]?.image_url || fallback,
@@ -121,7 +119,6 @@ export default async function RelatedProducts({
       price: Number(product.price || 0),
       category: product.category || "Khác",
       status: product.status || "Còn hàng",
-      badge: product.badge,
       stockQuantity: 1,
       image1: product.images[0] || "/logo/logo.png",
       image2: product.images[1] || product.images[0] || "/logo/logo.png",
@@ -145,103 +142,62 @@ export default async function RelatedProducts({
   }
 
   return (
-    <section className="relatedHomeStyle section-index">
-      <div className="relatedTitle">
-        <span className="titleBar" />
-        <div>
-          <p>Có thể bạn cũng thích</p>
-          <h2>Sản phẩm liên quan</h2>
-        </div>
+    <section className="relatedSection">
+      <div className="relatedHeader">
+        <span />
+        <h2>Sản phẩm liên quan</h2>
       </div>
 
-      <div className="relatedHomeGrid">
+      <div className="relatedGrid">
         {relatedProducts.map((product) => {
           const outOfStock = isOutOfStock(product);
-          const stockText = outOfStock ? "Hết hàng" : product.status || "Còn hàng";
           const productUrl = `/${product.slug}`;
 
           return (
-            <div className="relatedItem" key={`${product.source}-${product.id}`}>
-              <div className="item_product_main">
-                <div className="product-thumbnail">
-                  <Link
-                    className="image_thumb"
-                    href={productUrl}
-                    title={product.name}
-                  >
-                    <img className="image1" src={product.image1} alt={product.name} />
-                    <img className="image2" src={product.image2} alt={product.name} />
+            <article className="relatedCard" key={`${product.source}-${product.id}`}>
+              <Link href={productUrl} className="imageBox" title={product.name}>
+                <img className="imageMain" src={product.image1} alt={product.name} />
+                <img className="imageHover" src={product.image2} alt={product.name} />
+              </Link>
+
+              <button
+                type="button"
+                className="wishBtn"
+                title="Thêm vào yêu thích"
+                aria-label="Thêm vào yêu thích"
+              >
+                ♡
+              </button>
+
+              <div className="cardBody">
+                <h3>
+                  <Link href={productUrl} title={product.name}>
+                    {product.name}
                   </Link>
+                </h3>
 
-                  {product.badge ? (
-                    <div className="badge">
-                      <span>{product.badge}</span>
-                    </div>
-                  ) : null}
+                <div className="relatedPrice">{formatPrice(product.price)}</div>
 
-                  <button
-                    type="button"
-                    className="setWishlist"
-                    title="Thêm vào yêu thích"
-                    aria-label="Thêm vào yêu thích"
-                  >
-                    ♡
-                  </button>
+                <div className="stockLine">
+                  <span>Tình trạng:</span>
+                  <b className={outOfStock ? "out" : ""}>
+                    {outOfStock ? "Hết hàng" : product.status || "Còn hàng"}
+                  </b>
                 </div>
 
-                <div className="product-info">
-                  <h3 className="product-name">
-                    <Link href={productUrl} title={product.name}>
-                      {product.name}
-                    </Link>
-                  </h3>
-
-                  <div className="product-price-cart">
-                    <span className="price">{formatPrice(product.price)}</span>
-                  </div>
-
-                  <div className="inventory_quantity">
-                    <span className="stock-brand-title">Tình trạng: </span>
-                    <span className={outOfStock ? "a-stock out" : "a-stock"}>
-                      {stockText}
-                    </span>
-                  </div>
-
-                  <div className="product-button">
-                    {outOfStock ? (
-                      <button type="button" className="btn-cart disabled" disabled>
-                        Hết hàng
-                      </button>
-                    ) : (
-                      <Link
-                        href={productUrl}
-                        className="btn-cart relatedAddButton"
-                        title="Xem chi tiết"
-                      >
-                        Xem chi tiết
-                      </Link>
-                    )}
-
-                    <Link
-                      href={productUrl}
-                      className="relatedQuickView"
-                      title="Xem nhanh"
-                      aria-label="Xem nhanh"
-                    >
-                      🔍
-                    </Link>
-                  </div>
-                </div>
+                <Link href={productUrl} className="detailBtn">
+                  Xem chi tiết
+                </Link>
               </div>
-            </div>
+            </article>
           );
         })}
       </div>
 
       <style>{`
-        .relatedHomeStyle {
+        .relatedSection {
           margin-top: 34px;
-          padding: 26px;
+          padding: 24px;
           border-radius: 18px;
           background: #ffffff;
           border: 1px solid #e5e7eb;
@@ -249,188 +205,131 @@ export default async function RelatedProducts({
           font-family: Arial, "Helvetica Neue", sans-serif !important;
         }
 
-        .relatedHomeStyle * {
+        .relatedSection * {
           box-sizing: border-box;
           font-family: Arial, "Helvetica Neue", sans-serif !important;
         }
 
-        .relatedTitle {
+        .relatedHeader {
           display: flex;
           align-items: center;
-          gap: 12px;
-          margin-bottom: 22px;
-          padding-bottom: 18px;
+          gap: 10px;
+          margin-bottom: 20px;
+          padding-bottom: 16px;
           border-bottom: 1px solid #edf0f3;
         }
 
-        .titleBar {
-          width: 5px;
-          height: 42px;
-          border-radius: 999px;
+        .relatedHeader span {
+          width: 4px;
+          height: 26px;
+          border-radius: 99px;
           background: #d32f2f;
-          flex: 0 0 auto;
         }
 
-        .relatedTitle p {
-          margin: 0 0 4px;
-          color: #d32f2f;
-          font-size: 13px;
-          font-weight: 900;
-          text-transform: uppercase;
-          letter-spacing: 0.4px;
-        }
-
-        .relatedTitle h2 {
+        .relatedHeader h2 {
           margin: 0;
           color: #111827;
-          font-size: 24px;
+          font-size: 22px;
           line-height: 1.2;
-          font-weight: 950;
-          letter-spacing: -0.3px;
+          font-weight: 850;
+          letter-spacing: -0.2px;
         }
 
-        .relatedHomeGrid {
+        .relatedGrid {
           display: grid;
           grid-template-columns: repeat(5, minmax(0, 1fr));
           gap: 18px;
         }
 
-        .relatedItem {
-          min-width: 0;
-        }
-
-        .item_product_main {
-          height: 100%;
+        .relatedCard {
+          position: relative;
           overflow: hidden;
           border-radius: 14px;
           background: #ffffff;
           border: 1px solid #e5e7eb;
-          box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
-          transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+          box-shadow: 0 6px 16px rgba(15, 23, 42, 0.05);
+          transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
         }
 
-        .item_product_main:hover {
-          transform: translateY(-4px);
-          border-color: #f3b1b1;
-          box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
+        .relatedCard:hover {
+          transform: translateY(-3px);
+          border-color: #f0b7b7;
+          box-shadow: 0 12px 24px rgba(15, 23, 42, 0.1);
         }
 
-        .product-thumbnail {
+        .imageBox {
           position: relative;
-          overflow: hidden;
+          display: block;
           aspect-ratio: 1 / 1;
+          overflow: hidden;
           background: #f8fafc;
           border-bottom: 1px solid #edf0f3;
         }
 
-        .image_thumb {
-          position: relative;
-          display: block;
-          width: 100%;
-          height: 100%;
-          overflow: hidden;
-          background: #f8fafc;
-        }
-
-        .image_thumb img {
+        .imageBox img {
           position: absolute;
           inset: 0;
           width: 100%;
           height: 100%;
-          display: block;
           object-fit: contain;
           padding: 8px;
-          transition: opacity 0.24s ease, transform 0.24s ease;
+          transition: opacity 0.22s ease, transform 0.22s ease;
         }
 
-        .image_thumb .image1 {
+        .imageMain {
           opacity: 1;
-          z-index: 1;
         }
 
-        .image_thumb .image2 {
-          opacity: 0;
-          z-index: 2;
-        }
-
-        .item_product_main:hover .image1 {
+        .imageHover {
           opacity: 0;
         }
 
-        .item_product_main:hover .image2 {
+        .relatedCard:hover .imageMain {
+          opacity: 0;
+        }
+
+        .relatedCard:hover .imageHover {
           opacity: 1;
-          transform: scale(1.035);
+          transform: scale(1.03);
         }
 
-        .badge {
-          position: absolute;
-          left: 10px;
-          bottom: 10px;
-          z-index: 4;
-          background: transparent;
-          padding: 0;
-        }
-
-        .badge span {
-          display: inline-flex;
-          align-items: center;
-          min-height: 28px;
-          padding: 0 10px;
-          border-radius: 7px;
-          color: #ffffff;
-          background: #d32f2f;
-          font-size: 12px;
-          font-weight: 900;
-          line-height: 1;
-          box-shadow: 0 6px 14px rgba(211, 47, 47, 0.18);
-        }
-
-        .setWishlist {
+        .wishBtn {
           position: absolute;
           top: 10px;
           right: 10px;
           z-index: 5;
-          width: 38px;
-          height: 38px;
+          width: 34px;
+          height: 34px;
           border-radius: 999px;
           border: 1px solid #f3b1b1;
+          background: #ffffff;
+          color: #d32f2f;
           display: grid;
           place-items: center;
-          color: #d32f2f;
-          background: #ffffff;
-          font-size: 22px;
+          font-size: 20px;
           line-height: 1;
           cursor: pointer;
-          box-shadow: 0 6px 16px rgba(15, 23, 42, 0.16);
-          transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+          box-shadow: 0 6px 14px rgba(15, 23, 42, 0.14);
         }
 
-        .setWishlist:hover {
-          color: #ffffff;
+        .wishBtn:hover {
           background: #d32f2f;
-          transform: scale(1.06);
+          color: #ffffff;
         }
 
-        .product-info {
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          min-height: 170px;
-          padding: 13px 13px 14px;
-          color: #111827;
-          background: #ffffff;
+        .cardBody {
+          padding: 13px 14px 14px;
         }
 
-        .product-name {
-          margin: 0;
-          min-height: 43px;
+        .cardBody h3 {
+          margin: 0 0 9px;
+          min-height: 40px;
           font-size: 14px;
           line-height: 1.35;
-          font-weight: 900;
-          overflow: hidden;
+          font-weight: 750;
         }
 
-        .product-name a {
+        .cardBody h3 a {
           color: #111827;
           text-decoration: none;
           display: -webkit-box;
@@ -439,154 +338,101 @@ export default async function RelatedProducts({
           overflow: hidden;
         }
 
-        .product-name a:hover {
+        .cardBody h3 a:hover {
           color: #d32f2f;
         }
 
-        .product-price-cart {
-          margin: 10px 0 13px;
-        }
-
-        .price {
+        .relatedPrice {
+          margin-bottom: 12px;
           color: #ff5722;
-          font-size: 19px;
+          font-size: 20px;
           line-height: 1;
-          font-weight: 950;
-          text-shadow: none;
+          font-weight: 850;
+          letter-spacing: -0.2px;
         }
 
-        .inventory_quantity {
-          margin-top: auto;
+        .stockLine {
+          display: flex;
+          align-items: center;
+          gap: 4px;
           color: #6b7280;
           font-size: 12px;
-          line-height: 1.45;
+          line-height: 1.4;
         }
 
-        .stock-brand-title {
+        .stockLine span {
           color: #6b7280;
           font-weight: 500;
         }
 
-        .a-stock {
+        .stockLine b {
           color: #15803d;
+          font-weight: 750;
+        }
+
+        .stockLine b.out {
+          color: #d32f2f;
+        }
+
+        .detailBtn {
+          margin-top: 12px;
+          display: none;
+          align-items: center;
+          justify-content: center;
+          height: 36px;
+          border-radius: 8px;
+          background: #d32f2f;
+          color: #ffffff;
+          text-decoration: none;
+          font-size: 13px;
           font-weight: 800;
         }
 
-        .a-stock.out {
-          color: #d32f2f;
-          font-weight: 900;
-        }
-
-        .product-button {
-          position: absolute;
-          left: 13px;
-          right: 13px;
-          bottom: 13px;
-          z-index: 8;
+        .relatedCard:hover .detailBtn {
           display: flex;
-          align-items: center;
-          gap: 8px;
-          opacity: 0;
-          transform: translateY(12px);
-          pointer-events: none;
-          transition: opacity 0.2s ease, transform 0.2s ease;
         }
 
-        .item_product_main:hover .product-button {
-          opacity: 1;
-          transform: translateY(0);
-          pointer-events: auto;
-        }
-
-        .btn-cart {
-          height: 38px;
-          min-width: 0;
-          flex: 1;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border: 0;
-          border-radius: 8px;
-          text-decoration: none;
-          color: #ffffff;
-          background: #d32f2f;
-          font-size: 13px;
-          font-weight: 900;
-          box-shadow: 0 8px 16px rgba(211, 47, 47, 0.18);
-          cursor: pointer;
-        }
-
-        .btn-cart:hover {
+        .detailBtn:hover {
           background: #b91c1c;
         }
 
-        .btn-cart.disabled {
-          opacity: 0.65;
-          cursor: not-allowed;
-        }
-
-        .relatedQuickView {
-          width: 38px;
-          height: 38px;
-          border-radius: 8px;
-          display: grid;
-          place-items: center;
-          text-decoration: none;
-          color: #ffffff;
-          background: #111827;
-          font-size: 16px;
-          box-shadow: 0 8px 16px rgba(17, 24, 39, 0.14);
-        }
-
-        .relatedQuickView:hover {
-          background: #000000;
-        }
-
         @media (max-width: 1199px) {
-          .relatedHomeGrid {
+          .relatedGrid {
             grid-template-columns: repeat(4, minmax(0, 1fr));
           }
         }
 
         @media (max-width: 991px) {
-          .relatedHomeGrid {
+          .relatedGrid {
             grid-template-columns: repeat(3, minmax(0, 1fr));
           }
         }
 
         @media (max-width: 767px) {
-          .relatedHomeStyle {
-            padding: 18px;
+          .relatedSection {
+            padding: 16px;
             border-radius: 14px;
           }
 
-          .relatedHomeGrid {
+          .relatedGrid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 12px;
           }
 
-          .relatedTitle h2 {
-            font-size: 21px;
+          .relatedHeader h2 {
+            font-size: 20px;
           }
 
-          .product-info {
-            min-height: 150px;
+          .cardBody {
             padding: 12px;
           }
 
-          .product-name {
-            min-height: 39px;
+          .cardBody h3 {
             font-size: 13px;
           }
 
-          .price {
-            font-size: 17px;
-          }
-
-          .product-button {
-            left: 12px;
-            right: 12px;
-            bottom: 12px;
+          .relatedPrice {
+            font-size: 18px;
           }
         }
       `}</style>
