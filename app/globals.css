@@ -1879,7 +1879,7 @@ body:has(a[href*="/tai-khoan"]) main [class*="Total"] {
 
 /* HMECHA ACCOUNT HIDE BENEFIT + STATS FIX */
 
-/* 1) ?n box ��?c quy?n HMECHA c?a b?n� */
+/* 1) ?n box ��?c quy?n HMECHA c?a b?n� */
 body:has(a[href*="/tai-khoan"]) [class*="benefit"],
 body:has(a[href*="/tai-khoan"]) [class*="Benefit"],
 body:has(a[href*="/tai-khoan"]) [class*="perk"],
@@ -1891,7 +1891,7 @@ body:has(a[href*="/tai-khoan"]) [class*="Special"] {
   display: none !important;
 }
 
-/* 2) S?a m�u c�c � th?ng k� cho d? d?c */
+/* 2) S?a m�u c�c � th?ng k� cho d? d?c */
 body:has(a[href*="/tai-khoan"]) [class*="stat"],
 body:has(a[href*="/tai-khoan"]) [class*="Stat"],
 body:has(a[href*="/tai-khoan"]) [class*="stats"],
@@ -1913,7 +1913,7 @@ body:has(a[href*="/tai-khoan"]) [class*="Stats"] article {
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06) !important;
 }
 
-/* 3) �p ch? trong � th?ng k� sang m�u d?m, d? d?c */
+/* 3) �p ch? trong � th?ng k� sang m�u d?m, d? d?c */
 body:has(a[href*="/tai-khoan"]) [class*="stat"] *,
 body:has(a[href*="/tai-khoan"]) [class*="Stat"] *,
 body:has(a[href*="/tai-khoan"]) [class*="stats"] *,
@@ -1946,7 +1946,7 @@ body:has(a[href*="/tai-khoan"]) [class*="Stats"] h3 {
   font-weight: 800 !important;
 }
 
-/* 4) N?u s? li?u dang b? qu� m? th� l�m n?i hon ch�t */
+/* 4) N?u s? li?u dang b? qu� m? th� l�m n?i hon ch�t */
 body:has(a[href*="/tai-khoan"]) [class*="stat"] .value,
 body:has(a[href*="/tai-khoan"]) [class*="Stat"] .value,
 body:has(a[href*="/tai-khoan"]) [class*="stats"] .value,
@@ -1956,3 +1956,111 @@ body:has(a[href*="/tai-khoan"]) [class*="Stats"] .value {
 
 /* END HMECHA ACCOUNT HIDE BENEFIT + STATS FIX */
 
+
+/* HMECHA REAL ACCOUNT VOUCHER FIX */
+
+/* Ẩn box đặc quyền nếu còn tồn tại */
+[class*="benefit"],
+[class*="Benefit"],
+[class*="perk"],
+[class*="Perk"],
+[class*="privilege"],
+[class*="Privilege"],
+[class*="specialBenefit"],
+[class*="SpecialBenefit"] {
+  display: none !important;
+}
+
+/* Khu voucher/điểm tích lũy */
+[class*="voucher"],
+[class*="Voucher"],
+[class*="reward"],
+[class*="Reward"],
+[class*="point"],
+[class*="Point"] {
+  color: #111827 !important;
+  text-shadow: none !important;
+}
+
+/* Card thống kê: Đơn hoàn thành / Sản phẩm đã mua / Tổng chi tiêu / Điểm trọn đời */
+[class*="voucher"] [class*="stat"],
+[class*="Voucher"] [class*="stat"],
+[class*="reward"] [class*="stat"],
+[class*="Reward"] [class*="stat"],
+[class*="point"] [class*="stat"],
+[class*="Point"] [class*="stat"],
+[class*="voucher"] article,
+[class*="Voucher"] article,
+[class*="reward"] article,
+[class*="Reward"] article,
+[class*="point"] article,
+[class*="Point"] article {
+  background: #ffffff !important;
+  color: #111827 !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06) !important;
+}
+
+/* Chữ trong thống kê */
+[class*="voucher"] [class*="stat"] *,
+[class*="Voucher"] [class*="stat"] *,
+[class*="reward"] [class*="stat"] *,
+[class*="Reward"] [class*="stat"] *,
+[class*="point"] [class*="stat"] *,
+[class*="Point"] [class*="stat"],
+[class*="voucher"] article *,
+[class*="Voucher"] article *,
+[class*="reward"] article *,
+[class*="Reward"] article *,
+[class*="point"] article *,
+[class*="Point"] article * {
+  color: #111827 !important;
+  text-shadow: none !important;
+}
+
+/* Label phụ */
+[class*="voucher"] article p,
+[class*="Voucher"] article p,
+[class*="reward"] article p,
+[class*="Reward"] article p,
+[class*="point"] article p,
+[class*="Point"] article p,
+[class*="voucher"] article span,
+[class*="Voucher"] article span,
+[class*="reward"] article span,
+[class*="Reward"] article span,
+[class*="point"] article span,
+[class*="Point"] article span {
+  color: #4b5563 !important;
+}
+
+/* Số liệu */
+[class*="voucher"] article strong,
+[class*="Voucher"] article strong,
+[class*="reward"] article strong,
+[class*="Reward"] article strong,
+[class*="point"] article strong,
+[class*="Point"] article strong,
+[class*="voucher"] article b,
+[class*="Voucher"] article b,
+[class*="reward"] article b,
+[class*="Reward"] article b,
+[class*="point"] article b,
+[class*="Point"] article b {
+  color: #d32f2f !important;
+  font-weight: 850 !important;
+}
+
+/* Bỏ nền tối/gradient còn sót trong voucher */
+[class*="voucher"] [style*="linear-gradient"],
+[class*="Voucher"] [style*="linear-gradient"],
+[class*="reward"] [style*="linear-gradient"],
+[class*="Reward"] [style*="linear-gradient"],
+[class*="point"] [style*="linear-gradient"],
+[class*="Point"] [style*="linear-gradient"] {
+  background: #ffffff !important;
+  color: #111827 !important;
+}
+
+/* END HMECHA REAL ACCOUNT VOUCHER FIX */

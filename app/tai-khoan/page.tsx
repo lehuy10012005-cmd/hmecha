@@ -145,17 +145,7 @@ export default async function CustomerAccountPage() {
               <strong>{phone}</strong>
             </div>
           </div>
-
-          <div className="benefits">
-            <h3>✦ Đặc quyền HMECHA của bạn</h3>
-
-            <ul>
-              <li>Theo dõi đơn hàng và trạng thái thanh toán.</li>
-              <li>Ưu tiên nhận thông báo preorder mô hình mới.</li>
-              <li>Tích điểm, voucher và hạng thành viên sẽ được mở rộng sau.</li>
-            </ul>
-          </div>
-        </aside>
+</aside>
 
         <section className="orderPanel">
           <div className="orderHeader">
