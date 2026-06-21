@@ -1040,342 +1040,252 @@ textarea::placeholder {
 
 
 
-/* HMECHA CLEAN SAME TONE PRODUCT PAGE */
 
-/* Nền tổng thể: trắng/xám nhẹ, không xanh neon */
-.productPage,
-.page,
-body {
-  color: #111827 !important;
+
+
+
+/* HMECHA PRODUCT PAGE RED YELLOW PATCH */
+.page {
+  background:
+    radial-gradient(circle at top left, rgba(211, 47, 47, 0.08), transparent 32%),
+    linear-gradient(180deg, #ffffff 0%, #f3f6fb 48%, #ffffff 100%) !important;
+  color: #222222 !important;
+  font-family: inherit !important;
 }
 
-/* Chỉ áp dụng mạnh cho trang chi tiết sản phẩm */
-.productPage {
-  background: #f4f5f7 !important;
-  font-family: Arial, "Helvetica Neue", sans-serif !important;
+.breadcrumb,
+.breadcrumb a {
+  color: #5f6b7a !important;
 }
 
-/* Card chính */
-.productPage .galleryCard,
-.productPage .infoCard,
-.productPage .sideCard,
-.productPage .descriptionCard,
-.productPage .productGallery,
-.productPage .hmechaReviews,
-.productPage .relatedHomeStyle,
+.breadcrumb strong {
+  color: #d32f2f !important;
+}
+
+.productBox {
+  gap: 22px !important;
+}
+
+.gallery,
+.details,
+.rightBox > div,
+.tabs,
 .hmechaReviews,
 .relatedHomeStyle {
   background: #ffffff !important;
-  border: 1px solid #e5e7eb !important;
-  border-radius: 14px !important;
-  box-shadow: 0 8px 22px rgba(17, 24, 39, 0.08) !important;
-  color: #111827 !important;
+  border: 1px solid #e7eaf0 !important;
+  border-radius: 18px !important;
+  box-shadow: 0 12px 34px rgba(15, 23, 42, 0.08) !important;
+  backdrop-filter: none !important;
 }
 
-/* Chữ chung */
-.productPage *,
-.hmechaReviews *,
-.relatedHomeStyle * {
-  font-family: Arial, "Helvetica Neue", sans-serif !important;
+.gallery,
+.details {
+  padding: 22px !important;
 }
 
-.productPage p,
-.productPage li,
-.productPage span,
-.productPage small,
-.hmechaReviews p,
-.hmechaReviews li,
-.hmechaReviews span,
-.hmechaReviews small,
-.relatedHomeStyle p,
-.relatedHomeStyle li,
-.relatedHomeStyle span,
-.relatedHomeStyle small {
-  color: #4b5563 !important;
+.mainImage {
+  background: #f7f8fb !important;
+  border: 1px solid #edf0f5 !important;
+  border-radius: 16px !important;
 }
 
-/* Tiêu đề */
-.productPage h1,
-.productPage h2,
-.productPage h3,
-.hmechaReviews h1,
-.hmechaReviews h2,
-.hmechaReviews h3,
-.relatedHomeStyle h1,
-.relatedHomeStyle h2,
-.relatedHomeStyle h3,
-.relatedHomeStyle .product-name,
-.relatedHomeStyle .product-name a {
-  color: #111827 !important;
-  font-weight: 900 !important;
+.mainImage img {
+  object-fit: contain !important;
 }
 
-/* Breadcrumb */
-.productPage .breadcrumb,
-.productPage .breadcrumb a {
-  color: #6b7280 !important;
-}
-
-.productPage .breadcrumb strong,
-.productPage .breadcrumb a:hover {
-  color: #d32f2f !important;
-}
-
-/* Badge / nhãn */
-.productPage .badge,
-.productPage [class*="badge"],
-.productPage [class*="Badge"],
-.relatedHomeStyle .badge,
-.relatedHomeStyle [class*="badge"],
-.relatedHomeStyle [class*="Badge"],
-.relatedHomeStyle .flash-sale,
-.relatedHomeStyle .label {
-  background: #d32f2f !important;
-  color: #ffffff !important;
-  border: 0 !important;
-  box-shadow: none !important;
-}
-
-/* Trạng thái còn hàng */
-.productPage .stock,
-.productPage [class*="stock"],
-.productPage [class*="Stock"],
-.relatedHomeStyle .stock,
-.relatedHomeStyle [class*="stock"],
-.relatedHomeStyle [class*="Stock"] {
-  color: #15803d !important;
-  background: #ecfdf3 !important;
-  border-color: #bbf7d0 !important;
-  font-weight: 800 !important;
-}
-
-/* Trạng thái hết hàng */
-.productPage .out,
-.productPage .a-stock.out,
-.relatedHomeStyle .out {
-  color: #d32f2f !important;
-  background: #fff1f2 !important;
-}
-
-/* Giá */
-.productPage .price,
-.productPage .product-price,
-.productPage [class*="price"],
-.productPage [class*="Price"],
-.relatedHomeStyle .price,
-.relatedHomeStyle .product-price,
-.relatedHomeStyle [class*="price"],
-.relatedHomeStyle [class*="Price"] {
-  color: #ff5722 !important;
-  font-weight: 950 !important;
-  text-shadow: none !important;
-}
-
-/* Mô tả ngắn / box vàng nhẹ */
-.productPage .shortDesc,
-.productPage .summary,
-.productPage .quickInfo div {
-  background: #fff8ed !important;
-  border: 1px solid #ffe0b2 !important;
-  color: #4b5563 !important;
-}
-
-/* Header các box bên phải */
-.productPage .serviceBox h3,
-.productPage .promo h3,
-.productPage .policy h3 {
-  background: #d32f2f !important;
-  color: #ffffff !important;
-  border: 0 !important;
-}
-
-/* Nút chính */
-.productPage button[data-hmecha-event="buy_now"],
-.productPage .buyNow,
-.productPage .reviewCta,
-.productPage .sendButton,
-.productPage .replyButton,
-.hmechaReviews button,
-.hmechaReviews .reviewCta,
-.hmechaReviews .sendButton,
-.relatedHomeStyle button,
-.relatedHomeStyle .relatedAddButton,
-.relatedHomeStyle .add_to_cart,
-.relatedHomeStyle .btn-cart {
-  background: #d32f2f !important;
-  color: #ffffff !important;
-  border: 0 !important;
-  border-radius: 9px !important;
-  font-weight: 800 !important;
-  box-shadow: 0 8px 16px rgba(211, 47, 47, 0.18) !important;
-}
-
-.productPage button[data-hmecha-event="buy_now"]:hover,
-.productPage .buyNow:hover,
-.hmechaReviews button:hover,
-.relatedHomeStyle button:hover {
-  background: #b91c1c !important;
-}
-
-/* Nút thêm giỏ: đen cho chuyên nghiệp, không xanh */
-.productPage button[data-hmecha-event="add_to_cart"],
-.productPage .addCart {
-  background: #111827 !important;
-  color: #ffffff !important;
-  border: 0 !important;
-  box-shadow: 0 8px 16px rgba(17, 24, 39, 0.15) !important;
-}
-
-.productPage button[data-hmecha-event="add_to_cart"]:hover,
-.productPage .addCart:hover {
-  background: #000000 !important;
-}
-
-/* Input review: bỏ nền xanh đậm */
-.hmechaReviews input,
-.hmechaReviews textarea,
-.hmechaReviews select {
+.thumb {
   background: #ffffff !important;
-  color: #111827 !important;
-  border: 1px solid #d1d5db !important;
+  border: 1px solid #e7eaf0 !important;
+  border-radius: 12px !important;
+}
+
+.thumb:hover {
+  border-color: #d32f2f !important;
+}
+
+.badge {
+  background: #d32f2f !important;
+  color: #ffffff !important;
   border-radius: 8px !important;
   box-shadow: none !important;
 }
 
-.hmechaReviews input::placeholder,
-.hmechaReviews textarea::placeholder {
-  color: #9ca3af !important;
+.details h1 {
+  color: #171717 !important;
+  font-size: 32px !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.4px !important;
 }
 
-.hmechaReviews input:focus,
-.hmechaReviews textarea:focus {
-  border-color: #d32f2f !important;
-  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.12) !important;
+.sku,
+.meta,
+.summary,
+.tabContent,
+.promo ul,
+.policy div {
+  color: #4b5563 !important;
 }
 
-/* Sao đánh giá: vàng, không xanh */
-.hmechaReviews .stars,
-.hmechaReviews .stars *,
-.hmechaReviews .star,
-.hmechaReviews .active,
-.productPage .stars,
-.productPage .stars *,
-.productPage .star,
-.productPage .active {
-  color: #f59e0b !important;
-  fill: #f59e0b !important;
+.sku b,
+.meta b {
+  color: #d32f2f !important;
 }
 
-/* Thanh rating: đỏ/cam, không xanh */
-.hmechaReviews [class*="bar"],
-.hmechaReviews [class*="Bar"],
-.hmechaReviews [class*="progress"],
-.hmechaReviews [class*="Progress"] {
-  background: #f3f4f6 !important;
+.meta {
+  border-bottom: 1px solid #e7eaf0 !important;
 }
 
-.hmechaReviews [class*="fill"],
-.hmechaReviews [class*="Fill"] {
-  background: linear-gradient(90deg, #ff5722, #d32f2f) !important;
+.meta i {
+  background: #d6dbe3 !important;
 }
 
-/* Chip lọc đánh giá */
-.hmechaReviews .filterChip,
-.hmechaReviews .ratingFilter,
-.hmechaReviews .tag,
-.hmechaReviews .chip {
-  background: #fff8ed !important;
-  color: #b91c1c !important;
-  border: 1px solid #ffd7a3 !important;
-  font-weight: 700 !important;
+.price {
+  color: #ff5722 !important;
+  text-shadow: none !important;
+  font-size: 36px !important;
+  font-weight: 950 !important;
 }
 
-/* Product card liên quan */
-.relatedHomeStyle .item_product_main,
-.relatedHomeStyle .product-card,
-.relatedHomeStyle [class*="productCard"],
-.relatedHomeStyle [class*="ProductCard"] {
+.summary {
+  background: #fff8eb !important;
+  border: 1px solid #ffe4a3 !important;
+  border-radius: 14px !important;
+  padding: 16px 18px !important;
+  line-height: 1.75 !important;
+}
+
+.summary b,
+.tabContent h3 {
+  color: #d32f2f !important;
+}
+
+.promo h3,
+.policy h3,
+.tabHeader {
+  background: linear-gradient(135deg, #d32f2f, #b91c1c) !important;
+  color: #ffffff !important;
+}
+
+.promo h3,
+.policy h3 {
+  font-size: 16px !important;
+  letter-spacing: 0.2px !important;
+}
+
+.policy div {
+  border-bottom: 1px solid #edf0f5 !important;
+}
+
+.tabHeader h2 {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+}
+
+.tabContent {
+  color: #374151 !important;
   background: #ffffff !important;
-  border: 1px solid #e5e7eb !important;
+}
+
+button[data-hmecha-event="buy_now"] {
+  background: linear-gradient(135deg, #d32f2f, #a71919) !important;
+  color: #ffffff !important;
   border-radius: 12px !important;
-  box-shadow: 0 6px 16px rgba(17, 24, 39, 0.07) !important;
-  overflow: hidden !important;
+  box-shadow: 0 12px 24px rgba(211, 47, 47, 0.22) !important;
 }
 
-.relatedHomeStyle .item_product_main:hover,
-.relatedHomeStyle .product-card:hover,
-.relatedHomeStyle [class*="productCard"]:hover,
-.relatedHomeStyle [class*="ProductCard"]:hover {
-  border-color: #f3b1b1 !important;
-  box-shadow: 0 12px 26px rgba(17, 24, 39, 0.12) !important;
-}
-
-.relatedHomeStyle a,
-.relatedHomeStyle .product-name a {
+button[data-hmecha-event="add_to_cart"] {
+  background: linear-gradient(135deg, #ffc107, #ffb300) !important;
   color: #111827 !important;
-  text-decoration: none !important;
+  border-radius: 12px !important;
+  box-shadow: 0 12px 24px rgba(255, 193, 7, 0.25) !important;
 }
 
-.relatedHomeStyle a:hover,
-.relatedHomeStyle .product-name a:hover {
-  color: #d32f2f !important;
+button[data-hmecha-event="buy_now"]:hover,
+button[data-hmecha-event="add_to_cart"]:hover {
+  transform: translateY(-1px) !important;
+  filter: brightness(0.98) !important;
 }
 
-/* Nút yêu thích */
-.productPage .wishButton,
-.productPage .wishCompact,
-.relatedHomeStyle .wishlist,
-.relatedHomeStyle [class*="wish"],
-.relatedHomeStyle [class*="Wish"] {
+.rightBox button {
+  color: #222222 !important;
+  border-color: #e7eaf0 !important;
   background: #ffffff !important;
+}
+
+.hmechaReviews,
+.relatedHomeStyle {
+  margin-top: 28px !important;
+  padding: 22px !important;
+}
+
+.blockTitle,
+.relatedTitle,
+.section-title {
+  color: #171717 !important;
+}
+
+.stars .active,
+.stars.large .active {
+  color: #ffc107 !important;
+}
+
+.reviewCta,
+.sendButton,
+.relatedAddButton {
+  background: linear-gradient(135deg, #d32f2f, #b91c1c) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  box-shadow: 0 10px 20px rgba(211, 47, 47, 0.18) !important;
+}
+
+.item_product_main {
+  background: #ffffff !important;
+  border: 1px solid #e7eaf0 !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07) !important;
+}
+
+.product-name a,
+.product-name {
+  color: #171717 !important;
+  font-weight: 800 !important;
+}
+
+.product-price-cart .price,
+.item_product_main .price {
+  color: #ff5722 !important;
+  font-weight: 950 !important;
+}
+
+.inventory_quantity,
+.stock-brand-title {
+  color: #6b7280 !important;
+}
+
+.a-stock {
+  color: #16a34a !important;
+  font-weight: 800 !important;
+}
+
+.a-stock.out {
   color: #d32f2f !important;
-  border: 1px solid #f3b1b1 !important;
 }
 
-.productPage .wishButton:hover,
-.productPage .wishButton.active,
-.productPage .wishCompact.active {
-  background: #fff5f5 !important;
-  color: #d32f2f !important;
-  border-color: #d32f2f !important;
-}
-
-/* Ép bỏ các màu xanh/cyan/tím còn sót trong trang sản phẩm */
-.productPage [style*="cyan"],
-.productPage [style*="blue"],
-.productPage [style*="purple"],
-.hmechaReviews [style*="cyan"],
-.hmechaReviews [style*="blue"],
-.hmechaReviews [style*="purple"],
-.relatedHomeStyle [style*="cyan"],
-.relatedHomeStyle [style*="blue"],
-.relatedHomeStyle [style*="purple"] {
-  color: #d32f2f !important;
-  border-color: #d32f2f !important;
-}
-
-/* Nếu có nền xanh/cyan/tím inline thì chuyển về trắng */
-.productPage [style*="background"],
-.hmechaReviews [style*="background"],
-.relatedHomeStyle [style*="background"] {
-  background-color: inherit;
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-  .productPage .galleryCard,
-  .productPage .infoCard,
-  .productPage .sideCard,
-  .productPage .descriptionCard,
-  .hmechaReviews,
-  .relatedHomeStyle {
-    border-radius: 12px !important;
-  }
-
-  .productPage h1 {
+@media (max-width: 700px) {
+  .details h1 {
     font-size: 25px !important;
   }
-}
 
-/* END HMECHA CLEAN SAME TONE PRODUCT PAGE */
+  .price {
+    font-size: 30px !important;
+  }
+
+  .gallery,
+  .details {
+    padding: 16px !important;
+  }
+}
+/* END HMECHA PRODUCT PAGE RED YELLOW PATCH */
 
