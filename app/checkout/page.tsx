@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -29,10 +29,6 @@ function formatPrice(price: number) {
   return Number(price || 0).toLocaleString("vi-VN") + "₫";
 }
 
-function isUuid(value: string) {
-  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
-}
-
 export default function CheckoutPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [placing, setPlacing] = useState(false);
@@ -55,6 +51,7 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     const savedCart = localStorage.getItem("hmecha-cart");
+
     if (savedCart) {
       setCart(JSON.parse(savedCart));
     }
@@ -182,7 +179,11 @@ export default function CheckoutPage() {
       return;
     }
 
-    setPlacing(true); const { data: { user } } = await supabase.auth.getUser();
+    setPlacing(true);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     const couponNote = appliedCoupon
       ? ` | Mã giảm giá: ${appliedCoupon.code} (-${formatPrice(appliedCoupon.discountAmount)})`
@@ -275,11 +276,23 @@ export default function CheckoutPage() {
   return (
     <main className="checkoutPage">
       <div className="checkoutShell">
+        <div className="checkoutTop">
+          <Link href="/cart" className="backLink">
+            ← Quay lại giỏ hàng
+          </Link>
+
+          <div>
+            <span>HMECHA CHECKOUT</span>
+            <h1>Tiến hành thanh toán</h1>
+            <p>Kiểm tra thông tin nhận hàng trước khi xác nhận đơn.</p>
+          </div>
+        </div>
+
         <div className="checkoutLayout">
           <section className="leftPanel">
             <div className="panelHeader">
               <h2>Thông tin mua hàng</h2>
-              <span>Điền thông tin nhận hàng để HMECHA xác nhận đơn.</span>
+              <p>Điền thông tin nhận hàng để HMECHA xác nhận đơn.</p>
             </div>
 
             <div className="fieldGrid">
@@ -320,11 +333,11 @@ export default function CheckoutPage() {
               </label>
 
               <CheckoutAddressPicker
-  city={customer.city}
-  district={customer.district}
-  ward={customer.ward}
-  onChange={(field, value) => updateCustomer(field, value)}
-/>
+                city={customer.city}
+                district={customer.district}
+                ward={customer.ward}
+                onChange={(field, value) => updateCustomer(field, value)}
+              />
 
               <label className="full">
                 <span>Ghi chú đơn hàng</span>
@@ -337,20 +350,22 @@ export default function CheckoutPage() {
             </div>
 
             <div className="sectionBlock">
-              <h2>Shipping</h2>
+              <h2>Vận chuyển</h2>
 
               <div className="shippingOption">
                 <span className="radioDot" />
+
                 <div>
                   <b>Giao hàng tận nơi</b>
-                  <small>Miễn phí vận chuyển cho đơn từ 1.000.000đ.</small>
+                  <small>Miễn phí vận chuyển cho đơn hàng từ 1.000.000đ.</small>
                 </div>
+
                 <strong>{shippingFee === 0 ? "Miễn phí" : formatPrice(shippingFee)}</strong>
               </div>
             </div>
 
             <div className="sectionBlock">
-              <h2>Payment</h2>
+              <h2>Thanh toán</h2>
 
               <div className="paymentList">
                 <label className={customer.payment === "vnpay" ? "active" : ""}>
@@ -360,10 +375,12 @@ export default function CheckoutPage() {
                     checked={customer.payment === "vnpay"}
                     onChange={() => updateCustomer("payment", "vnpay")}
                   />
+
                   <span>
                     <b>Thanh toán VNPAY / QR</b>
                     <small>Chuyển sang cổng VNPAY Sandbox để quét QR hoặc dùng thẻ test.</small>
                   </span>
+
                   <i>💳</i>
                 </label>
 
@@ -374,10 +391,12 @@ export default function CheckoutPage() {
                     checked={customer.payment === "cod"}
                     onChange={() => updateCustomer("payment", "cod")}
                   />
+
                   <span>
                     <b>Thanh toán khi nhận hàng (COD)</b>
                     <small>HMECHA sẽ gọi xác nhận trước khi giao.</small>
                   </span>
+
                   <i>💵</i>
                 </label>
               </div>
@@ -385,7 +404,10 @@ export default function CheckoutPage() {
           </section>
 
           <aside className="orderPanel">
-            <h2>Đơn hàng ({cart.length} sản phẩm)</h2>
+            <div className="orderHeader">
+              <h2>Đơn hàng</h2>
+              <span>{cart.length} sản phẩm</span>
+            </div>
 
             {cart.length === 0 ? (
               <div className="emptyBox">
@@ -397,7 +419,7 @@ export default function CheckoutPage() {
                 <div className="cartItems">
                   {cart.map((item) => (
                     <div className="cartItem" key={item.id}>
-                      <div className="thumb">
+                      <div className="checkoutThumb">
                         <img src={item.image} alt={item.name} />
                         <span>{item.quantity}</span>
                       </div>
@@ -410,28 +432,31 @@ export default function CheckoutPage() {
                   ))}
                 </div>
 
-              <div className="couponBox">
-  <CouponQuickPicker
-    selectedCode={couponCode}
-    onPick={(code) => {
-      setCouponCode(code);
-      setCouponMessage("Đã chọn mã " + code + ". Bấm Áp dụng để dùng mã.");
-    }}
-  />
+                <div className="couponBox">
+                  <CouponQuickPicker
+                    selectedCode={couponCode}
+                    onPick={(code) => {
+                      setCouponCode(code);
+                      setCouponMessage("Đã chọn mã " + code + ". Bấm Áp dụng để dùng mã.");
+                    }}
+                  />
 
-  <div className="couponInput">
+                  <div className="couponInput">
                     <input
                       value={couponCode}
                       onChange={(event) => setCouponCode(event.target.value.toUpperCase())}
                       placeholder="Nhập mã giảm giá"
                     />
+
                     <button type="button" onClick={applyCoupon} disabled={couponLoading}>
                       {couponLoading ? "Đang áp dụng..." : "Áp dụng"}
                     </button>
                   </div>
 
                   {couponMessage && (
-                    <p className={appliedCoupon ? "couponOk" : "couponError"}>{couponMessage}</p>
+                    <p className={appliedCoupon ? "couponOk" : "couponError"}>
+                      {couponMessage}
+                    </p>
                   )}
 
                   {appliedCoupon && (
@@ -439,6 +464,7 @@ export default function CheckoutPage() {
                       <span>
                         Đã áp dụng <b>{appliedCoupon.code}</b>
                       </span>
+
                       <button type="button" onClick={removeCoupon}>
                         Bỏ mã
                       </button>
@@ -478,11 +504,11 @@ export default function CheckoutPage() {
                 <button className="orderBtn" onClick={placeOrder} disabled={placing}>
                   {placing
                     ? customer.payment === "vnpay"
-                      ? "ĐANG CHUYỂN SANG VNPAY..."
-                      : "ĐANG TẠO ĐƠN COD..."
+                      ? "Đang chuyển sang VNPAY..."
+                      : "Đang tạo đơn COD..."
                     : customer.payment === "vnpay"
-                    ? "THANH TOÁN QUA VNPAY / QR"
-                    : "ĐẶT HÀNG COD"}
+                    ? "Thanh toán qua VNPAY / QR"
+                    : "Đặt hàng COD"}
                 </button>
 
                 <Link href="/cart" className="cartLink">
@@ -498,11 +524,14 @@ export default function CheckoutPage() {
         .checkoutPage {
           min-height: 100vh;
           padding: 34px 20px 80px;
-          color: #ffffff;
-          background:
-            radial-gradient(circle at 8% 0%, rgba(124, 77, 255, 0.24), transparent 34%),
-            radial-gradient(circle at 92% 8%, rgba(0, 229, 255, 0.16), transparent 30%),
-            linear-gradient(180deg, #050816 0%, #0b1434 48%, #050816 100%);
+          background: #f3f6fb;
+          color: #111827;
+          font-family: Arial, "Helvetica Neue", sans-serif !important;
+        }
+
+        .checkoutPage * {
+          box-sizing: border-box;
+          font-family: Arial, "Helvetica Neue", sans-serif !important;
         }
 
         .checkoutShell {
@@ -513,61 +542,64 @@ export default function CheckoutPage() {
         .checkoutTop {
           display: flex;
           justify-content: space-between;
+          align-items: flex-end;
           gap: 24px;
-          align-items: flex-start;
-          margin-bottom: 30px;
+          margin-bottom: 22px;
         }
 
         .backLink,
         .cartLink {
-          color: #00e5ff;
+          color: #d32f2f;
           text-decoration: none;
-          font-weight: 900;
+          font-weight: 800;
         }
 
-        .checkoutTop p {
-          margin: 0 0 8px;
-          color: #00e5ff;
-          font-size: 13px;
-          font-weight: 950;
-          letter-spacing: 4px;
-          text-align: right;
-        }
-
-        .checkoutTop h1 {
-          margin: 0;
-          font-size: clamp(36px, 5vw, 56px);
-          line-height: 1.05;
+        .checkoutTop > div {
           text-align: right;
         }
 
         .checkoutTop span {
-          display: block;
-          margin-top: 10px;
-          color: #c5d2f2;
-          text-align: right;
+          display: inline-block;
+          margin-bottom: 6px;
+          color: #d32f2f;
+          font-size: 13px;
+          font-weight: 900;
+          letter-spacing: 0.5px;
+        }
+
+        .checkoutTop h1 {
+          margin: 0;
+          color: #111827;
+          font-size: clamp(30px, 4vw, 44px);
+          line-height: 1.1;
+          font-weight: 950;
+          letter-spacing: -0.6px;
+        }
+
+        .checkoutTop p {
+          margin: 8px 0 0;
+          color: #6b7280;
+          font-size: 15px;
         }
 
         .checkoutLayout {
           display: grid;
-          grid-template-columns: minmax(0, 1.14fr) minmax(390px, 0.86fr);
-          gap: 26px;
+          grid-template-columns: minmax(0, 1.18fr) minmax(390px, 0.82fr);
+          gap: 24px;
           align-items: start;
         }
 
         .leftPanel,
         .orderPanel {
-          border-radius: 24px;
-          border: 1px solid rgba(0, 229, 255, 0.22);
-          background:
-            radial-gradient(circle at 0% 0%, rgba(124, 77, 255, 0.12), transparent 34%),
-            rgba(7, 12, 32, 0.84);
-          box-shadow: 0 20px 52px rgba(0, 0, 0, 0.28);
           overflow: hidden;
+          border-radius: 18px;
+          border: 1px solid #e5e7eb;
+          background: #ffffff;
+          box-shadow: 0 12px 34px rgba(15, 23, 42, 0.08);
         }
 
         .leftPanel {
-          padding: 28px;
+          padding: 26px;
         }
 
         .panelHeader {
@@ -575,25 +607,27 @@ export default function CheckoutPage() {
         }
 
         .panelHeader h2,
-        .sectionBlock h2,
-        .orderPanel h2 {
+        .sectionBlock h2 {
           margin: 0;
-          font-size: 25px;
+          color: #111827;
+          font-size: 24px;
           line-height: 1.2;
+          font-weight: 900;
+          letter-spacing: -0.2px;
         }
 
-        .panelHeader span {
-          display: block;
-          margin-top: 8px;
-          color: #9fb0d8;
+        .panelHeader p {
+          margin: 8px 0 0;
+          color: #6b7280;
           line-height: 1.6;
+          font-size: 14px;
         }
 
         .fieldGrid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 14px;
-          margin-bottom: 28px;
+          margin-bottom: 26px;
         }
 
         .fieldGrid label {
@@ -606,37 +640,36 @@ export default function CheckoutPage() {
         }
 
         .fieldGrid span {
-          color: #c5d2f2;
+          color: #374151;
           font-size: 13px;
-          font-weight: 850;
+          font-weight: 800;
         }
 
-        input,
-        textarea {
+        .checkoutPage input,
+        .checkoutPage textarea {
           width: 100%;
-          box-sizing: border-box;
-          border: 1px solid rgba(0, 229, 255, 0.22);
+          border: 1px solid #d1d5db;
           outline: none;
-          border-radius: 13px;
-          padding: 15px 16px;
-          background: rgba(5, 8, 22, 0.92);
-          color: #ffffff;
-          font: inherit;
+          border-radius: 12px;
+          padding: 14px 15px;
+          background: #ffffff;
+          color: #111827;
           font-size: 15px;
+          line-height: 1.4;
         }
 
-        input::placeholder,
-        textarea::placeholder {
-          color: #8ea0ca;
+        .checkoutPage input::placeholder,
+        .checkoutPage textarea::placeholder {
+          color: #9ca3af;
         }
 
-        input:focus,
-        textarea:focus {
-          border-color: #00e5ff;
-          box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.13);
+        .checkoutPage input:focus,
+        .checkoutPage textarea:focus {
+          border-color: #d32f2f;
+          box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.11);
         }
 
-        textarea {
+        .checkoutPage textarea {
           min-height: 100px;
           resize: vertical;
         }
@@ -647,6 +680,7 @@ export default function CheckoutPage() {
 
         .sectionBlock h2 {
           margin-bottom: 14px;
+          font-size: 22px;
         }
 
         .shippingOption,
@@ -654,18 +688,18 @@ export default function CheckoutPage() {
           display: flex;
           align-items: center;
           gap: 14px;
-          padding: 17px;
-          border-radius: 16px;
-          border: 1px solid rgba(0, 229, 255, 0.18);
-          background: rgba(255, 255, 255, 0.055);
+          padding: 16px;
+          border-radius: 14px;
+          border: 1px solid #e5e7eb;
+          background: #ffffff;
         }
 
         .radioDot {
           width: 18px;
           height: 18px;
           border-radius: 999px;
-          background: #00e5ff;
-          box-shadow: 0 0 0 5px rgba(0, 229, 255, 0.15);
+          background: #d32f2f;
+          box-shadow: 0 0 0 5px rgba(211, 47, 47, 0.1);
           flex: 0 0 auto;
         }
 
@@ -677,19 +711,23 @@ export default function CheckoutPage() {
         .shippingOption b,
         .paymentList b {
           display: block;
-          color: #ffffff;
+          color: #111827;
           margin-bottom: 5px;
+          font-size: 14px;
+          font-weight: 900;
         }
 
         .shippingOption small,
         .paymentList small {
-          color: #9fb0d8;
+          color: #6b7280;
           line-height: 1.45;
+          font-size: 13px;
         }
 
         .shippingOption strong {
-          color: #00e5ff;
+          color: #d32f2f;
           white-space: nowrap;
+          font-weight: 900;
         }
 
         .paymentList {
@@ -699,19 +737,19 @@ export default function CheckoutPage() {
 
         .paymentList label {
           cursor: pointer;
-          transition: 0.22s ease;
+          transition: 0.2s ease;
         }
 
         .paymentList label.active {
-          border-color: rgba(0, 229, 255, 0.8);
-          box-shadow: 0 0 22px rgba(0, 229, 255, 0.14);
-          background: rgba(0, 229, 255, 0.075);
+          border-color: #d32f2f;
+          background: #fff8ed;
+          box-shadow: 0 8px 20px rgba(211, 47, 47, 0.08);
         }
 
         .paymentList input {
           width: 18px;
           height: 18px;
-          accent-color: #00e5ff;
+          accent-color: #d32f2f;
         }
 
         .paymentList i {
@@ -719,85 +757,120 @@ export default function CheckoutPage() {
           font-size: 24px;
         }
 
-        .orderPanel h2 {
-          padding: 24px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.09);
-          background: rgba(0, 0, 0, 0.18);
+        .orderPanel {
+          position: sticky;
+          top: 18px;
+        }
+
+        .orderHeader {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          padding: 22px 24px;
+          border-bottom: 1px solid #edf0f3;
+          background: #ffffff;
+        }
+
+        .orderHeader h2 {
+          margin: 0;
+          color: #111827;
+          font-size: 23px;
+          line-height: 1.2;
+          font-weight: 900;
+        }
+
+        .orderHeader span {
+          color: #d32f2f;
+          font-size: 14px;
+          font-weight: 900;
         }
 
         .cartItems {
           display: grid;
-          gap: 15px;
-          padding: 22px 24px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+          gap: 14px;
+          padding: 20px 24px;
+          border-bottom: 1px solid #edf0f3;
         }
 
         .cartItem {
           display: grid;
-          grid-template-columns: 78px 1fr;
-          gap: 15px;
+          grid-template-columns: 70px 1fr;
+          gap: 14px;
           align-items: center;
         }
 
-        .thumb {
+        .checkoutThumb {
           position: relative;
         }
 
-        .thumb img {
-          width: 78px;
-          height: 78px;
+        .checkoutThumb img {
+          width: 70px;
+          height: 70px;
           object-fit: contain;
-          border-radius: 13px;
-          border: 1px solid rgba(0, 229, 255, 0.28);
-          background: #050816;
+          border-radius: 12px;
+          border: 1px solid #e5e7eb;
+          background: #f8fafc;
           display: block;
         }
 
-        .thumb span {
+        .checkoutThumb span {
           position: absolute;
-          top: -9px;
-          right: -9px;
-          width: 28px;
-          height: 28px;
+          top: -8px;
+          right: -8px;
+          width: 25px;
+          height: 25px;
           display: grid;
           place-items: center;
           border-radius: 999px;
-          background: #00e5ff;
-          color: #061020;
-          font-weight: 950;
+          background: #d32f2f;
+          color: #ffffff;
+          font-size: 13px;
+          font-weight: 900;
         }
 
         .cartItem h3 {
-          margin: 0 0 8px;
-          font-size: 16px;
+          margin: 0 0 7px;
+          color: #111827;
+          font-size: 14px;
           line-height: 1.35;
+          font-weight: 800;
         }
 
         .cartItem p {
           margin: 0;
-          color: #ff78d2;
-          font-weight: 950;
+          color: #ff5722;
+          font-size: 14px;
+          font-weight: 900;
         }
 
         .couponBox {
           padding: 20px 24px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+          border-bottom: 1px solid #edf0f3;
+          background: #fafafa;
         }
 
         .couponInput {
           display: grid;
-          grid-template-columns: 1fr 132px;
+          grid-template-columns: 1fr 118px;
           gap: 10px;
+          margin-top: 14px;
         }
 
         .couponInput button,
         .orderBtn {
           border: 0;
-          border-radius: 13px;
-          color: #061020;
-          background: linear-gradient(135deg, #7c4dff, #00e5ff);
-          font-weight: 950;
+          border-radius: 11px;
+          color: #ffffff;
+          background: #d32f2f;
+          font-weight: 900;
           cursor: pointer;
+          transition: 0.18s ease;
+        }
+
+        .couponInput button:hover,
+        .orderBtn:hover {
+          background: #b91c1c;
         }
 
         .couponInput button:disabled,
@@ -810,15 +883,15 @@ export default function CheckoutPage() {
         .couponError {
           margin: 12px 0 0;
           font-size: 14px;
-          font-weight: 850;
+          font-weight: 800;
         }
 
         .couponOk {
-          color: #9ff6ff;
+          color: #15803d;
         }
 
         .couponError {
-          color: #ff8aa5;
+          color: #d32f2f;
         }
 
         .appliedCoupon {
@@ -828,21 +901,21 @@ export default function CheckoutPage() {
           align-items: center;
           margin-top: 12px;
           padding: 12px;
-          border-radius: 13px;
-          background: rgba(0, 229, 255, 0.08);
-          border: 1px solid rgba(0, 229, 255, 0.18);
-          color: #dce6ff;
+          border-radius: 12px;
+          background: #ecfdf3;
+          border: 1px solid #bbf7d0;
+          color: #166534;
         }
 
         .appliedCoupon b {
-          color: #00e5ff;
+          color: #15803d;
         }
 
         .appliedCoupon button {
           border: 0;
           background: transparent;
-          color: #ff8aa5;
-          font-weight: 850;
+          color: #d32f2f;
+          font-weight: 900;
           cursor: pointer;
         }
 
@@ -850,41 +923,53 @@ export default function CheckoutPage() {
           padding: 20px 24px;
           display: grid;
           gap: 14px;
+          background: #ffffff;
         }
 
         .summary div {
           display: flex;
           justify-content: space-between;
           gap: 14px;
-          color: #dce6ff;
+          color: #4b5563;
+          font-size: 14px;
         }
 
         .summary b {
-          color: #ffffff;
+          color: #111827;
+          font-weight: 900;
         }
 
         .summary .discount b {
-          color: #9ff6ff;
+          color: #15803d;
         }
 
         .summary .total {
           margin-top: 4px;
           padding-top: 16px;
-          border-top: 1px solid rgba(255, 255, 255, 0.14);
-          font-size: 22px;
+          border-top: 1px solid #e5e7eb;
+          align-items: flex-end;
+        }
+
+        .summary .total span {
+          color: #111827;
+          font-size: 18px;
+          font-weight: 800;
         }
 
         .summary .total b {
-          color: #00e5ff;
+          color: #ff5722;
           font-size: 30px;
+          line-height: 1;
+          font-weight: 950;
         }
 
         .orderBtn {
           width: calc(100% - 48px);
           margin: 0 24px 14px;
-          min-height: 58px;
-          font-size: 16px;
-          box-shadow: 0 0 24px rgba(0, 229, 255, 0.24);
+          min-height: 56px;
+          font-size: 15px;
+          text-transform: uppercase;
+          box-shadow: 0 10px 20px rgba(211, 47, 47, 0.18);
         }
 
         .cartLink {
@@ -894,11 +979,11 @@ export default function CheckoutPage() {
 
         .emptyBox {
           padding: 24px;
-          color: #dce6ff;
+          color: #4b5563;
         }
 
         .emptyBox a {
-          color: #00e5ff;
+          color: #d32f2f;
           font-weight: 900;
         }
 
@@ -907,25 +992,51 @@ export default function CheckoutPage() {
             display: block;
           }
 
-          .checkoutTop p,
-          .checkoutTop h1,
-          .checkoutTop span {
+          .checkoutTop > div {
             text-align: left;
+            margin-top: 16px;
           }
 
           .checkoutLayout {
             grid-template-columns: 1fr;
           }
+
+          .orderPanel {
+            position: static;
+          }
         }
 
         @media (max-width: 640px) {
+          .checkoutPage {
+            padding: 20px 12px 60px;
+          }
+
           .leftPanel {
-            padding: 20px;
+            padding: 18px;
           }
 
           .fieldGrid,
           .couponInput {
             grid-template-columns: 1fr;
+          }
+
+          .orderHeader,
+          .cartItems,
+          .couponBox,
+          .summary {
+            padding-left: 18px;
+            padding-right: 18px;
+          }
+
+          .orderBtn {
+            width: calc(100% - 36px);
+            margin-left: 18px;
+            margin-right: 18px;
+          }
+
+          .cartLink {
+            padding-left: 18px;
+            padding-right: 18px;
           }
         }
       `}</style>

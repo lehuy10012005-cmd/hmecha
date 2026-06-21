@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 
@@ -48,11 +48,11 @@ export default function CouponQuickPicker({
     <div className="couponQuickPicker">
       <div className="couponTitle">
         <div>
-          <h3>Mã có thể dùng</h3>
-          <p>Chọn nhanh hoặc nhập mã thủ công bên dưới.</p>
+          <h3>Mã giảm giá</h3>
+          <p>Chọn nhanh một mã phù hợp cho đơn hàng.</p>
         </div>
 
-        <span>Mỗi đơn chỉ áp dụng 1 mã</span>
+        <span>1 mã / đơn</span>
       </div>
 
       <div className="couponList">
@@ -84,14 +84,11 @@ export default function CouponQuickPicker({
 
       <style>{`
         .couponQuickPicker {
-          margin-bottom: 16px;
+          margin-bottom: 0;
           padding: 16px;
-          border-radius: 18px;
-          background:
-            radial-gradient(circle at 0% 0%, rgba(124, 77, 255, 0.18), transparent 34%),
-            radial-gradient(circle at 100% 0%, rgba(0, 229, 255, 0.13), transparent 30%),
-            rgba(255, 255, 255, 0.045);
-          border: 1px solid rgba(0, 229, 255, 0.18);
+          border-radius: 14px;
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
         }
 
         .couponTitle {
@@ -104,28 +101,28 @@ export default function CouponQuickPicker({
 
         .couponTitle h3 {
           margin: 0;
-          color: #ffffff;
-          font-size: 18px;
+          color: #111827;
+          font-size: 17px;
           line-height: 1.2;
-          font-weight: 950;
+          font-weight: 900;
         }
 
         .couponTitle p {
           margin: 5px 0 0;
-          color: #9fb0d8;
+          color: #6b7280;
           font-size: 13px;
           line-height: 1.45;
         }
 
         .couponTitle span {
           flex: 0 0 auto;
-          color: #9ff6ff;
+          color: #d32f2f;
           font-size: 12px;
-          font-weight: 850;
-          padding: 7px 10px;
+          font-weight: 900;
+          padding: 6px 10px;
           border-radius: 999px;
-          background: rgba(0, 229, 255, 0.08);
-          border: 1px solid rgba(0, 229, 255, 0.18);
+          background: #fff5f5;
+          border: 1px solid #f3b1b1;
         }
 
         .couponList {
@@ -135,69 +132,43 @@ export default function CouponQuickPicker({
         }
 
         .couponItem {
-          position: relative;
           display: grid;
-          grid-template-columns: 42px 1fr auto;
+          grid-template-columns: 40px 1fr auto;
           gap: 10px;
           align-items: center;
           width: 100%;
-          min-height: 78px;
-          padding: 12px;
+          min-height: 74px;
+          padding: 11px;
           text-align: left;
-          border-radius: 16px;
-          border: 1px solid rgba(0, 229, 255, 0.2);
-          background:
-            linear-gradient(135deg, rgba(5, 8, 22, 0.94), rgba(12, 25, 52, 0.92));
-          color: #ffffff;
+          border-radius: 13px;
+          border: 1px solid #e5e7eb;
+          background: #ffffff;
+          color: #111827;
           cursor: pointer;
-          overflow: hidden;
           transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
         }
 
-        .couponItem::before,
-        .couponItem::after {
-          content: "";
-          position: absolute;
-          top: 50%;
-          width: 16px;
-          height: 16px;
-          border-radius: 999px;
-          background: rgba(7, 12, 32, 0.96);
-          transform: translateY(-50%);
-          z-index: 2;
-        }
-
-        .couponItem::before {
-          left: -8px;
-        }
-
-        .couponItem::after {
-          right: -8px;
-        }
-
         .couponItem:hover {
-          transform: translateY(-2px);
-          border-color: rgba(0, 229, 255, 0.72);
-          box-shadow: 0 0 22px rgba(0, 229, 255, 0.13);
+          transform: translateY(-1px);
+          border-color: #f3b1b1;
+          box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
         }
 
         .couponItem.active {
-          border-color: #00e5ff;
-          background:
-            radial-gradient(circle at 0% 0%, rgba(124, 77, 255, 0.35), transparent 38%),
-            linear-gradient(135deg, rgba(124, 77, 255, 0.78), rgba(0, 229, 255, 0.78));
-          box-shadow: 0 0 24px rgba(0, 229, 255, 0.2);
+          border-color: #d32f2f;
+          background: #fff8ed;
+          box-shadow: 0 8px 18px rgba(211, 47, 47, 0.1);
         }
 
         .couponIcon {
-          width: 42px;
-          height: 42px;
+          width: 40px;
+          height: 40px;
           display: grid;
           place-items: center;
-          border-radius: 13px;
-          background: rgba(0, 229, 255, 0.1);
-          border: 1px solid rgba(0, 229, 255, 0.22);
-          font-size: 22px;
+          border-radius: 11px;
+          background: #fff5f5;
+          border: 1px solid #f3b1b1;
+          font-size: 20px;
         }
 
         .couponText {
@@ -206,23 +177,19 @@ export default function CouponQuickPicker({
 
         .couponText b {
           display: block;
-          color: #00e5ff;
-          font-size: 15px;
+          color: #d32f2f;
+          font-size: 14px;
           line-height: 1.1;
-          font-weight: 950;
-          letter-spacing: 0.3px;
+          font-weight: 900;
+          letter-spacing: 0.2px;
           margin-bottom: 5px;
-        }
-
-        .couponItem.active .couponText b {
-          color: #061020;
         }
 
         .couponText small {
           display: block;
-          color: #ffffff;
+          color: #111827;
           font-size: 13px;
-          font-weight: 850;
+          font-weight: 800;
           margin-bottom: 3px;
           white-space: nowrap;
           overflow: hidden;
@@ -231,7 +198,7 @@ export default function CouponQuickPicker({
 
         .couponText em {
           display: block;
-          color: #9fb0d8;
+          color: #6b7280;
           font-size: 12px;
           font-style: normal;
           line-height: 1.35;
@@ -240,25 +207,19 @@ export default function CouponQuickPicker({
           text-overflow: ellipsis;
         }
 
-        .couponItem.active .couponText small,
-        .couponItem.active .couponText em {
-          color: #061020;
-        }
-
         .couponAction {
           align-self: center;
           padding: 7px 10px;
           border-radius: 999px;
-          color: #061020;
-          background: linear-gradient(135deg, #7c4dff, #00e5ff);
+          color: #ffffff;
+          background: #111827;
           font-size: 12px;
-          font-weight: 950;
+          font-weight: 900;
           white-space: nowrap;
         }
 
         .couponItem.active .couponAction {
-          background: #061020;
-          color: #00e5ff;
+          background: #d32f2f;
         }
 
         @media (max-width: 720px) {
