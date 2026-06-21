@@ -1,4 +1,4 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 
 :root {
   --background: #ffffff;
@@ -1803,4 +1803,76 @@ body:has(a[href*="/tai-khoan"]) main [style*="color"] {
 }
 
 /* END HMECHA ACCOUNT FONT LAYOUT CLEAN */
+
+
+/* HMECHA ACCOUNT LOGO STATUS FIX */
+
+/* Đồng bộ font trang tài khoản */
+body:has(a[href*="/tai-khoan"]),
+body:has(a[href*="/tai-khoan"]) * {
+  font-family: "Segoe UI", Arial, sans-serif !important;
+  text-shadow: none !important;
+}
+
+/* Logo HMECHA sidebar: bỏ khối đỏ thô */
+body:has(a[href*="/tai-khoan"]) aside > a:first-of-type {
+  display: block !important;
+  padding: 0 !important;
+  margin: 8px 0 12px !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: #d32f2f !important;
+  font-size: 32px !important;
+  line-height: 1 !important;
+  font-weight: 900 !important;
+  letter-spacing: 5px !important;
+  text-decoration: none !important;
+}
+
+body:has(a[href*="/tai-khoan"]) aside > a:first-of-type:hover {
+  background: transparent !important;
+  color: #b91c1c !important;
+}
+
+/* Tên người dùng dưới logo */
+body:has(a[href*="/tai-khoan"]) aside p,
+body:has(a[href*="/tai-khoan"]) aside span,
+body:has(a[href*="/tai-khoan"]) aside strong {
+  color: #374151 !important;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+}
+
+/* Badge trạng thái đơn hàng */
+body:has(a[href*="/tai-khoan"]) main [class*="status"],
+body:has(a[href*="/tai-khoan"]) main [class*="Status"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 34px !important;
+  padding: 0 14px !important;
+  white-space: nowrap !important;
+  border-radius: 999px !important;
+  background: #fff8ed !important;
+  color: #92400e !important;
+  border: 1px solid #fed7aa !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  box-shadow: none !important;
+}
+
+/* Giá tiền gọn hơn */
+body:has(a[href*="/tai-khoan"]) main [class*="price"],
+body:has(a[href*="/tai-khoan"]) main [class*="Price"],
+body:has(a[href*="/tai-khoan"]) main [class*="total"],
+body:has(a[href*="/tai-khoan"]) main [class*="Total"] {
+  color: #ff5722 !important;
+  font-size: 24px !important;
+  line-height: 1.1 !important;
+  font-weight: 800 !important;
+}
+
+/* END HMECHA ACCOUNT LOGO STATUS FIX */
 

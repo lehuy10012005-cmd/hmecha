@@ -96,7 +96,7 @@ export async function POST(request: Request) {
         subtotal,
         shipping_fee: shippingFee,
         total,
-        status: "Chá» thanh toÃ¡n",
+        status: "Chờ thanh toán",
         payment_method: "vnpay",
         payment_status: "pending",
         vnpay_txn_ref: txnRef,

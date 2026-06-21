@@ -243,7 +243,7 @@ export default function CheckoutPage() {
         subtotal,
         shipping_fee: shippingFee,
         total,
-        status: "Chá» xÃ¡c nháº­n",
+        status: "Chờ xác nhận",
       })
       .select()
       .single();
