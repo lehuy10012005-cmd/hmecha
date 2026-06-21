@@ -14,67 +14,55 @@ type CouponQuickPickerProps = {
   onPick: (code: string) => void;
 };
 
-function getVoucherType(code: string) {
+function getVoucherInfo(code: string) {
   const upper = code.toUpperCase();
 
   if (upper.includes("SHIP")) {
     return {
-      heading: "Miễn phí vận chuyển",
+      label: "FREE SHIP",
       type: "Mã vận chuyển",
-      leftBg: "#dff7f4",
-      leftText: "#0f766e",
-      badgeBg: "#ecfeff",
-      badgeText: "#0f766e",
-      shortText: "FREE\nSHIP",
+      title: "Miễn phí vận chuyển",
+      accent: "#0f766e",
+      soft: "#ecfdf5",
     };
   }
 
   if (upper.includes("WELCOME")) {
     return {
-      heading: "Giảm cho khách mới",
+      label: "WELCOME",
       type: "Mã giảm giá",
-      leftBg: "#fff1eb",
-      leftText: "#ea580c",
-      badgeBg: "#fff7ed",
-      badgeText: "#c2410c",
-      shortText: "WELCOME",
+      title: "Giảm cho khách mới",
+      accent: "#d32f2f",
+      soft: "#fff5f5",
     };
   }
 
   if (upper.includes("GUNDAM")) {
     return {
-      heading: "Giảm giá đơn hàng",
+      label: "SALE",
       type: "Mã giảm giá",
-      leftBg: "#fff1eb",
-      leftText: "#ea580c",
-      badgeBg: "#fff7ed",
-      badgeText: "#c2410c",
-      shortText: "SALE",
+      title: "Giảm giá đơn hàng",
+      accent: "#d32f2f",
+      soft: "#fff5f5",
     };
   }
 
   return {
-    heading: "Ưu đãi HMECHA",
-    type: "Voucher",
-    leftBg: "#f8fafc",
-    leftText: "#334155",
-    badgeBg: "#f8fafc",
-    badgeText: "#334155",
-    shortText: "VOUCHER",
+    label: "VOUCHER",
+    type: "Ưu đãi",
+    title: "Ưu đãi HMECHA",
+    accent: "#d32f2f",
+    soft: "#fff5f5",
   };
 }
 
 function getMinimumText(coupon: Coupon) {
   const text = `${coupon.title || ""} ${coupon.description || ""}`.toLowerCase();
 
-  if (text.includes("miễn phí ship") || text.includes("miễn phí vận chuyển")) {
-    return "Áp dụng cho đơn đủ điều kiện";
-  }
-
   const match = text.match(/(\d+[\.,]?\d*)\s*k/);
   if (match) return `Đơn tối thiểu ${match[1].replace(".", ",")}k`;
 
-  if (text.includes("bất kỳ") || text.includes("0đ")) return "Đơn tối thiểu 0đ";
+  if (text.includes("0đ") || text.includes("bất kỳ")) return "Đơn tối thiểu 0đ";
 
   return "Áp dụng cho đơn đủ điều kiện";
 }
@@ -105,11 +93,11 @@ export default function CouponQuickPicker({
   const visibleCoupons = showAll ? coupons : coupons.slice(0, 3);
 
   return (
-    <div className="voucherPicker">
-      <div className="voucherHeader">
+    <div className="hmechaWhiteVoucher">
+      <div className="voucherHeading">
         <div>
           <h3>Chọn HMECHA Voucher</h3>
-          <p>Chọn nhanh một mã phù hợp cho đơn hàng.</p>
+          <p>Chọn một mã giảm giá phù hợp cho đơn hàng.</p>
         </div>
 
         <span>1 mã / đơn</span>
@@ -117,57 +105,47 @@ export default function CouponQuickPicker({
 
       <div className="voucherList">
         {visibleCoupons.map((coupon, index) => {
-          const isActive =
+          const active =
             selectedCode.trim().toUpperCase() === coupon.code.trim().toUpperCase();
 
-          const voucher = getVoucherType(coupon.code);
+          const info = getVoucherInfo(coupon.code);
 
           return (
             <button
               key={coupon.id}
               type="button"
-              className={isActive ? "voucherItem active" : "voucherItem"}
+              className={active ? "voucherCard active" : "voucherCard"}
               onClick={() => onPick(coupon.code)}
-              title={coupon.description || coupon.title}
             >
               <div
-                className="voucherLeft"
+                className="voucherIcon"
                 style={{
-                  background: voucher.leftBg,
-                  color: voucher.leftText,
+                  background: info.soft,
+                  color: info.accent,
                 }}
               >
-                <strong>{voucher.shortText}</strong>
-                <small>{voucher.type}</small>
+                <b>{info.label}</b>
+                <small>{info.type}</small>
               </div>
 
-              <div className="voucherBody">
+              <div className="voucherContent">
                 <div className="voucherTop">
-                  <h4>{voucher.heading}</h4>
-                  {index === 0 && <span className="bestChoice">Gợi ý</span>}
+                  <h4>{info.title}</h4>
+                  {index === 0 && <em>Gợi ý</em>}
                 </div>
 
-                <p className="voucherCondition">{getMinimumText(coupon)}</p>
+                <p>{getMinimumText(coupon)}</p>
 
                 <div className="voucherMeta">
-                  <span
-                    className="customerTag"
-                    style={{
-                      background: voucher.badgeBg,
-                      color: voucher.badgeText,
-                    }}
-                  >
-                    Dành riêng cho bạn
-                  </span>
-
-                  <em>Điều kiện</em>
+                  <span>Dành riêng cho bạn</span>
+                  <a>Điều kiện</a>
                 </div>
 
-                <small className="voucherCode">{coupon.code}</small>
+                <small>{coupon.code}</small>
               </div>
 
-              <div className="voucherCheck">
-                <span>{isActive ? "✓" : ""}</span>
+              <div className="voucherRadio">
+                <i>{active ? "✓" : ""}</i>
               </div>
             </button>
           );
@@ -177,51 +155,52 @@ export default function CouponQuickPicker({
       {coupons.length > 3 && (
         <button
           type="button"
-          className="toggleMoreBtn"
+          className="moreVoucher"
           onClick={() => setShowAll(!showAll)}
         >
-          {showAll ? "Thu gọn" : "Xem thêm"} <b>⌄</b>
+          {showAll ? "Thu gọn" : "Xem thêm"} ˅
         </button>
       )}
 
       <style>{`
-        .voucherPicker {
+        .hmechaWhiteVoucher {
+          width: 100%;
           font-family: Arial, "Helvetica Neue", sans-serif !important;
         }
 
-        .voucherPicker * {
+        .hmechaWhiteVoucher * {
           box-sizing: border-box;
           font-family: Arial, "Helvetica Neue", sans-serif !important;
         }
 
-        .voucherHeader {
+        .voucherHeading {
           display: flex;
-          align-items: flex-start;
           justify-content: space-between;
+          align-items: flex-start;
           gap: 12px;
           margin-bottom: 12px;
         }
 
-        .voucherHeader h3 {
+        .voucherHeading h3 {
           margin: 0;
           color: #111827;
           font-size: 18px;
-          line-height: 1.2;
+          line-height: 1.25;
           font-weight: 900;
         }
 
-        .voucherHeader p {
+        .voucherHeading p {
           margin: 4px 0 0;
           color: #6b7280;
           font-size: 13px;
-          line-height: 1.45;
+          line-height: 1.4;
         }
 
-        .voucherHeader span {
+        .voucherHeading > span {
           flex: 0 0 auto;
           padding: 6px 10px;
-          border-radius: 999px;
           border: 1px solid #e5e7eb;
+          border-radius: 999px;
           background: #ffffff;
           color: #374151;
           font-size: 12px;
@@ -233,71 +212,77 @@ export default function CouponQuickPicker({
           gap: 10px;
         }
 
-        .voucherItem {
+        .voucherCard {
+          position: relative;
           width: 100%;
           min-height: 92px;
           display: grid;
-          grid-template-columns: 104px minmax(0, 1fr) 42px;
+          grid-template-columns: 108px minmax(0, 1fr) 42px;
+          padding: 0;
+          overflow: hidden;
           border: 1px solid #e5e7eb;
           border-radius: 12px;
-          overflow: hidden;
-          background: #ffffff;
+          background: #ffffff !important;
+          color: #111827;
           text-align: left;
           cursor: pointer;
+          box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
           transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
         }
 
-        .voucherItem:hover {
+        .voucherCard:hover {
           transform: translateY(-1px);
           border-color: #d1d5db;
-          box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+          box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
         }
 
-        .voucherItem.active {
-          border-color: #ea580c;
-          box-shadow: 0 8px 18px rgba(234, 88, 12, 0.1);
+        .voucherCard.active {
+          border-color: #d32f2f;
+          box-shadow: 0 8px 18px rgba(211, 47, 47, 0.1);
         }
 
-        .voucherLeft {
+        .voucherIcon {
           position: relative;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
+          gap: 6px;
           padding: 12px 8px;
           text-align: center;
           border-right: 1px dashed #d1d5db;
         }
 
-        .voucherLeft::before {
+        .voucherIcon::before {
           content: "";
           position: absolute;
           left: -1px;
           top: 0;
           bottom: 0;
-          width: 10px;
+          width: 9px;
           background:
-            radial-gradient(circle at 0 8px, transparent 6px, #ffffff 7px) 0 0 / 10px 18px repeat-y;
+            radial-gradient(circle at 0 8px, transparent 6px, #ffffff 7px) 0 0 / 9px 18px repeat-y;
         }
 
-        .voucherLeft strong {
-          white-space: pre-line;
-          font-size: 19px;
+        .voucherIcon b {
+          color: inherit;
+          font-size: 17px;
           line-height: 1;
           font-weight: 950;
           letter-spacing: 0.2px;
         }
 
-        .voucherLeft small {
-          margin-top: 6px;
+        .voucherIcon small {
+          color: inherit;
+          opacity: 0.9;
           font-size: 11px;
           font-weight: 700;
-          opacity: 0.9;
         }
 
-        .voucherBody {
+        .voucherContent {
           min-width: 0;
           padding: 12px 12px 10px 14px;
+          background: #ffffff !important;
         }
 
         .voucherTop {
@@ -311,85 +296,92 @@ export default function CouponQuickPicker({
         .voucherTop h4 {
           margin: 0;
           color: #111827;
-          font-size: 16px;
-          line-height: 1.25;
+          font-size: 15px;
+          line-height: 1.3;
           font-weight: 900;
         }
 
-        .bestChoice {
+        .voucherTop em {
           flex: 0 0 auto;
           padding: 3px 7px;
           border-radius: 999px;
-          background: #fff7ed;
-          color: #ea580c;
+          background: #f3f4f6;
+          color: #4b5563;
           font-size: 11px;
+          font-style: normal;
           font-weight: 800;
         }
 
-        .voucherCondition {
+        .voucherContent p {
           margin: 0 0 7px;
           color: #4b5563;
           font-size: 13px;
+          line-height: 1.35;
           font-weight: 700;
         }
 
         .voucherMeta {
           display: flex;
+          flex-wrap: wrap;
           align-items: center;
           gap: 8px;
-          flex-wrap: wrap;
           margin-bottom: 5px;
         }
 
-        .customerTag {
+        .voucherMeta span {
           display: inline-flex;
           align-items: center;
           padding: 3px 8px;
           border-radius: 6px;
+          background: #f9fafb;
+          color: #374151;
+          border: 1px solid #e5e7eb;
           font-size: 11px;
           font-weight: 800;
         }
 
-        .voucherMeta em {
+        .voucherMeta a {
           color: #2563eb;
           font-size: 12px;
-          font-style: normal;
           font-weight: 700;
+          text-decoration: none;
         }
 
-        .voucherCode {
+        .voucherContent > small {
           display: block;
           color: #9ca3af;
           font-size: 11px;
           font-weight: 700;
         }
 
-        .voucherCheck {
+        .voucherRadio {
           display: grid;
           place-items: center;
-          padding: 0 8px;
-          background: #ffffff;
+          background: #ffffff !important;
+          border-left: 1px solid #f3f4f6;
         }
 
-        .voucherCheck span {
+        .voucherRadio i {
           width: 24px;
           height: 24px;
-          border-radius: 999px;
           display: grid;
           place-items: center;
+          border-radius: 999px;
           border: 2px solid #d1d5db;
           background: #ffffff;
           color: #ffffff;
           font-size: 14px;
+          line-height: 1;
+          font-style: normal;
           font-weight: 900;
         }
 
-        .voucherItem.active .voucherCheck span {
-          border-color: #ea580c;
-          background: #ea580c;
+        .voucherCard.active .voucherRadio i {
+          border-color: #d32f2f;
+          background: #d32f2f;
         }
 
-        .toggleMoreBtn {
+        .moreVoucher {
           width: 100%;
           min-height: 36px;
           margin-top: 10px;
@@ -398,44 +390,35 @@ export default function CouponQuickPicker({
           background: #ffffff;
           color: #4b5563;
           font-size: 13px;
-          font-weight: 700;
+          font-weight: 800;
           cursor: pointer;
         }
 
-        .toggleMoreBtn:hover {
-          color: #ea580c;
-          border-color: #fed7aa;
-          background: #fffaf5;
-        }
-
-        .toggleMoreBtn b {
-          font-weight: 900;
-          color: inherit;
+        .moreVoucher:hover {
+          color: #d32f2f;
+          border-color: #f3b1b1;
+          background: #fffafa;
         }
 
         @media (max-width: 640px) {
-          .voucherHeader {
+          .voucherHeading {
             flex-direction: column;
           }
 
-          .voucherItem {
+          .voucherCard {
             grid-template-columns: 88px minmax(0, 1fr) 36px;
             min-height: 84px;
           }
 
-          .voucherLeft {
-            padding: 10px 6px;
+          .voucherIcon b {
+            font-size: 14px;
           }
 
-          .voucherLeft strong {
-            font-size: 15px;
-          }
-
-          .voucherLeft small {
+          .voucherIcon small {
             font-size: 10px;
           }
 
-          .voucherBody {
+          .voucherContent {
             padding: 10px 10px 9px 12px;
           }
 
@@ -443,14 +426,14 @@ export default function CouponQuickPicker({
             font-size: 14px;
           }
 
-          .voucherCondition,
-          .voucherMeta em {
+          .voucherContent p,
+          .voucherMeta a {
             font-size: 11px;
           }
 
-          .customerTag,
-          .voucherCode,
-          .bestChoice {
+          .voucherMeta span,
+          .voucherContent > small,
+          .voucherTop em {
             font-size: 10px;
           }
         }
