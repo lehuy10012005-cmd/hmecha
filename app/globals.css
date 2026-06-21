@@ -1576,3 +1576,231 @@ body:has(a[href*="/tai-khoan"]) main [style*="purple"] {
 
 /* END HMECHA ACCOUNT FINAL CLEAN PATCH */
 
+
+
+/* HMECHA ACCOUNT FONT LAYOUT CLEAN */
+
+/* Font đồng bộ, bỏ cảm giác chữ bị thô */
+body:has(a[href*="/tai-khoan"]),
+body:has(a[href*="/tai-khoan"]) * {
+  font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif !important;
+  letter-spacing: normal !important;
+  text-shadow: none !important;
+}
+
+/* Nền tổng thể giữ trắng/xám nhẹ */
+body:has(a[href*="/tai-khoan"]) {
+  background: #f5f6f8 !important;
+}
+
+/* Sidebar gọn hơn */
+body:has(a[href*="/tai-khoan"]) aside {
+  background: #ffffff !important;
+  border-right: 1px solid #e5e7eb !important;
+  box-shadow: 4px 0 24px rgba(15, 23, 42, 0.04) !important;
+}
+
+body:has(a[href*="/tai-khoan"]) aside h1,
+body:has(a[href*="/tai-khoan"]) aside h2,
+body:has(a[href*="/tai-khoan"]) aside h3,
+body:has(a[href*="/tai-khoan"]) aside a:first-child {
+  font-size: 25px !important;
+  font-weight: 850 !important;
+  letter-spacing: 4px !important;
+  line-height: 1 !important;
+}
+
+body:has(a[href*="/tai-khoan"]) aside a,
+body:has(a[href*="/tai-khoan"]) aside button {
+  min-height: 48px !important;
+  border-radius: 12px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+/* Header trang đơn hàng/tài khoản */
+body:has(a[href*="/tai-khoan"]) main > section:first-child,
+body:has(a[href*="/tai-khoan"]) main > div:first-child,
+body:has(a[href*="/tai-khoan"]) main header:first-child {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 18px !important;
+  padding: 28px 32px !important;
+  margin-bottom: 24px !important;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.05) !important;
+}
+
+/* Tiêu đề chính bớt to và bớt nặng */
+body:has(a[href*="/tai-khoan"]) main h1 {
+  color: #111827 !important;
+  font-size: clamp(36px, 4vw, 50px) !important;
+  line-height: 1.08 !important;
+  font-weight: 750 !important;
+  letter-spacing: -1.2px !important;
+  margin-bottom: 10px !important;
+}
+
+body:has(a[href*="/tai-khoan"]) main h2 {
+  color: #111827 !important;
+  font-size: 25px !important;
+  line-height: 1.25 !important;
+  font-weight: 750 !important;
+  letter-spacing: -0.4px !important;
+}
+
+body:has(a[href*="/tai-khoan"]) main h3,
+body:has(a[href*="/tai-khoan"]) main h4 {
+  color: #111827 !important;
+  font-weight: 700 !important;
+}
+
+body:has(a[href*="/tai-khoan"]) main p,
+body:has(a[href*="/tai-khoan"]) main span,
+body:has(a[href*="/tai-khoan"]) main small {
+  color: #4b5563 !important;
+  font-weight: 400 !important;
+}
+
+/* Nhãn nhỏ như MY ORDERS / HMECHA MEMBER */
+body:has(a[href*="/tai-khoan"]) main > section:first-child span,
+body:has(a[href*="/tai-khoan"]) main > div:first-child span,
+body:has(a[href*="/tai-khoan"]) main header:first-child span,
+body:has(a[href*="/tai-khoan"]) main [class*="eyebrow"],
+body:has(a[href*="/tai-khoan"]) main [class*="Eyebrow"] {
+  color: #d32f2f !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  letter-spacing: 2px !important;
+  text-transform: uppercase !important;
+}
+
+/* Card đơn hàng: nhẹ hơn, không bị “cục” */
+body:has(a[href*="/tai-khoan"]) main article,
+body:has(a[href*="/tai-khoan"]) main [class*="order"],
+body:has(a[href*="/tai-khoan"]) main [class*="Order"] {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.055) !important;
+}
+
+/* Layout hàng đơn hàng dạng bảng gọn hơn */
+body:has(a[href*="/tai-khoan"]) main article[class*="order"],
+body:has(a[href*="/tai-khoan"]) main article[class*="Order"],
+body:has(a[href*="/tai-khoan"]) main div[class*="orderCard"],
+body:has(a[href*="/tai-khoan"]) main div[class*="OrderCard"],
+body:has(a[href*="/tai-khoan"]) main div[class*="orderItem"],
+body:has(a[href*="/tai-khoan"]) main div[class*="OrderItem"] {
+  padding: 22px 24px !important;
+  margin-bottom: 16px !important;
+}
+
+/* Chữ trong card đơn hàng */
+body:has(a[href*="/tai-khoan"]) main article strong,
+body:has(a[href*="/tai-khoan"]) main article b,
+body:has(a[href*="/tai-khoan"]) main [class*="order"] strong,
+body:has(a[href*="/tai-khoan"]) main [class*="Order"] strong,
+body:has(a[href*="/tai-khoan"]) main [class*="order"] b,
+body:has(a[href*="/tai-khoan"]) main [class*="Order"] b {
+  color: #111827 !important;
+  font-weight: 700 !important;
+}
+
+/* Mã đơn */
+body:has(a[href*="/tai-khoan"]) main [class*="code"],
+body:has(a[href*="/tai-khoan"]) main [class*="Code"],
+body:has(a[href*="/tai-khoan"]) main a[href*="/tai-khoan/don-hang"] {
+  color: #d32f2f !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  text-decoration: none !important;
+}
+
+/* Giá/tổng tiền giảm kích thước cho sang hơn */
+body:has(a[href*="/tai-khoan"]) main [class*="price"],
+body:has(a[href*="/tai-khoan"]) main [class*="Price"],
+body:has(a[href*="/tai-khoan"]) main [class*="total"],
+body:has(a[href*="/tai-khoan"]) main [class*="Total"] {
+  color: #ff5722 !important;
+  font-size: 28px !important;
+  line-height: 1.1 !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.5px !important;
+}
+
+/* Các label như Sản phẩm / Thanh toán / Tổng tiền */
+body:has(a[href*="/tai-khoan"]) main article span,
+body:has(a[href*="/tai-khoan"]) main article small,
+body:has(a[href*="/tai-khoan"]) main [class*="order"] span,
+body:has(a[href*="/tai-khoan"]) main [class*="Order"] span,
+body:has(a[href*="/tai-khoan"]) main [class*="order"] small,
+body:has(a[href*="/tai-khoan"]) main [class*="Order"] small {
+  color: #6b7280 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+}
+
+/* Trạng thái đơn hàng */
+body:has(a[href*="/tai-khoan"]) main [class*="status"],
+body:has(a[href*="/tai-khoan"]) main [class*="Status"] {
+  min-height: 34px !important;
+  padding: 0 14px !important;
+  border-radius: 999px !important;
+  background: #fff8ed !important;
+  color: #92400e !important;
+  border: 1px solid #fed7aa !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+}
+
+/* Nút đỏ nhìn sạch hơn */
+body:has(a[href*="/tai-khoan"]) main button,
+body:has(a[href*="/tai-khoan"]) main a[class*="button"],
+body:has(a[href*="/tai-khoan"]) main a[class*="btn"],
+body:has(a[href*="/tai-khoan"]) aside button {
+  border-radius: 11px !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+}
+
+/* Các khối voucher/điểm nếu có: bớt nặng */
+body:has(a[href*="/tai-khoan"]) main [class*="voucher"],
+body:has(a[href*="/tai-khoan"]) main [class*="Voucher"],
+body:has(a[href*="/tai-khoan"]) main [class*="reward"],
+body:has(a[href*="/tai-khoan"]) main [class*="Reward"] {
+  background: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  border-radius: 16px !important;
+  color: #111827 !important;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.055) !important;
+}
+
+body:has(a[href*="/tai-khoan"]) main [class*="voucher"] *,
+body:has(a[href*="/tai-khoan"]) main [class*="Voucher"] *,
+body:has(a[href*="/tai-khoan"]) main [class*="reward"] *,
+body:has(a[href*="/tai-khoan"]) main [class*="Reward"] * {
+  color: inherit !important;
+}
+
+/* Xử lý các chữ lỗi màu quá nhạt */
+body:has(a[href*="/tai-khoan"]) main [style*="color"] {
+  color: inherit;
+}
+
+/* Mobile */
+@media (max-width: 900px) {
+  body:has(a[href*="/tai-khoan"]) main h1 {
+    font-size: 34px !important;
+  }
+
+  body:has(a[href*="/tai-khoan"]) main [class*="price"],
+  body:has(a[href*="/tai-khoan"]) main [class*="Price"],
+  body:has(a[href*="/tai-khoan"]) main [class*="total"],
+  body:has(a[href*="/tai-khoan"]) main [class*="Total"] {
+    font-size: 23px !important;
+  }
+}
+
+/* END HMECHA ACCOUNT FONT LAYOUT CLEAN */
+
