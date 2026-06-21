@@ -421,12 +421,14 @@ export default function CheckoutPage() {
                     <div className="cartItem" key={item.id}>
                       <div className="checkoutThumb">
                         <img src={item.image} alt={item.name} />
-                        <span>{item.quantity}</span>
                       </div>
 
                       <div>
                         <h3>{item.name}</h3>
-                        <p>{formatPrice(item.price)}</p>
+                        <p className="itemPriceLine">
+                          <span>{formatPrice(item.price)}</span>
+                          <b>x{item.quantity}</b>
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -814,20 +816,7 @@ export default function CheckoutPage() {
           display: block;
         }
 
-        .checkoutThumb span {
-          position: absolute;
-          top: -8px;
-          right: -8px;
-          width: 25px;
-          height: 25px;
-          display: grid;
-          place-items: center;
-          border-radius: 999px;
-          background: #d32f2f;
-          color: #ffffff;
-          font-size: 13px;
-          font-weight: 900;
-        }
+        
 
         .cartItem h3 {
           margin: 0 0 7px;
@@ -839,8 +828,31 @@ export default function CheckoutPage() {
 
         .cartItem p {
           margin: 0;
+        }
+
+        .itemPriceLine {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .itemPriceLine span {
           color: #ff5722;
           font-size: 14px;
+          font-weight: 900;
+        }
+
+        .itemPriceLine b {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 34px;
+          height: 22px;
+          padding: 0 8px;
+          border-radius: 999px;
+          background: #f3f4f6;
+          color: #374151;
+          font-size: 13px;
           font-weight: 900;
         }
 
@@ -1043,3 +1055,4 @@ export default function CheckoutPage() {
     </main>
   );
 }
+
