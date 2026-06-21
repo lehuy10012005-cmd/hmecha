@@ -2064,3 +2064,42 @@ body:has(a[href*="/tai-khoan"]) [class*="Stats"] .value {
 }
 
 /* END HMECHA REAL ACCOUNT VOUCHER FIX */
+
+/* HMECHA ACCOUNT SIDEBAR FONT FINAL */
+
+/* Tổng quan giống Đơn hàng của tôi */
+body:has(a[href*="/tai-khoan"]) aside nav a,
+body:has(a[href*="/tai-khoan"]) aside nav button,
+body:has(a[href*="/tai-khoan"]) aside a[href*="/tai-khoan"],
+body:has(a[href*="/tai-khoan"]) aside button {
+  font-family: "Segoe UI", Arial, sans-serif !important;
+  letter-spacing: 0 !important;
+  word-spacing: 0 !important;
+  text-transform: none !important;
+  font-size: 15px !important;
+  line-height: 1.2 !important;
+  font-weight: 700 !important;
+}
+
+/* Logo giữ kiểu riêng */
+body:has(a[href*="/tai-khoan"]) aside > a:first-of-type {
+  letter-spacing: 4px !important;
+  font-size: 30px !important;
+  font-weight: 900 !important;
+}
+
+/* Trạng thái đơn hàng */
+body:has(a[href*="/tai-khoan"]) main [class*="status"],
+body:has(a[href*="/tai-khoan"]) main [class*="Status"] {
+  font-family: "Segoe UI", Arial, sans-serif !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  white-space: nowrap !important;
+  color: #92400e !important;
+  background: #fff8ed !important;
+  border: 1px solid #fed7aa !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+/* END HMECHA ACCOUNT SIDEBAR FONT FINAL */

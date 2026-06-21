@@ -1,8 +1,30 @@
-import { fixVietnameseText } from "../../../../lib/fixVietnamese";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createAuthServerClient } from "../../../../lib/supabase-auth/server";
 import { supabaseAdmin } from "../../../../lib/supabase-admin";
+
+function displayStatusText(value: unknown) {
+  const text = String(value || "");
+  const lower = text.toLowerCase();
+
+  if (lower === "pending") return "Chờ xác nhận";
+  if (lower === "paid") return "Đã thanh toán";
+  if (lower === "completed" || lower === "complete") return "Hoàn thành";
+  if (lower === "cancelled" || lower === "canceled") return "Đã hủy";
+
+  if (text.includes("Chá") || text.includes("toÃ") || text.includes("xÃ") || text.includes("nhá") || text.includes("Ä") || text.includes("Ã")) {
+    if (text.includes("thanh")) return "Chờ thanh toán";
+    if (text.includes("xÃ") || text.includes("xac")) return "Chờ xác nhận";
+    if (text.includes("Ä") || text.includes("Ã£")) return "Đã thanh toán";
+    return "Chờ xác nhận";
+  }
+
+  return text
+    .replaceAll("Chá» thanh toÃ¡n", "Chờ thanh toán")
+    .replaceAll("Chá» xÃ¡c nháº­n", "Chờ xác nhận")
+    .replaceAll("ÄÃ£ thanh toÃ¡n", "Đã thanh toán")
+    .replaceAll("HoÃ n thÃ nh", "Hoàn thành");
+}
 export const dynamic = "force-dynamic";
 
 type PageProps = {
