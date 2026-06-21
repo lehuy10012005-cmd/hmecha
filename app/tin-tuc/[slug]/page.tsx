@@ -113,12 +113,8 @@ export default async function ArticleDetailPage({
       <style>{`
         .articlePage {
           min-height: 100vh;
-          background:
-            radial-gradient(circle at top left, rgba(124, 77, 255, 0.24), transparent 34%),
-            radial-gradient(circle at top right, rgba(0, 229, 255, 0.18), transparent 30%),
-            radial-gradient(circle at bottom, rgba(255, 79, 216, 0.13), transparent 36%),
-            linear-gradient(180deg, #050816 0%, #0b1026 52%, #050816 100%);
-          color: #ffffff;
+          background: #f3f6fb;
+          color: #111827;
           padding: 34px 18px 86px;
         }
 
@@ -133,42 +129,38 @@ export default async function ArticleDetailPage({
           flex-wrap: wrap;
           gap: 9px;
           margin-bottom: 22px;
-          color: #b8c4e6;
+          color: #6b7280;
           font-size: 14px;
         }
 
         .breadcrumb a {
-          color: #00e5ff;
+          color: #d32f2f;
           text-decoration: none;
-          font-weight: 800;
+          font-weight: 850;
         }
 
         .breadcrumb strong {
-          color: #ffffff;
+          color: #111827;
         }
 
         .articleCard {
           overflow: hidden;
-          border-radius: 30px;
-          border: 1px solid rgba(0, 229, 255, 0.22);
-          background: rgba(5, 8, 22, 0.9);
-          box-shadow: 0 28px 90px rgba(0, 0, 0, 0.48);
+          border-radius: 24px;
+          border: 1px solid #e5e7eb;
+          background: #ffffff;
+          box-shadow: 0 20px 55px rgba(15, 23, 42, 0.10);
         }
 
         .heroImage {
           position: relative;
-          background: #0b1026;
+          background: #ffffff;
         }
 
         .heroImage::after {
           content: "";
           position: absolute;
           inset: 0;
-          background: linear-gradient(
-            180deg,
-            rgba(5, 8, 22, 0) 45%,
-            rgba(5, 8, 22, 0.78) 100%
-          );
+          background: linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(0,0,0,0.22) 100%);
           pointer-events: none;
         }
 
@@ -182,6 +174,7 @@ export default async function ArticleDetailPage({
 
         .articleContent {
           padding: clamp(24px, 5vw, 50px);
+          background: #ffffff;
         }
 
         .meta {
@@ -194,27 +187,30 @@ export default async function ArticleDetailPage({
         .meta span {
           border-radius: 999px;
           padding: 8px 13px;
-          background: rgba(0, 229, 255, 0.1);
-          border: 1px solid rgba(0, 229, 255, 0.24);
-          color: #c8f9ff;
+          background: #fff7d6;
+          border: 1px solid #ffc107;
+          color: #111827;
           font-size: 13px;
           font-weight: 900;
         }
 
         h1 {
           margin: 0;
-          font-size: clamp(32px, 5vw, 56px);
+          font-family: Georgia, "Times New Roman", serif;
+          font-size: clamp(34px, 5vw, 58px);
           line-height: 1.08;
-          letter-spacing: -0.04em;
-          color: #ffffff;
-          text-shadow: 0 0 24px rgba(0, 229, 255, 0.13);
+          letter-spacing: -0.045em;
+          color: #111827;
+          text-shadow: none;
         }
 
         .excerpt {
           margin: 24px 0 22px;
-          padding-left: 18px;
-          border-left: 4px solid #00e5ff;
-          color: #dbeafe;
+          padding: 14px 18px;
+          border-left: 4px solid #d32f2f;
+          border-radius: 0 14px 14px 0;
+          background: #fff7f7;
+          color: #374151;
           font-size: 19px;
           line-height: 1.75;
           font-weight: 750;
@@ -230,9 +226,9 @@ export default async function ArticleDetailPage({
         .tagList span {
           border-radius: 999px;
           padding: 7px 11px;
-          background: rgba(255, 255, 255, 0.08);
-          border: 1px solid rgba(255, 255, 255, 0.13);
-          color: #dce6ff;
+          background: #f9fafb;
+          border: 1px solid #e5e7eb;
+          color: #4b5563;
           font-size: 13px;
           font-weight: 800;
         }
@@ -240,12 +236,7 @@ export default async function ArticleDetailPage({
         .contentDivider {
           height: 1px;
           margin: 34px 0;
-          background: linear-gradient(
-            90deg,
-            rgba(0, 229, 255, 0),
-            rgba(0, 229, 255, 0.55),
-            rgba(255, 79, 216, 0)
-          );
+          background: linear-gradient(90deg, rgba(211,47,47,0), rgba(211,47,47,.55), rgba(255,193,7,0));
         }
 
         .articleSection {
@@ -257,24 +248,26 @@ export default async function ArticleDetailPage({
           align-items: center;
           gap: 13px;
           margin: 0 0 16px;
-          color: #ffffff;
+          color: #111827;
           font-size: clamp(24px, 3vw, 34px);
           line-height: 1.22;
+          font-family: Georgia, "Times New Roman", serif;
+          font-weight: 850;
         }
 
         .articleSection h2 span {
           flex: 0 0 auto;
-          color: #00e5ff;
+          color: #111827;
           font-size: 15px;
-          border: 1px solid rgba(0, 229, 255, 0.3);
-          background: rgba(0, 229, 255, 0.08);
+          border: 1px solid #ffc107;
+          background: #ffc107;
           border-radius: 999px;
           padding: 7px 10px;
           font-weight: 950;
         }
 
         .articleSection p {
-          color: #d4ddf7;
+          color: #1f2937;
           font-size: 17px;
           line-height: 1.92;
           margin: 15px 0;
@@ -284,19 +277,15 @@ export default async function ArticleDetailPage({
           margin: 18px 0 0;
           padding: 18px 20px;
           list-style: none;
-          border-radius: 20px;
-          background: linear-gradient(
-            135deg,
-            rgba(124, 77, 255, 0.16),
-            rgba(0, 229, 255, 0.08)
-          );
-          border: 1px solid rgba(0, 229, 255, 0.18);
+          border-radius: 18px;
+          background: #fff7d6;
+          border: 1px solid #ffc107;
         }
 
         .articleSection li {
           position: relative;
           padding-left: 24px;
-          color: #eaf1ff;
+          color: #1f2937;
           line-height: 1.75;
           margin: 8px 0;
           font-size: 16px;
@@ -310,8 +299,8 @@ export default async function ArticleDetailPage({
           width: 8px;
           height: 8px;
           border-radius: 999px;
-          background: #00e5ff;
-          box-shadow: 0 0 12px rgba(0, 229, 255, 0.75);
+          background: #d32f2f;
+          box-shadow: none;
         }
 
         .actions {
@@ -337,29 +326,46 @@ export default async function ArticleDetailPage({
         }
 
         .primaryBtn {
-          color: #06101f;
-          background: linear-gradient(135deg, #00e5ff, #7c4dff);
-          box-shadow: 0 12px 32px rgba(0, 229, 255, 0.22);
+          color: #ffffff;
+          background: #d32f2f;
+          box-shadow: 0 12px 26px rgba(211, 47, 47, 0.22);
+        }
+
+        .primaryBtn:hover {
+          background: #be1f2e;
         }
 
         .secondaryBtn {
-          color: #ffffff;
-          background: rgba(255, 255, 255, 0.08);
-          border: 1px solid rgba(255, 255, 255, 0.16);
+          color: #d32f2f;
+          background: #ffffff;
+          border: 1px solid #d32f2f;
+        }
+
+        .secondaryBtn:hover {
+          color: #111827;
+          background: #ffc107;
+          border-color: #ffc107;
         }
 
         .relatedBox {
           margin-top: 36px;
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
+          border-radius: 22px;
+          padding: 22px;
+          box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
         }
 
         .relatedBox h2 {
           margin: 0 0 18px;
-          color: #ffffff;
+          color: #111827;
           font-size: 30px;
+          font-family: Georgia, "Times New Roman", serif;
+          font-weight: 850;
         }
 
         .relatedBox h2 span {
-          color: #00e5ff;
+          color: #d32f2f;
         }
 
         .relatedGrid {
@@ -374,17 +380,19 @@ export default async function ArticleDetailPage({
           gap: 13px;
           align-items: center;
           padding: 12px;
-          border-radius: 18px;
-          color: white;
+          border-radius: 16px;
+          color: #111827;
           text-decoration: none;
-          background: rgba(255, 255, 255, 0.07);
-          border: 1px solid rgba(0, 229, 255, 0.14);
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
+          box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
           transition: 0.2s ease;
         }
 
         .relatedCard:hover {
           transform: translateY(-3px);
-          border-color: rgba(0, 229, 255, 0.45);
+          border-color: rgba(211, 47, 47, 0.36);
+          box-shadow: 0 14px 28px rgba(211, 47, 47, 0.12);
         }
 
         .relatedCard img {
@@ -392,11 +400,11 @@ export default async function ArticleDetailPage({
           height: 74px;
           object-fit: cover;
           border-radius: 13px;
-          background: #111827;
+          background: #ffffff;
         }
 
         .relatedCard small {
-          color: #00e5ff;
+          color: #d32f2f;
           font-weight: 850;
         }
 
@@ -404,7 +412,7 @@ export default async function ArticleDetailPage({
           margin: 5px 0 0;
           font-size: 14px;
           line-height: 1.35;
-          color: #ffffff;
+          color: #111827;
         }
 
         @media (max-width: 640px) {
@@ -413,7 +421,7 @@ export default async function ArticleDetailPage({
           }
 
           .articleCard {
-            border-radius: 22px;
+            border-radius: 20px;
           }
 
           .heroImage img {
