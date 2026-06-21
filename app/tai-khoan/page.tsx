@@ -1,3 +1,4 @@
+import { fixVietnameseText } from "../../lib/fixVietnamese";
 import Link from "next/link";
 import { createAuthServerClient } from "../../lib/supabase-auth/server";
 import CustomerVoucherPanel from "../../components/customer/CustomerVoucherPanel";
@@ -197,7 +198,7 @@ export default async function CustomerAccountPage() {
                       </div>
 
                       <b className={`status ${statusClass(order.status)}`}>
-                        {order.status}
+                        {fixVietnameseText(order.status)}
                       </b>
                     </div>
 

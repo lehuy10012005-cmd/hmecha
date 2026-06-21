@@ -1,8 +1,8 @@
+import { fixVietnameseText } from "../../../../lib/fixVietnamese";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createAuthServerClient } from "../../../../lib/supabase-auth/server";
 import { supabaseAdmin } from "../../../../lib/supabase-admin";
-
 export const dynamic = "force-dynamic";
 
 type PageProps = {
