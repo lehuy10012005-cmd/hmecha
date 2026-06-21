@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 
@@ -35,7 +35,6 @@ function getReviewRating(review: any) {
     0;
 
   const value = Number(raw);
-
   if (!Number.isFinite(value)) return 0;
 
   return Math.round(value);
@@ -111,7 +110,6 @@ export default function ProductReviews({
     if (filter === "comment") return comments;
 
     const selectedRating = Number(filter);
-
     return comments.filter((review) => getReviewRating(review) === selectedRating);
   }, [filter, reviews]);
 
@@ -158,54 +156,54 @@ export default function ProductReviews({
 
   return (
     <section className="hmechaReviews">
-      <div className="reviewSummary">
-        <div className="blockTitle">
-          <i />
-          <h2>Đánh giá về {productName}</h2>
+      <div className="reviewHeader">
+        <div>
+          <span className="eyebrow">Đánh giá sản phẩm</span>
+          <h2>Khách hàng nói gì về sản phẩm này</h2>
         </div>
 
-        <div className="summaryBody">
-          <div className="scoreBox">
-            <strong>{stats.average ? stats.average.toFixed(1) : "0.0"}</strong>
-            <Stars value={Math.round(stats.average)} large />
-            <p>{stats.total} người đã đánh giá</p>
+        <button
+          type="button"
+          className="reviewCta"
+          onClick={() => {
+            document.getElementById("hmecha-review-form")?.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+            });
+          }}
+        >
+          Viết đánh giá
+        </button>
+      </div>
 
-            <button
-              type="button"
-              className="reviewCta"
-              onClick={() => {
-                document.getElementById("hmecha-review-form")?.scrollIntoView({
-                  behavior: "smooth",
-                  block: "center",
-                });
-              }}
-            >
-              Đánh giá sản phẩm
-            </button>
-          </div>
+      <div className="reviewSummary">
+        <div className="scoreBox">
+          <strong>{stats.average ? stats.average.toFixed(1) : "0.0"}</strong>
+          <Stars value={Math.round(stats.average)} large />
+          <p>{stats.total} người đã đánh giá</p>
+        </div>
 
-          <div className="ratingBars">
-            {stats.counts.map((item) => (
-              <div className="ratingRow" key={item.star}>
-                <span>{item.star} ★</span>
-                <div className="bar">
-                  <i style={{ width: `${item.percent}%` }} />
-                </div>
-                <strong>{item.percent}%</strong>
+        <div className="ratingBars">
+          {stats.counts.map((item) => (
+            <div className="ratingRow" key={item.star}>
+              <span>{item.star} sao</span>
+              <div className="bar">
+                <i style={{ width: `${item.percent}%` }} />
               </div>
-            ))}
-          </div>
+              <strong>{item.percent}%</strong>
+            </div>
+          ))}
         </div>
       </div>
 
       <form id="hmecha-review-form" className="quickComment" onSubmit={submitReview}>
-        <div className="blockTitle small">
-          <i />
-          <h3>Bình luận nhanh</h3>
+        <div className="formTitle">
+          <h3>Gửi bình luận của bạn</h3>
+          <p>Chia sẻ cảm nhận để người mua sau chọn sản phẩm dễ hơn.</p>
         </div>
 
         <div className="ratingPick">
-          <strong>Chọn đánh giá:</strong>
+          <span>Chọn đánh giá</span>
 
           <div className="starButtons">
             {[1, 2, 3, 4, 5].map((star) => (
@@ -226,19 +224,19 @@ export default function ProductReviews({
           <input
             value={customerName}
             onChange={(event) => setCustomerName(event.target.value)}
-            placeholder="Nhập họ và tên"
+            placeholder="Họ và tên"
           />
 
           <input
             value={customerPhone}
             onChange={(event) => setCustomerPhone(event.target.value)}
-            placeholder="Nhập số điện thoại"
+            placeholder="Số điện thoại"
           />
 
           <input
             value={customerEmail}
             onChange={(event) => setCustomerEmail(event.target.value)}
-            placeholder="Nhập email (Không bắt buộc)"
+            placeholder="Email (không bắt buộc)"
           />
         </div>
 
@@ -246,12 +244,12 @@ export default function ProductReviews({
           <textarea
             value={content}
             onChange={(event) => setContent(event.target.value)}
-            placeholder="Nhập nội dung bình luận"
-            rows={2}
+            placeholder="Nội dung bình luận"
+            rows={3}
           />
 
           <button type="submit" className="sendButton" disabled={sending}>
-            {sending ? "Đang gửi..." : "Gửi bình luận ➤"}
+            {sending ? "Đang gửi..." : "Gửi bình luận"}
           </button>
         </div>
 
@@ -259,10 +257,10 @@ export default function ProductReviews({
       </form>
 
       <div className="filterBar">
-        <span>Lọc đánh giá theo:</span>
+        <span>Lọc đánh giá:</span>
 
         {[
-          ["comment", "Bình luận"],
+          ["comment", "Có bình luận"],
           ["5", "5 sao"],
           ["4", "4 sao"],
           ["3", "3 sao"],
@@ -324,77 +322,99 @@ export default function ProductReviews({
 
       <style>{`
         .hmechaReviews {
-          margin-top: 44px;
-          padding: 26px 30px 30px;
-          border-radius: 22px;
+          margin-top: 34px;
+          padding: 26px;
+          border-radius: 18px;
           background: #ffffff;
-          color: #0f172a;
+          color: #111827;
           border: 1px solid #e5e7eb;
-          box-shadow: 0 22px 60px rgba(0, 0, 0, 0.20);
+          box-shadow: 0 12px 34px rgba(15, 23, 42, 0.08);
           font-family: Arial, "Helvetica Neue", sans-serif !important;
         }
 
         .hmechaReviews * {
           box-sizing: border-box;
+          font-family: Arial, "Helvetica Neue", sans-serif !important;
         }
 
-        .blockTitle {
+        .reviewHeader {
           display: flex;
+          justify-content: space-between;
+          gap: 18px;
           align-items: center;
-          gap: 10px;
           margin-bottom: 22px;
+          padding-bottom: 18px;
+          border-bottom: 1px solid #edf0f3;
         }
 
-        .blockTitle.small {
-          margin-bottom: 18px;
+        .eyebrow {
+          display: inline-block;
+          margin-bottom: 6px;
+          color: #d32f2f;
+          font-size: 13px;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 0.4px;
         }
 
-        .blockTitle i {
-          width: 4px;
-          height: 28px;
-          border-radius: 99px;
-          background: #00a889;
-          flex: 0 0 auto;
-        }
-
-        .blockTitle h2,
-        .blockTitle h3 {
+        .reviewHeader h2 {
           margin: 0;
-          color: #0f172a;
-          font-size: 19px;
-          line-height: 1.35;
-          font-weight: 800;
-          letter-spacing: -0.2px;
+          color: #111827;
+          font-size: 24px;
+          line-height: 1.25;
+          font-weight: 900;
+          letter-spacing: -0.3px;
         }
 
-        .summaryBody {
+        .reviewCta {
+          min-width: 132px;
+          min-height: 42px;
+          padding: 0 18px;
+          border: 0;
+          border-radius: 10px;
+          background: #d32f2f;
+          color: #ffffff;
+          font-size: 14px;
+          font-weight: 900;
+          cursor: pointer;
+          box-shadow: 0 8px 18px rgba(211, 47, 47, 0.18);
+        }
+
+        .reviewCta:hover {
+          background: #b91c1c;
+        }
+
+        .reviewSummary {
           display: grid;
-          grid-template-columns: 170px 1fr;
-          gap: 28px;
+          grid-template-columns: 190px 1fr;
+          gap: 26px;
           align-items: center;
-          padding-bottom: 24px;
-          border-bottom: 1px solid #e5e7eb;
+          padding: 20px;
+          border: 1px solid #edf0f3;
+          border-radius: 14px;
+          background: #fafafa;
+          margin-bottom: 22px;
         }
 
         .scoreBox {
           text-align: center;
-          padding-right: 26px;
+          padding-right: 24px;
           border-right: 1px solid #e5e7eb;
         }
 
         .scoreBox strong {
           display: block;
-          color: #020617;
-          font-size: 42px;
+          color: #d32f2f;
+          font-size: 46px;
           line-height: 1;
-          font-weight: 800;
+          font-weight: 950;
           margin-bottom: 8px;
         }
 
         .stars {
           display: inline-flex;
           gap: 2px;
-          color: #cbd5e1;
+          color: #d1d5db;
           font-size: 14px;
           line-height: 1;
           vertical-align: middle;
@@ -402,7 +422,7 @@ export default function ProductReviews({
         }
 
         .stars.large {
-          font-size: 18px;
+          font-size: 19px;
         }
 
         .stars .active {
@@ -410,62 +430,42 @@ export default function ProductReviews({
         }
 
         .scoreBox p {
-          margin: 8px 0 14px;
-          color: #00846f;
+          margin: 8px 0 0;
+          color: #6b7280;
           font-size: 14px;
-        }
-
-        .reviewCta,
-        .sendButton {
-          border: 0 !important;
-          outline: 0 !important;
-          color: #ffffff !important;
-          background: #00a889 !important;
-          box-shadow: none !important;
-          font-family: inherit !important;
-          cursor: pointer;
-        }
-
-        .reviewCta {
-          width: 150px;
-          min-height: 42px;
-          padding: 0 14px;
-          border-radius: 7px;
-          font-size: 14px;
-          font-weight: 800;
-          line-height: 1.25;
         }
 
         .ratingBars {
           display: grid;
-          gap: 13px;
+          gap: 12px;
         }
 
         .ratingRow {
           display: grid;
-          grid-template-columns: 46px 1fr 44px;
-          gap: 10px;
+          grid-template-columns: 58px 1fr 46px;
+          gap: 12px;
           align-items: center;
-          color: #334155;
+          color: #374151;
           font-size: 14px;
         }
 
         .ratingRow > span {
-          color: #0f172a;
+          color: #374151;
           white-space: nowrap;
+          font-weight: 700;
         }
 
         .ratingRow strong {
-          color: #334155;
-          font-size: 14px;
-          font-weight: 500;
+          color: #6b7280;
+          font-size: 13px;
+          font-weight: 700;
           text-align: right;
         }
 
         .bar {
-          height: 6px;
+          height: 8px;
           border-radius: 999px;
-          background: #eaf2fb;
+          background: #e5e7eb;
           overflow: hidden;
         }
 
@@ -473,23 +473,43 @@ export default function ProductReviews({
           display: block;
           height: 100%;
           border-radius: 999px;
-          background: #00a889;
+          background: linear-gradient(90deg, #ff5722, #d32f2f);
         }
 
         .quickComment {
-          padding-top: 26px;
-          margin-bottom: 24px;
+          padding: 20px;
+          border-radius: 14px;
+          background: #fff8ed;
+          border: 1px solid #ffe0b2;
+          margin-bottom: 20px;
+        }
+
+        .formTitle {
+          margin-bottom: 16px;
+        }
+
+        .formTitle h3 {
+          margin: 0 0 4px;
+          color: #111827;
+          font-size: 18px;
+          font-weight: 900;
+        }
+
+        .formTitle p {
+          margin: 0;
+          color: #6b7280;
+          font-size: 14px;
         }
 
         .ratingPick {
           display: flex;
           align-items: center;
           gap: 12px;
-          margin-bottom: 16px;
-          color: #0f172a;
+          margin-bottom: 14px;
+          color: #374151;
         }
 
-        .ratingPick strong {
+        .ratingPick span {
           font-size: 14px;
           font-weight: 800;
         }
@@ -498,28 +518,20 @@ export default function ProductReviews({
           display: inline-flex;
           gap: 2px;
           align-items: center;
-          background: transparent !important;
         }
 
         .starButtons button {
-          appearance: none !important;
-          -webkit-appearance: none !important;
-          width: auto !important;
-          height: auto !important;
-          min-width: 0 !important;
-          min-height: 0 !important;
-          padding: 0 !important;
-          margin: 0 !important;
-          border: 0 !important;
-          border-radius: 0 !important;
+          appearance: none;
+          width: auto;
+          height: auto;
+          padding: 0;
+          border: 0;
           background: transparent !important;
-          box-shadow: none !important;
-          color: #cbd5e1 !important;
-          font-size: 24px !important;
-          line-height: 1 !important;
-          font-family: Arial, sans-serif !important;
-          font-weight: 400 !important;
+          color: #d1d5db !important;
+          font-size: 26px;
+          line-height: 1;
           cursor: pointer;
+          box-shadow: none !important;
         }
 
         .starButtons button.selected {
@@ -529,32 +541,32 @@ export default function ProductReviews({
         .fieldGrid {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 8px;
-          margin-bottom: 14px;
+          gap: 10px;
+          margin-bottom: 12px;
         }
 
         .fieldGrid input,
         .commentRow textarea {
           width: 100%;
-          border: 1px solid #e2e8f0;
-          border-radius: 7px;
+          border: 1px solid #e5e7eb;
+          border-radius: 10px;
           background: #ffffff;
-          color: #0f172a;
-          padding: 14px 15px;
+          color: #111827;
+          padding: 13px 14px;
           outline: none;
-          font: inherit;
-          font-size: 15px;
+          font-size: 14px;
+          line-height: 1.4;
         }
 
         .fieldGrid input::placeholder,
         .commentRow textarea::placeholder {
-          color: #94a3b8;
+          color: #9ca3af;
         }
 
         .fieldGrid input:focus,
         .commentRow textarea:focus {
-          border-color: #00a889;
-          box-shadow: 0 0 0 3px rgba(0, 168, 137, 0.12);
+          border-color: #d32f2f;
+          box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.12);
         }
 
         .commentRow {
@@ -566,22 +578,34 @@ export default function ProductReviews({
 
         .commentRow textarea {
           resize: vertical;
-          min-height: 48px;
+          min-height: 74px;
         }
 
         .sendButton {
-          min-height: 48px;
+          min-height: 52px;
           padding: 0 18px;
-          border-radius: 7px;
-          font-size: 15px;
-          font-weight: 800;
-          white-space: normal;
-          line-height: 1.2;
+          border: 0;
+          border-radius: 10px;
+          background: #d32f2f;
+          color: #ffffff;
+          font-size: 14px;
+          font-weight: 900;
+          cursor: pointer;
+          box-shadow: 0 8px 18px rgba(211, 47, 47, 0.18);
+        }
+
+        .sendButton:hover {
+          background: #b91c1c;
+        }
+
+        .sendButton:disabled {
+          opacity: 0.65;
+          cursor: not-allowed;
         }
 
         .reviewMessage {
           margin: 10px 0 0;
-          color: #00846f;
+          color: #15803d;
           font-weight: 800;
           font-size: 14px;
         }
@@ -591,46 +615,53 @@ export default function ProductReviews({
           flex-wrap: wrap;
           align-items: center;
           gap: 9px;
-          margin: 8px 0 18px;
-          color: #334155;
+          margin: 10px 0 20px;
+          color: #374151;
           font-size: 14px;
         }
 
+        .filterBar span {
+          font-weight: 800;
+          color: #374151;
+        }
+
         .filterBar button {
-          appearance: none !important;
-          -webkit-appearance: none !important;
-          min-height: 34px !important;
-          padding: 0 14px !important;
-          border-radius: 999px !important;
-          border: 1px solid #e2e8f0 !important;
-          background: #ffffff !important;
-          color: #334155 !important;
-          box-shadow: none !important;
-          font: inherit !important;
-          font-size: 14px !important;
+          min-height: 34px;
+          padding: 0 14px;
+          border-radius: 999px;
+          border: 1px solid #e5e7eb;
+          background: #ffffff;
+          color: #374151;
+          font-size: 14px;
+          font-weight: 800;
           cursor: pointer;
+          box-shadow: none;
         }
 
         .filterBar button.active,
         .filterBar button:hover {
-          color: #00a889 !important;
-          border-color: #00a889 !important;
+          color: #ffffff;
+          border-color: #d32f2f;
+          background: #d32f2f;
         }
 
         .commentList {
           display: grid;
-          gap: 18px;
+          gap: 14px;
         }
 
         .commentItem {
-          padding: 0 0 2px;
+          padding: 18px;
+          border: 1px solid #edf0f3;
+          border-radius: 14px;
+          background: #ffffff;
         }
 
         .customerLine {
           display: flex;
           align-items: center;
           gap: 12px;
-          margin-bottom: 8px;
+          margin-bottom: 10px;
         }
 
         .avatar,
@@ -641,70 +672,73 @@ export default function ProductReviews({
           place-items: center;
           border-radius: 999px;
           color: #ffffff;
-          background: #64748b;
+          background: #d32f2f;
           font-weight: 900;
           flex: 0 0 auto;
         }
 
         .shopAvatar {
-          background: #00a889;
+          background: #111827;
         }
 
         .customerLine strong {
           display: block;
-          color: #0f172a;
-          margin-bottom: 3px;
-          font-weight: 800;
+          color: #111827;
+          margin-bottom: 4px;
+          font-weight: 900;
         }
 
         .customerLine span {
           display: flex;
           align-items: center;
           gap: 5px;
-          color: #64748b;
+          color: #6b7280;
           font-size: 13px;
         }
 
         .commentItem > p {
-          margin: 0 0 10px 54px;
-          color: #334155;
+          margin: 0 0 12px 54px;
+          color: #374151;
           line-height: 1.7;
           font-size: 15px;
         }
 
         .replyMini {
-          appearance: none !important;
-          -webkit-appearance: none !important;
           margin-left: 54px;
-          min-height: 30px !important;
-          padding: 0 14px !important;
-          border-radius: 999px !important;
-          border: 1px solid #00a889 !important;
-          background: #ffffff !important;
-          color: #00a889 !important;
-          box-shadow: none !important;
-          font: inherit !important;
-          font-size: 13px !important;
-          font-weight: 700 !important;
+          min-height: 30px;
+          padding: 0 14px;
+          border-radius: 999px;
+          border: 1px solid #f3b1b1;
+          background: #fff5f5;
+          color: #d32f2f;
+          font-size: 13px;
+          font-weight: 800;
           cursor: pointer;
+        }
+
+        .replyMini:hover {
+          color: #ffffff;
+          background: #d32f2f;
+          border-color: #d32f2f;
         }
 
         .adminReply {
           display: flex;
           gap: 12px;
           margin: 14px 0 0 54px;
-          padding: 16px;
-          border-radius: 8px;
-          background: #f8fafc;
+          padding: 15px;
+          border-radius: 12px;
+          background: #f9fafb;
+          border-left: 4px solid #d32f2f;
         }
 
         .adminReply strong {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          color: #0f172a;
+          color: #111827;
           margin-bottom: 6px;
-          font-weight: 800;
+          font-weight: 900;
         }
 
         .adminReply strong::after {
@@ -712,22 +746,23 @@ export default function ProductReviews({
           padding: 2px 8px;
           border-radius: 999px;
           color: #ffffff;
-          background: #00a889;
+          background: #d32f2f;
           font-size: 11px;
         }
 
         .adminReply p {
           margin: 0;
-          color: #334155;
+          color: #374151;
           line-height: 1.65;
           font-size: 14px;
         }
 
         .emptyComment {
           padding: 22px 24px;
-          border-radius: 10px;
-          background: #f8fafc;
-          color: #64748b;
+          border-radius: 12px;
+          background: #f9fafb;
+          border: 1px dashed #d1d5db;
+          color: #6b7280;
           font-size: 15px;
         }
 
@@ -736,7 +771,16 @@ export default function ProductReviews({
             padding: 18px;
           }
 
-          .summaryBody,
+          .reviewHeader {
+            align-items: stretch;
+            flex-direction: column;
+          }
+
+          .reviewCta {
+            width: 100%;
+          }
+
+          .reviewSummary,
           .fieldGrid,
           .commentRow {
             grid-template-columns: 1fr;
@@ -749,146 +793,12 @@ export default function ProductReviews({
             border-bottom: 1px solid #e5e7eb;
           }
 
-          .reviewCta {
-            width: 100%;
-          }
-
           .commentItem > p,
           .replyMini,
           .adminReply {
             margin-left: 0;
           }
         }
-          .hmechaReviews {
-  background:
-    radial-gradient(circle at 8% 0%, rgba(124, 77, 255, 0.18), transparent 32%),
-    radial-gradient(circle at 92% 8%, rgba(0, 229, 255, 0.13), transparent 30%),
-    rgba(7, 12, 32, 0.92) !important;
-  border: 1px solid rgba(0, 229, 255, 0.26) !important;
-  color: #ffffff !important;
-}
-
-.blockTitle h2,
-.blockTitle h3,
-.ratingPick strong,
-.ratingRow > span,
-.customerLine strong {
-  color: #ffffff !important;
-}
-
-.blockTitle i {
-  background: linear-gradient(180deg, #00e5ff, #7c4dff) !important;
-  box-shadow: 0 0 14px rgba(0, 229, 255, 0.45);
-}
-
-.scoreBox {
-  border-right: 1px solid rgba(255,255,255,0.1) !important;
-}
-
-.scoreBox strong {
-  color: #00e5ff !important;
-  text-shadow: 0 0 18px rgba(0, 229, 255, 0.25);
-}
-
-.scoreBox p,
-.reviewMessage {
-  color: #9ff6ff !important;
-}
-
-.reviewCta,
-.sendButton {
-  background: linear-gradient(135deg, #7c4dff, #00e5ff) !important;
-  color: #061020 !important;
-  box-shadow: 0 0 18px rgba(0, 229, 255, 0.22) !important;
-}
-
-.reviewCta:hover,
-.sendButton:hover {
-  color: #ffffff !important;
-  background: linear-gradient(135deg, #ff4fd8, #7c4dff) !important;
-}
-
-.fieldGrid input,
-.commentRow textarea {
-  background: rgba(5, 8, 22, 0.9) !important;
-  border: 1px solid rgba(0, 229, 255, 0.22) !important;
-  color: #ffffff !important;
-}
-
-.fieldGrid input::placeholder,
-.commentRow textarea::placeholder {
-  color: #8ea0ca !important;
-}
-
-.fieldGrid input:focus,
-.commentRow textarea:focus {
-  border-color: #00e5ff !important;
-  box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.14) !important;
-}
-
-.bar {
-  background: rgba(255, 255, 255, 0.09) !important;
-}
-
-.bar i {
-  background: linear-gradient(90deg, #7c4dff, #00e5ff) !important;
-}
-
-.filterBar {
-  color: #c5d2f2 !important;
-}
-
-.filterBar button {
-  background: rgba(5, 8, 22, 0.72) !important;
-  color: #dce6ff !important;
-  border: 1px solid rgba(0, 229, 255, 0.22) !important;
-}
-
-.filterBar button.active,
-.filterBar button:hover {
-  color: #061020 !important;
-  border-color: #00e5ff !important;
-  background: linear-gradient(135deg, #7c4dff, #00e5ff) !important;
-}
-
-.emptyComment {
-  background: rgba(255,255,255,0.055) !important;
-  color: #b9c8ed !important;
-}
-
-.commentItem > p {
-  color: #dce6ff !important;
-}
-
-.replyMini {
-  background: rgba(5, 8, 22, 0.72) !important;
-  color: #00e5ff !important;
-  border-color: rgba(0, 229, 255, 0.55) !important;
-}
-
-.avatar {
-  background: linear-gradient(135deg, #7c4dff, #00e5ff) !important;
-  color: #061020 !important;
-}
-
-.adminReply {
-  background: rgba(0, 229, 255, 0.08) !important;
-  border: 1px solid rgba(0, 229, 255, 0.16);
-}
-
-.adminReply strong,
-.adminReply p {
-  color: #dce6ff !important;
-}
-
-.stars .active,
-.starButtons button.selected {
-  color: #ffcf33 !important;
-}
-
-.starButtons button {
-  color: #465371 !important;
-}
       `}</style>
     </section>
   );
