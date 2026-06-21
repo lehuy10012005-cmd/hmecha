@@ -58,10 +58,7 @@ function uniqueBySlug(products: RelatedProduct[]) {
 }
 
 function isOutOfStock(product: RelatedProduct) {
-  return (
-    product.status === "Hết hàng" ||
-    Number(product.stockQuantity || 0) <= 0
-  );
+  return product.status === "Hết hàng" || Number(product.stockQuantity || 0) <= 0;
 }
 
 export default async function RelatedProducts({
@@ -149,10 +146,12 @@ export default async function RelatedProducts({
 
   return (
     <section className="relatedHomeStyle section-index">
-      <div className="relatedTitle section-title a-left font-title">
-        <h2>
-          Sản phẩm <span>liên quan</span>
-        </h2>
+      <div className="relatedTitle">
+        <span className="titleBar" />
+        <div>
+          <p>Có thể bạn cũng thích</p>
+          <h2>Sản phẩm liên quan</h2>
+        </div>
       </div>
 
       <div className="relatedHomeGrid">
@@ -162,96 +161,77 @@ export default async function RelatedProducts({
           const productUrl = `/${product.slug}`;
 
           return (
-            <div className="swiper-slide" key={`${product.source}-${product.id}`}>
+            <div className="relatedItem" key={`${product.source}-${product.id}`}>
               <div className="item_product_main">
-                <form
-                  action="javascript:void(0)"
-                  method="post"
-                  className="variants product-action item-product-main duration-300"
-                >
-                  <div className="product-thumbnail">
-                    <Link
-                      className="image_thumb scale_hover"
-                      href={productUrl}
-                      title={product.name}
-                    >
-                      <img
-                        className="duration-300 image1"
-                        src={product.image1}
-                        alt={product.name}
-                      />
+                <div className="product-thumbnail">
+                  <Link
+                    className="image_thumb"
+                    href={productUrl}
+                    title={product.name}
+                  >
+                    <img className="image1" src={product.image1} alt={product.name} />
+                    <img className="image2" src={product.image2} alt={product.name} />
+                  </Link>
 
-                      <img
-                        className="duration-300 image2"
-                        src={product.image2}
-                        alt={product.name}
-                      />
+                  {product.badge ? (
+                    <div className="badge">
+                      <span>{product.badge}</span>
+                    </div>
+                  ) : null}
+
+                  <button
+                    type="button"
+                    className="setWishlist"
+                    title="Thêm vào yêu thích"
+                    aria-label="Thêm vào yêu thích"
+                  >
+                    ♡
+                  </button>
+                </div>
+
+                <div className="product-info">
+                  <h3 className="product-name">
+                    <Link href={productUrl} title={product.name}>
+                      {product.name}
                     </Link>
+                  </h3>
 
-                    {product.badge ? (
-                      <div className="badge">
-                        <span className="new">{product.badge}</span>
-                      </div>
-                    ) : null}
-
-                    <button
-                      type="button"
-                      className="setWishlist btn-views btn-circle"
-                      title="Thêm vào yêu thích"
-                      aria-label="Thêm vào yêu thích"
-                    >
-                      ♡
-                    </button>
+                  <div className="product-price-cart">
+                    <span className="price">{formatPrice(product.price)}</span>
                   </div>
 
-                  <div className="product-info">
-                    <h3 className="product-name line-clamp-2-new">
-                      <Link href={productUrl} title={product.name}>
-                        {product.name}
-                      </Link>
-                    </h3>
+                  <div className="inventory_quantity">
+                    <span className="stock-brand-title">Tình trạng: </span>
+                    <span className={outOfStock ? "a-stock out" : "a-stock"}>
+                      {stockText}
+                    </span>
+                  </div>
 
-                    <div className="product-price-cart">
-                      <span className="price">{formatPrice(product.price)}</span>
-                    </div>
-
-                    <div className="inventory_quantity">
-                      <span className="stock-brand-title">Tình trạng: </span>
-                      <span className={outOfStock ? "a-stock out" : "a-stock"}>
-                        {stockText}
-                      </span>
-                    </div>
-
-                    <div className="product-button">
-                      {outOfStock ? (
-                        <button
-                          type="button"
-                          className="btn-cart btn-views disabled"
-                          disabled
-                        >
-                          Hết hàng
-                        </button>
-                      ) : (
-                        <Link
-                          href={productUrl}
-                          className="btn-cart btn-views relatedAddButton"
-                          title="Xem chi tiết"
-                        >
-                          Thêm vào giỏ
-                        </Link>
-                      )}
-
+                  <div className="product-button">
+                    {outOfStock ? (
+                      <button type="button" className="btn-cart disabled" disabled>
+                        Hết hàng
+                      </button>
+                    ) : (
                       <Link
                         href={productUrl}
-                        className="relatedQuickView"
-                        title="Xem nhanh"
-                        aria-label="Xem nhanh"
+                        className="btn-cart relatedAddButton"
+                        title="Xem chi tiết"
                       >
-                        🔍
+                        Xem chi tiết
                       </Link>
-                    </div>
+                    )}
+
+                    <Link
+                      href={productUrl}
+                      className="relatedQuickView"
+                      title="Xem nhanh"
+                      aria-label="Xem nhanh"
+                    >
+                      🔍
+                    </Link>
                   </div>
-                </form>
+                </div>
               </div>
             </div>
           );
@@ -260,282 +240,306 @@ export default async function RelatedProducts({
 
       <style>{`
         .relatedHomeStyle {
-          margin-top: 54px;
-          padding: 0;
+          margin-top: 34px;
+          padding: 26px;
+          border-radius: 18px;
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
+          box-shadow: 0 12px 34px rgba(15, 23, 42, 0.08);
+          font-family: Arial, "Helvetica Neue", sans-serif !important;
         }
 
-        .relatedHomeStyle .relatedTitle {
+        .relatedHomeStyle * {
+          box-sizing: border-box;
+          font-family: Arial, "Helvetica Neue", sans-serif !important;
+        }
+
+        .relatedTitle {
+          display: flex;
+          align-items: center;
+          gap: 12px;
           margin-bottom: 22px;
+          padding-bottom: 18px;
+          border-bottom: 1px solid #edf0f3;
         }
 
-        .relatedHomeStyle .relatedTitle h2 {
+        .titleBar {
+          width: 5px;
+          height: 42px;
+          border-radius: 999px;
+          background: #d32f2f;
+          flex: 0 0 auto;
+        }
+
+        .relatedTitle p {
+          margin: 0 0 4px;
+          color: #d32f2f;
+          font-size: 13px;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 0.4px;
+        }
+
+        .relatedTitle h2 {
           margin: 0;
-          color: #ffffff !important;
-          font-size: 32px;
+          color: #111827;
+          font-size: 24px;
+          line-height: 1.2;
           font-weight: 950;
-          line-height: 1.15;
-        }
-
-        .relatedHomeStyle .relatedTitle h2 span {
-          color: #00e5ff !important;
+          letter-spacing: -0.3px;
         }
 
         .relatedHomeGrid {
           display: grid;
           grid-template-columns: repeat(5, minmax(0, 1fr));
-          gap: 20px;
+          gap: 18px;
         }
 
-        .relatedHomeGrid .swiper-slide {
-          width: 100% !important;
-          height: auto !important;
-          margin: 0 !important;
+        .relatedItem {
+          min-width: 0;
         }
 
-        .relatedHomeStyle .item_product_main {
-          height: 100%;
-          background: transparent !important;
-        }
-
-        .relatedHomeStyle .product-action {
-          position: relative;
+        .item_product_main {
           height: 100%;
           overflow: hidden;
-          display: flex;
-          flex-direction: column;
-          background: #ffffff !important;
-          border: 2px solid rgba(0, 229, 255, 0.35) !important;
-          border-radius: 0 !important;
-          box-shadow: 0 0 18px rgba(0, 229, 255, 0.08) !important;
-          transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+          border-radius: 14px;
+          background: #ffffff;
+          border: 1px solid #e5e7eb;
+          box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06);
+          transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
         }
 
-        .relatedHomeStyle .product-action:hover {
+        .item_product_main:hover {
           transform: translateY(-4px);
-          border-color: rgba(0, 229, 255, 0.95) !important;
-          box-shadow: 0 0 26px rgba(0, 229, 255, 0.18) !important;
+          border-color: #f3b1b1;
+          box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
         }
 
-        .relatedHomeStyle .product-thumbnail {
+        .product-thumbnail {
           position: relative;
           overflow: hidden;
           aspect-ratio: 1 / 1;
-          background: #000000 !important;
+          background: #f8fafc;
+          border-bottom: 1px solid #edf0f3;
         }
 
-        .relatedHomeStyle .image_thumb {
+        .image_thumb {
           position: relative;
           display: block;
           width: 100%;
           height: 100%;
           overflow: hidden;
-          background: #000000 !important;
+          background: #f8fafc;
         }
 
-        .relatedHomeStyle .image_thumb img {
+        .image_thumb img {
           position: absolute;
           inset: 0;
           width: 100%;
           height: 100%;
           display: block;
           object-fit: contain;
-          transition: opacity 0.25s ease, transform 0.25s ease;
+          padding: 8px;
+          transition: opacity 0.24s ease, transform 0.24s ease;
         }
 
-        .relatedHomeStyle .image_thumb .image1 {
+        .image_thumb .image1 {
           opacity: 1;
           z-index: 1;
         }
 
-        .relatedHomeStyle .image_thumb .image2 {
+        .image_thumb .image2 {
           opacity: 0;
           z-index: 2;
         }
 
-        .relatedHomeStyle .product-action:hover .image1 {
+        .item_product_main:hover .image1 {
           opacity: 0;
         }
 
-        .relatedHomeStyle .product-action:hover .image2 {
+        .item_product_main:hover .image2 {
           opacity: 1;
           transform: scale(1.035);
         }
 
-        .relatedHomeStyle .badge {
+        .badge {
           position: absolute;
-          left: 12px;
-          bottom: 12px;
+          left: 10px;
+          bottom: 10px;
           z-index: 4;
-          display: flex;
-          gap: 6px;
-          flex-wrap: wrap;
-          background: transparent !important;
-          padding: 0 !important;
+          background: transparent;
+          padding: 0;
         }
 
-        .relatedHomeStyle .badge .new,
-        .relatedHomeStyle .badge span {
+        .badge span {
           display: inline-flex;
           align-items: center;
-          min-height: 34px;
-          padding: 0 13px;
-          border-radius: 8px;
-          color: #ffffff !important;
-          background: linear-gradient(135deg, #ff4fd8, #7c4dff) !important;
-          font-size: 13px;
-          font-weight: 950;
+          min-height: 28px;
+          padding: 0 10px;
+          border-radius: 7px;
+          color: #ffffff;
+          background: #d32f2f;
+          font-size: 12px;
+          font-weight: 900;
           line-height: 1;
+          box-shadow: 0 6px 14px rgba(211, 47, 47, 0.18);
         }
 
-        .relatedHomeStyle .setWishlist {
+        .setWishlist {
           position: absolute;
-          top: 12px;
-          right: 12px;
+          top: 10px;
+          right: 10px;
           z-index: 5;
-          width: 46px;
-          height: 46px;
+          width: 38px;
+          height: 38px;
           border-radius: 999px;
-          border: none;
+          border: 1px solid #f3b1b1;
           display: grid;
           place-items: center;
-          color: #111827 !important;
-          background: #ffffff !important;
-          font-size: 27px;
+          color: #d32f2f;
+          background: #ffffff;
+          font-size: 22px;
           line-height: 1;
           cursor: pointer;
-          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
-          transition: transform 0.2s ease, color 0.2s ease;
+          box-shadow: 0 6px 16px rgba(15, 23, 42, 0.16);
+          transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
         }
 
-        .relatedHomeStyle .setWishlist:hover {
-          color: #ff4fd8 !important;
+        .setWishlist:hover {
+          color: #ffffff;
+          background: #d32f2f;
           transform: scale(1.06);
         }
 
-        .relatedHomeStyle .product-info {
+        .product-info {
           position: relative;
-          flex: 1;
           display: flex;
           flex-direction: column;
-          min-height: 166px;
-          padding: 14px 14px 15px;
-          background: #ffffff !important;
-          color: #111827 !important;
+          min-height: 170px;
+          padding: 13px 13px 14px;
+          color: #111827;
+          background: #ffffff;
         }
 
-        .relatedHomeStyle .product-name {
+        .product-name {
           margin: 0;
-          min-height: 49px;
-          font-size: 17px !important;
-          line-height: 1.35 !important;
-          font-weight: 900 !important;
+          min-height: 43px;
+          font-size: 14px;
+          line-height: 1.35;
+          font-weight: 900;
           overflow: hidden;
         }
 
-        .relatedHomeStyle .product-name a {
-          color: #111827 !important;
-          text-decoration: none !important;
+        .product-name a {
+          color: #111827;
+          text-decoration: none;
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
         }
 
-        .relatedHomeStyle .product-price-cart {
-          margin: 12px 0 16px;
+        .product-name a:hover {
+          color: #d32f2f;
         }
 
-        .relatedHomeStyle .product-price-cart .price,
-        .relatedHomeStyle .price {
-          color: #00cfe8 !important;
-          font-size: 22px !important;
-          line-height: 1 !important;
-          font-weight: 950 !important;
-          text-shadow: none !important;
+        .product-price-cart {
+          margin: 10px 0 13px;
         }
 
-        .relatedHomeStyle .inventory_quantity {
+        .price {
+          color: #ff5722;
+          font-size: 19px;
+          line-height: 1;
+          font-weight: 950;
+          text-shadow: none;
+        }
+
+        .inventory_quantity {
           margin-top: auto;
-          color: #4b5563 !important;
-          font-size: 14px !important;
-          line-height: 1.4;
+          color: #6b7280;
+          font-size: 12px;
+          line-height: 1.45;
         }
 
-        .relatedHomeStyle .stock-brand-title {
-          color: #4b5563 !important;
-          font-weight: 400 !important;
+        .stock-brand-title {
+          color: #6b7280;
+          font-weight: 500;
         }
 
-        .relatedHomeStyle .a-stock {
-          color: #4b5563 !important;
-          font-weight: 500 !important;
+        .a-stock {
+          color: #15803d;
+          font-weight: 800;
         }
 
-        .relatedHomeStyle .a-stock.out {
-          color: #ff4f7b !important;
-          font-weight: 800 !important;
+        .a-stock.out {
+          color: #d32f2f;
+          font-weight: 900;
         }
 
-        .relatedHomeStyle .product-button {
+        .product-button {
           position: absolute;
-          left: 14px;
-          right: 14px;
-          bottom: 14px;
+          left: 13px;
+          right: 13px;
+          bottom: 13px;
           z-index: 8;
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 8px;
           opacity: 0;
-          transform: translateY(14px);
+          transform: translateY(12px);
           pointer-events: none;
-          transition: opacity 0.22s ease, transform 0.22s ease;
+          transition: opacity 0.2s ease, transform 0.2s ease;
         }
 
-        .relatedHomeStyle .product-action:hover .product-button {
+        .item_product_main:hover .product-button {
           opacity: 1;
           transform: translateY(0);
           pointer-events: auto;
         }
 
-        .relatedHomeStyle .btn-cart {
-          height: 42px;
+        .btn-cart {
+          height: 38px;
           min-width: 0;
           flex: 1;
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          border: none !important;
-          border-radius: 8px !important;
-          text-decoration: none !important;
-          color: #050816 !important;
-          background: linear-gradient(90deg, #7c4dff, #00e5ff) !important;
-          font-size: 14px !important;
-          font-weight: 950 !important;
-          box-shadow: 0 0 16px rgba(0, 229, 255, 0.2) !important;
+          border: 0;
+          border-radius: 8px;
+          text-decoration: none;
+          color: #ffffff;
+          background: #d32f2f;
+          font-size: 13px;
+          font-weight: 900;
+          box-shadow: 0 8px 16px rgba(211, 47, 47, 0.18);
           cursor: pointer;
         }
 
-        .relatedHomeStyle .btn-cart:hover {
-          color: #ffffff !important;
-          background: linear-gradient(90deg, #ff4fd8, #7c4dff) !important;
+        .btn-cart:hover {
+          background: #b91c1c;
         }
 
-        .relatedHomeStyle .btn-cart.disabled {
+        .btn-cart.disabled {
           opacity: 0.65;
           cursor: not-allowed;
         }
 
-        .relatedHomeStyle .relatedQuickView {
-          width: 42px;
-          height: 42px;
+        .relatedQuickView {
+          width: 38px;
+          height: 38px;
           border-radius: 8px;
           display: grid;
           place-items: center;
           text-decoration: none;
-          color: #ffffff !important;
-          background: linear-gradient(135deg, #7c4dff, #00e5ff) !important;
-          font-size: 18px;
-          box-shadow: 0 0 16px rgba(0, 229, 255, 0.22);
+          color: #ffffff;
+          background: #111827;
+          font-size: 16px;
+          box-shadow: 0 8px 16px rgba(17, 24, 39, 0.14);
+        }
+
+        .relatedQuickView:hover {
+          background: #000000;
         }
 
         @media (max-width: 1199px) {
@@ -551,34 +555,38 @@ export default async function RelatedProducts({
         }
 
         @media (max-width: 767px) {
+          .relatedHomeStyle {
+            padding: 18px;
+            border-radius: 14px;
+          }
+
           .relatedHomeGrid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 12px;
           }
 
-          .relatedHomeStyle .product-info {
+          .relatedTitle h2 {
+            font-size: 21px;
+          }
+
+          .product-info {
             min-height: 150px;
             padding: 12px;
           }
 
-          .relatedHomeStyle .product-name {
-            min-height: 43px;
-            font-size: 15px !important;
+          .product-name {
+            min-height: 39px;
+            font-size: 13px;
           }
 
-          .relatedHomeStyle .product-price-cart .price,
-          .relatedHomeStyle .price {
-            font-size: 19px !important;
+          .price {
+            font-size: 17px;
           }
 
-          .relatedHomeStyle .product-button {
+          .product-button {
             left: 12px;
             right: 12px;
             bottom: 12px;
-          }
-
-          .relatedHomeStyle .btn-cart {
-            font-size: 13px !important;
           }
         }
       `}</style>
