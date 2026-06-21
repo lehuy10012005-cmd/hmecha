@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import type { Product } from "../data/products";
@@ -20,7 +20,7 @@ export default function AddToCartButton({ product }: { product: Product }) {
         name: product.name,
         slug: product.slug,
         price: product.price,
-        image: product.images[0],
+        image: Array.isArray(product.images) ? product.images[0] : "",
         quantity,
       });
     }
@@ -30,127 +30,171 @@ export default function AddToCartButton({ product }: { product: Product }) {
     if (goToCheckout) {
       window.location.href = "/checkout";
     } else {
-      alert("Đã thêm vào giỏ hàng!");
+      alert("Đã thêm sản phẩm vào giỏ hàng.");
     }
   }
 
   const isOutOfStock = product.status === "Hết hàng";
 
   return (
-    <div style={{ marginTop: 20 }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 14,
-          marginBottom: 18,
-        }}
-      >
-        <b style={{ color: "white", fontSize: 16 }}>Số lượng:</b>
+    <div className="cartBox">
+      <div className="qtyRow">
+        <span>Số lượng</span>
 
-        <div
-          style={{
-            display: "flex",
-            borderRadius: 8,
-            overflow: "hidden",
-            border: "1px solid rgba(255,255,255,.25)",
-          }}
-        >
+        <div className="qtyControl">
           <button
             type="button"
-            onClick={() => setQuantity((v) => Math.max(1, v - 1))}
-            style={{
-              width: 46,
-              height: 42,
-              border: "none",
-              background: "#e5e7eb",
-              color: "#111827",
-              fontSize: 20,
-              fontWeight: 900,
-              cursor: "pointer",
-            }}
+            onClick={() => setQuantity((value) => Math.max(1, value - 1))}
           >
             -
           </button>
 
-          <input
-            value={quantity}
-            readOnly
-            style={{
-              width: 58,
-              height: 42,
-              border: "none",
-              textAlign: "center",
-              fontWeight: 900,
-              fontSize: 16,
-            }}
-          />
+          <input value={quantity} readOnly aria-label="Số lượng" />
 
-          <button
-            type="button"
-            onClick={() => setQuantity((v) => v + 1)}
-            style={{
-              width: 46,
-              height: 42,
-              border: "none",
-              background: "#e5e7eb",
-              color: "#111827",
-              fontSize: 20,
-              fontWeight: 900,
-              cursor: "pointer",
-            }}
-          >
+          <button type="button" onClick={() => setQuantity((value) => value + 1)}>
             +
           </button>
         </div>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1.2fr 1fr",
-          gap: 12,
-        }}
-      >
-      <button
-  type="button"
-  disabled={isOutOfStock}
-  data-hmecha-event="buy_now"
-  onClick={() => saveToCart(true)}
-          style={{
-            minHeight: 64,
-            border: "none",
-            borderRadius: 10,
-            background: "linear-gradient(135deg,#e5485b,#c9184a)",
-            color: "white",
-            cursor: "pointer",
-            fontWeight: 900,
-            boxShadow: "0 0 24px rgba(229,72,91,.35)",
-          }}
+      <div className="actionGrid">
+        <button
+          type="button"
+          disabled={isOutOfStock}
+          data-hmecha-event="buy_now"
+          className="buyNow"
+          onClick={() => saveToCart(true)}
         >
-          🛒 MUA NGAY
+          Mua ngay
+          <small>Đặt hàng và thanh toán</small>
         </button>
 
-       <button
-  type="button"
-  disabled={isOutOfStock}
-  data-hmecha-event="add_to_cart"
-  onClick={() => saveToCart(false)}
-          style={{
-            minHeight: 64,
-            border: "none",
-            borderRadius: 10,
-            background: "linear-gradient(135deg,#ffd21f,#ffb700)",
-            color: "#111827",
-            cursor: "pointer",
-            fontSize: 16,
-            fontWeight: 950,
-            boxShadow: "0 0 24px rgba(255,210,31,.3)",
-          }}
+        <button
+          type="button"
+          disabled={isOutOfStock}
+          data-hmecha-event="add_to_cart"
+          className="addCart"
+          onClick={() => saveToCart(false)}
         >
-          {isOutOfStock ? "HẾT HÀNG" : "THÊM VÀO GIỎ HÀNG"}
+          {isOutOfStock ? "Hết hàng" : "Thêm vào giỏ"}
         </button>
       </div>
+
+      <style jsx>{`
+        .cartBox {
+          margin-top: 22px;
+        }
+
+        .qtyRow {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 14px;
+          margin-bottom: 16px;
+          color: #374151;
+          font-size: 15px;
+          font-weight: 700;
+        }
+
+        .qtyControl {
+          display: inline-flex;
+          overflow: hidden;
+          border: 1px solid #e5e7eb;
+          border-radius: 10px;
+          background: #ffffff;
+        }
+
+        .qtyControl button {
+          width: 42px;
+          height: 40px;
+          border: 0;
+          background: #f3f4f6;
+          color: #111827;
+          font-size: 18px;
+          font-weight: 900;
+          cursor: pointer;
+        }
+
+        .qtyControl input {
+          width: 56px;
+          height: 40px;
+          border: 0;
+          text-align: center;
+          font-size: 15px;
+          font-weight: 900;
+          color: #111827;
+          background: #ffffff;
+        }
+
+        .actionGrid {
+          display: grid;
+          grid-template-columns: 1.1fr 0.9fr;
+          gap: 12px;
+        }
+
+        .buyNow,
+        .addCart {
+          min-height: 56px;
+          border: 0;
+          border-radius: 10px;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 900;
+          transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+        }
+
+        .buyNow {
+          display: grid;
+          place-items: center;
+          gap: 2px;
+          background: #d32f2f;
+          color: #ffffff;
+          box-shadow: 0 10px 20px rgba(211, 47, 47, 0.2);
+        }
+
+        .buyNow small {
+          font-size: 11px;
+          font-weight: 600;
+          opacity: 0.9;
+        }
+
+        .addCart {
+          background: #111827;
+          color: #ffffff;
+          box-shadow: 0 10px 20px rgba(17, 24, 39, 0.14);
+        }
+
+        .buyNow:hover,
+        .addCart:hover {
+          transform: translateY(-1px);
+        }
+
+        .buyNow:hover {
+          background: #b91c1c;
+        }
+
+        .addCart:hover {
+          background: #000000;
+        }
+
+        .buyNow:disabled,
+        .addCart:disabled {
+          opacity: 0.55;
+          cursor: not-allowed;
+          transform: none;
+        }
+
+        @media (max-width: 560px) {
+          .qtyRow {
+            align-items: flex-start;
+            flex-direction: column;
+          }
+
+          .actionGrid {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
     </div>
   );
 }
