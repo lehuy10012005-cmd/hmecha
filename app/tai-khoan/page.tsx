@@ -1,1017 +1,654 @@
-﻿"use client";
-
-import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { supabase } from "../../lib/supabase";
+import { createAuthServerClient } from "../../lib/supabase-auth/server";
+import CustomerVoucherPanel from "../../components/customer/CustomerVoucherPanel";
+import PointExchangePanel from "../../components/customer/PointExchangePanel";
+export const dynamic = "force-dynamic";
 
-type AnyRecord = Record<string, any>;
-
-type AccountProfile = {
-  name: string;
-  email: string;
-  phone: string;
-  address: string;
-};
-
-type AccountOrderItem = {
-  name: string;
+type OrderItem = {
+  product_name: string;
+  product_price: number;
   quantity: number;
-  price: number;
 };
 
-type AccountOrder = {
+type Order = {
   id: string;
-  code: string;
-  createdAt: string;
-  status: string;
-  payment: string;
   total: number;
-  items: AccountOrderItem[];
+  status: string;
+  payment_method: string;
+  created_at: string;
+  order_items: OrderItem[] | null;
 };
 
-function formatPrice(value: number) {
-  return Number(value || 0).toLocaleString("vi-VN") + "₫";
+const money = (value: number) =>
+  Number(value || 0).toLocaleString("vi-VN") + "₫";
+
+const date = (value: string) => new Date(value).toLocaleDateString("vi-VN");
+
+function shortMemberCode(id?: string) {
+  if (!id) return "HM-MEMBER";
+  return `HM-${id.slice(0, 8).toUpperCase()}`;
 }
 
-function formatDate(value: string) {
-  if (!value) return "Không rõ ngày";
+function statusClass(status: string) {
+  const normalized = status.toLowerCase();
 
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-
-  return date.toLocaleDateString("vi-VN");
-}
-
-function getProfileName(user: AnyRecord | null, profile: AnyRecord | null) {
-  return (
-    profile?.full_name ||
-    profile?.name ||
-    profile?.customer_name ||
-    user?.user_metadata?.full_name ||
-    user?.user_metadata?.name ||
-    user?.email?.split("@")?.[0] ||
-    "Khách hàng HMECHA"
-  );
-}
-
-function normalizeOrderItems(order: AnyRecord): AccountOrderItem[] {
-  const rawItems =
-    order.order_items ||
-    order.items ||
-    order.cart_items ||
-    order.products ||
-    order.orderDetails ||
-    [];
-
-  if (!Array.isArray(rawItems)) return [];
-
-  return rawItems.map((item: AnyRecord) => ({
-    name:
-      item.product_name ||
-      item.name ||
-      item.product?.name ||
-      item.title ||
-      "Sản phẩm HMECHA",
-    quantity: Number(item.quantity || item.qty || 1),
-    price: Number(item.price || item.unit_price || item.product_price || 0),
-  }));
-}
-
-function normalizeOrder(order: AnyRecord): AccountOrder {
-  const id = String(order.id || order.order_id || order.code || Math.random());
-
-  return {
-    id,
-    code:
-      order.order_code ||
-      order.order_number ||
-      order.code ||
-      `HM-${id.slice(0, 8).toUpperCase()}`,
-    createdAt: order.created_at || order.createdAt || order.date || "",
-    status:
-      order.status ||
-      order.order_status ||
-      order.payment_status ||
-      "Chờ xử lý",
-    payment:
-      order.payment_method ||
-      order.payment ||
-      order.method ||
-      "Chưa cập nhật",
-    total: Number(
-      order.total ||
-        order.total_amount ||
-        order.final_total ||
-        order.amount ||
-        order.grand_total ||
-        0
-    ),
-    items: normalizeOrderItems(order),
-  };
-}
-
-function getStatusClass(status: string) {
-  const text = status.toLowerCase();
-
-  if (text.includes("hoàn") || text.includes("giao") || text.includes("paid")) {
+  if (normalized.includes("hoàn") || normalized.includes("thành công")) {
     return "success";
   }
 
-  if (text.includes("hủy") || text.includes("cancel")) {
+  if (normalized.includes("hủy") || normalized.includes("thất bại")) {
     return "danger";
   }
 
   return "pending";
 }
 
-export default function AccountPage() {
-  const [profile, setProfile] = useState<AccountProfile>({
-    name: "Khách hàng HMECHA",
-    email: "",
-    phone: "",
-    address: "",
-  });
+export default async function CustomerAccountPage() {
+  const supabase = await createAuthServerClient();
 
-  const [orders, setOrders] = useState<AccountOrder[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loginRequired, setLoginRequired] = useState(false);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  useEffect(() => {
-    async function loadAccount() {
-      setLoading(true);
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name,email,phone")
+    .eq("id", user!.id)
+    .maybeSingle();
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+  const { data: ordersData } = await supabase
+    .from("orders")
+    .select(
+      "id,total,status,payment_method,created_at,order_items(product_name,product_price,quantity)"
+    )
+    .or(`customer_id.eq.${user!.id},customer_email.eq.${user!.email || ""}`)
+    .order("created_at", { ascending: false })
+    .limit(5);
 
-      if (!user) {
-        setLoginRequired(true);
-        setLoading(false);
-        return;
-      }
+  const { data: pointRow } = await supabase
+    .from("customer_points")
+    .select("points,lifetime_points,lifetime_spent,completed_orders,completed_items,tier")
+    .eq("user_id", user!.id)
+    .maybeSingle();
 
-      let profileData: AnyRecord | null = null;
+  const memberPoints = Number(pointRow?.points || 0);
+  const memberTier = pointRow?.tier || "Rookie Builder";
 
-      try {
-        const profileResponse = await fetch("/api/account/profile", {
-          cache: "no-store",
-        });
+  const orders = (ordersData || []) as Order[];
 
-        const profileJson = await profileResponse.json();
+  const customerName =
+    profile?.full_name || user?.email?.split("@")[0] || "Thành viên HMECHA";
 
-        if (profileJson?.profile) {
-          profileData = profileJson.profile;
-        }
-      } catch {
-        profileData = null;
-      }
-
-      setProfile({
-        name: getProfileName(user, profileData),
-        email: profileData?.email || user.email || "",
-        phone: profileData?.phone || profileData?.customer_phone || "",
-        address: profileData?.address || "",
-      });
-
-      let loadedOrders: AccountOrder[] = [];
-
-      try {
-        const response = await fetch("/api/account/orders", {
-          cache: "no-store",
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-
-          const rawOrders =
-            data.orders ||
-            data.data ||
-            data.orderList ||
-            [];
-
-          if (Array.isArray(rawOrders)) {
-            loadedOrders = rawOrders.map(normalizeOrder);
-          }
-        }
-      } catch {
-        loadedOrders = [];
-      }
-
-      if (loadedOrders.length === 0 && user.email) {
-        const emailQueries = [
-          { column: "customer_email", value: user.email },
-          { column: "email", value: user.email },
-          { column: "user_id", value: user.id },
-        ];
-
-        for (const query of emailQueries) {
-          const { data, error } = await supabase
-            .from("orders")
-            .select("*")
-            .eq(query.column, query.value)
-            .order("created_at", { ascending: false })
-            .limit(20);
-
-          if (!error && Array.isArray(data)) {
-            loadedOrders = data.map(normalizeOrder);
-            break;
-          }
-        }
-      }
-
-      setOrders(loadedOrders);
-      setLoading(false);
-    }
-
-    loadAccount();
-  }, []);
-
-  const stats = useMemo(() => {
-    const totalOrders = orders.length;
-    const totalSpent = orders.reduce((sum, order) => sum + Number(order.total || 0), 0);
-    const pendingOrders = orders.filter((order) => {
-      const status = order.status.toLowerCase();
-      return !status.includes("hủy") && !status.includes("hoàn") && !status.includes("giao");
-    }).length;
-
-    return {
-      totalOrders,
-      totalSpent,
-      pendingOrders,
-    };
-  }, [orders]);
-
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    window.location.href = "/";
-  }
-
-  if (loginRequired) {
-    return (
-      <main className="hmAccountPage">
-        <div className="loginBox">
-          <h1>Bạn cần đăng nhập</h1>
-          <p>Vui lòng đăng nhập để xem thông tin tài khoản và đơn hàng.</p>
-
-          <div>
-            <Link href="/login">Đăng nhập</Link>
-            <Link href="/">Quay về trang chủ</Link>
-          </div>
-        </div>
-
-        <style jsx>{`
-          .hmAccountPage {
-            min-height: 100vh;
-            display: grid;
-            place-items: center;
-            background: #f4f5f7;
-            padding: 24px;
-            font-family: Arial, "Helvetica Neue", sans-serif;
-          }
-
-          .loginBox {
-            width: min(520px, 100%);
-            padding: 34px;
-            border-radius: 18px;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-          }
-
-          .loginBox h1 {
-            margin: 0 0 10px;
-            color: #111827;
-            font-size: 32px;
-            font-weight: 900;
-          }
-
-          .loginBox p {
-            margin: 0 0 22px;
-            color: #4b5563;
-            line-height: 1.7;
-          }
-
-          .loginBox div {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-          }
-
-          .loginBox a {
-            min-height: 44px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 18px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-weight: 800;
-          }
-
-          .loginBox a:first-child {
-            color: #ffffff;
-            background: #d32f2f;
-          }
-
-          .loginBox a:last-child {
-            color: #111827;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-          }
-        `}</style>
-      </main>
-    );
-  }
+  const email = profile?.email || user?.email || "Chưa cập nhật";
+  const phone = profile?.phone || "Chưa cập nhật";
 
   return (
-    <main className="hmAccountPage">
-      <aside className="hmSidebar">
-        <Link href="/" className="hmLogo">
-          HMECHA
-        </Link>
-
-        <div className="hmUserMini">
-          <strong>{profile.name}</strong>
-          <span>{profile.email || "Chưa cập nhật email"}</span>
+    <section className="accountDashboard">
+      <div className="topbar">
+        <div>
+          <p className="eyebrow">HMECHA MEMBER</p>
+          <h1>Xin chào, {customerName}!</h1>
+          <p className="intro">
+            Đây là khu vực theo dõi đơn hàng, thông tin thành viên và các quyền
+            lợi mua sắm của bạn tại HMECHA.
+          </p>
         </div>
 
-        <nav>
-          <a href="#overview" className="active">Tổng quan</a>
-          <a href="#orders">Đơn hàng của tôi</a>
-          <a href="#member">Thông tin thành viên</a>
-        </nav>
+        <Link className="continueShopping" href="/">
+          Tiếp tục mua sắm →
+        </Link>
+      </div>
 
-        <button type="button" onClick={handleLogout}>
-          Đăng xuất
-        </button>
-      </aside>
+      <div className="dashboardGrid">
+        <aside className="memberPanel">
+          <div className="memberCard">
+            <div className="memberCardGlow" />
 
-      <section className="hmContent">
-        <div className="hmTopbar">
-          <div>
-            <span>HMECHA MEMBER</span>
-            <h1>Xin chào, {profile.name}!</h1>
-            <p>
-              Theo dõi đơn hàng, thông tin thành viên và quyền lợi mua sắm của bạn
-              tại HMECHA.
-            </p>
+            <div className="memberCardTop">
+              <div>
+                <span>THẺ THÀNH VIÊN HMECHA</span>
+                <h2>{customerName}</h2>
+              </div>
+
+              <div className="avatar">HM</div>
+            </div>
+
+            <div className="memberCode">
+              <div>
+                <small>Mã số thành viên</small>
+                <strong>{shortMemberCode(user?.id)}</strong>
+              </div>
+
+              <span>ROOKIE</span>
+            </div>
           </div>
 
-          <Link href="/" className="shopBtn">
-            Tiếp tục mua sắm →
-          </Link>
-        </div>
-
-        <div id="overview" className="statGrid">
-          <article>
-            <span>Tổng đơn hàng</span>
-            <strong>{loading ? "..." : stats.totalOrders}</strong>
-            <p>Số đơn đã đặt tại HMECHA</p>
-          </article>
-
-          <article>
-            <span>Tổng chi tiêu</span>
-            <strong>{loading ? "..." : formatPrice(stats.totalSpent)}</strong>
-            <p>Tổng giá trị các đơn hàng</p>
-          </article>
-
-          <article>
-            <span>Đang xử lý</span>
-            <strong>{loading ? "..." : stats.pendingOrders}</strong>
-            <p>Đơn hàng chờ xác nhận/giao hàng</p>
-          </article>
-        </div>
-
-        <div className="mainGrid">
-          <section id="member" className="memberPanel">
-            <div className="sectionHead">
-              <span />
-              <div>
-                <h2>Thông tin thành viên</h2>
-                <p>Thông tin cơ bản của tài khoản mua hàng.</p>
-              </div>
+          <div className="memberInfo">
+            <div>
+              <span>Cấp thành viên:</span>
+              <strong>Rookie Builder</strong>
             </div>
 
-            <div className="memberCardClean">
-              <div className="avatar">
-                {profile.name.slice(0, 1).toUpperCase()}
-              </div>
-
-              <div>
-                <h3>{profile.name}</h3>
-                <p>Khách hàng HMECHA</p>
-              </div>
-
-              <dl>
-                <div>
-                  <dt>Email</dt>
-                  <dd>{profile.email || "Chưa cập nhật"}</dd>
-                </div>
-
-                <div>
-                  <dt>Số điện thoại</dt>
-                  <dd>{profile.phone || "Chưa cập nhật"}</dd>
-                </div>
-
-                <div>
-                  <dt>Địa chỉ</dt>
-                  <dd>{profile.address || "Chưa cập nhật"}</dd>
-                </div>
-              </dl>
-            </div>
-          </section>
-
-          <section id="orders" className="ordersPanelClean">
-            <div className="sectionHead ordersHead">
-              <span />
-              <div>
-                <h2>Đơn hàng gần đây</h2>
-                <p>Kiểm tra trạng thái, sản phẩm và tổng tiền đơn hàng.</p>
-              </div>
+            <div>
+              <span>Điểm tích lũy:</span>
+              <strong className="cyan">0 điểm</strong>
             </div>
 
-            {loading ? (
-              <div className="emptyState">Đang tải đơn hàng...</div>
-            ) : orders.length === 0 ? (
-              <div className="emptyState">
-                <h3>Chưa có đơn hàng</h3>
-                <p>Bạn chưa đặt đơn nào tại HMECHA.</p>
-                <Link href="/">Mua sắm ngay</Link>
-              </div>
-            ) : (
-              <div className="orderList">
-                {orders.map((order) => (
-                  <article className="orderCardClean" key={order.id}>
-                    <header>
+            <div>
+              <span>Email đăng ký:</span>
+              <strong>{email}</strong>
+            </div>
+
+            <div>
+              <span>Số điện thoại:</span>
+              <strong>{phone}</strong>
+            </div>
+          </div>
+
+          <div className="benefits">
+            <h3>✦ Đặc quyền HMECHA của bạn</h3>
+
+            <ul>
+              <li>Theo dõi đơn hàng và trạng thái thanh toán.</li>
+              <li>Ưu tiên nhận thông báo preorder mô hình mới.</li>
+              <li>Tích điểm, voucher và hạng thành viên sẽ được mở rộng sau.</li>
+            </ul>
+          </div>
+        </aside>
+
+        <section className="orderPanel">
+          <div className="orderHeader">
+            <div>
+              <p>LỊCH SỬ ĐƠN HÀNG</p>
+              <h2>Đơn hàng gần đây</h2>
+              <span>
+                Kiểm tra trạng thái đóng gói, thanh toán và tổng tiền đơn hàng.
+              </span>
+            </div>
+
+            <Link href="/tai-khoan/don-hang">Xem tất cả</Link>
+          </div>
+
+          {orders.length === 0 ? (
+            <div className="emptyOrders">
+              <div className="emptyIcon">□</div>
+              <h3>Bạn chưa có đơn hàng nào</h3>
+              <p>
+                Hãy chọn mẫu Gundam yêu thích, sau khi đặt hàng đơn sẽ xuất
+                hiện ở đây.
+              </p>
+              <Link href="/">Mua sắm ngay</Link>
+            </div>
+          ) : (
+            <div className="ordersList">
+              {orders.map((order) => {
+                const items = order.order_items || [];
+
+                return (
+                  <Link
+                    className="orderCard"
+                    href={`/tai-khoan/don-hang/${order.id}`}
+                    key={order.id}
+                  >
+                    <div className="orderCardTop">
                       <div>
-                        <h3>{order.code}</h3>
-                        <p>Đặt ngày {formatDate(order.createdAt)}</p>
+                        <strong>HM-ORD-{order.id.slice(0, 6).toUpperCase()}</strong>
+                        <span>Đặt ngày: {date(order.created_at)}</span>
                       </div>
 
-                      <span className={`status ${getStatusClass(order.status)}`}>
+                      <b className={`status ${statusClass(order.status)}`}>
                         {order.status}
-                      </span>
-                    </header>
+                      </b>
+                    </div>
 
                     <div className="orderItems">
-                      {order.items.length === 0 ? (
-                        <div className="orderProduct">
-                          <strong>Đơn hàng HMECHA</strong>
-                          <span>{formatPrice(order.total)}</span>
-                        </div>
-                      ) : (
-                        order.items.map((item, index) => (
-                          <div className="orderProduct" key={`${order.id}-${index}`}>
+                      {items.length > 0 ? (
+                        items.slice(0, 2).map((item, index) => (
+                          <div className="orderItem" key={`${item.product_name}-${index}`}>
                             <div>
-                              <strong>{item.name}</strong>
-                              <small>x{item.quantity}</small>
+                              <strong>{item.product_name}</strong>
+                              <span>Số lượng: {item.quantity}</span>
                             </div>
 
-                            <span>{formatPrice(item.price * item.quantity)}</span>
+                            <b>{money(item.product_price * item.quantity)}</b>
                           </div>
                         ))
+                      ) : (
+                        <p className="noItem">Đơn hàng đang được cập nhật sản phẩm.</p>
                       )}
                     </div>
 
-                    <footer>
-                      <span>Phương thức: {order.payment}</span>
+                    <div className="orderTotal">
+                      <span>
+                        Phương thức thanh toán:{" "}
+                        <b>{order.payment_method === "cod" ? "COD" : "VNPAY"}</b>
+                      </span>
 
-                      <strong>
-                        Tổng cộng: <b>{formatPrice(order.total)}</b>
-                      </strong>
-                    </footer>
-                  </article>
-                ))}
-              </div>
-            )}
-          </section>
-        </div>
-      </section>
+                      <strong>Tổng thanh toán: {money(order.total)}</strong>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      </div>
 
-      <style jsx>{`
-        .hmAccountPage {
-          min-height: 100vh;
-          display: grid;
-          grid-template-columns: 280px 1fr;
-          background: #f4f5f7;
-          color: #111827;
-          font-family: Arial, "Helvetica Neue", sans-serif;
+      <div style={{ marginTop: 28 }}>
+        <CustomerVoucherPanel />
+        <PointExchangePanel />
+      </div>
+      <style>{`
+        .accountDashboard {
+          color: #ffffff;
         }
 
-        .hmAccountPage * {
-          box-sizing: border-box;
-          font-family: Arial, "Helvetica Neue", sans-serif;
-        }
-
-        .hmSidebar {
-          position: sticky;
-          top: 0;
-          height: 100vh;
-          padding: 28px 22px;
-          background: #ffffff;
-          border-right: 1px solid #e5e7eb;
+        .topbar {
           display: flex;
-          flex-direction: column;
+          align-items: flex-start;
+          justify-content: space-between;
           gap: 22px;
+          margin-bottom: 34px;
         }
 
-        .hmLogo {
-          color: #d32f2f;
-          text-decoration: none;
-          font-size: 26px;
-          line-height: 1;
+        .eyebrow {
+          margin: 0 0 12px;
+          color: #00e5ff;
+          font-size: 13px;
           font-weight: 950;
           letter-spacing: 3px;
         }
 
-        .hmUserMini {
-          padding: 16px;
-          border-radius: 14px;
-          background: #f9fafb;
-          border: 1px solid #e5e7eb;
-        }
-
-        .hmUserMini strong {
-          display: block;
-          color: #111827;
-          font-size: 15px;
-          margin-bottom: 5px;
-        }
-
-        .hmUserMini span {
-          display: block;
-          color: #6b7280;
-          font-size: 13px;
-          line-height: 1.35;
-          word-break: break-word;
-        }
-
-        .hmSidebar nav {
-          display: grid;
-          gap: 10px;
-        }
-
-        .hmSidebar nav a,
-        .hmSidebar button {
-          width: 100%;
-          min-height: 46px;
-          display: flex;
-          align-items: center;
-          padding: 0 14px;
-          border-radius: 12px;
-          border: 1px solid #e5e7eb;
-          background: #ffffff;
-          color: #111827;
-          text-decoration: none;
-          font-size: 14px;
-          font-weight: 800;
-          cursor: pointer;
-          transition: 0.18s ease;
-        }
-
-        .hmSidebar nav a:hover,
-        .hmSidebar nav a.active {
-          color: #d32f2f;
-          border-color: #f3b1b1;
-          background: #fff5f5;
-        }
-
-        .hmSidebar button {
-          margin-top: auto;
-          justify-content: center;
-          color: #ffffff;
-          background: #d32f2f;
-          border-color: #d32f2f;
-        }
-
-        .hmSidebar button:hover {
-          background: #b91c1c;
-          border-color: #b91c1c;
-        }
-
-        .hmContent {
-          padding: 42px 48px 70px;
-        }
-
-        .hmTopbar {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 24px;
-          margin-bottom: 28px;
-        }
-
-        .hmTopbar span {
-          display: inline-block;
-          margin-bottom: 10px;
-          color: #d32f2f;
-          font-size: 13px;
-          font-weight: 900;
-          letter-spacing: 2px;
-        }
-
-        .hmTopbar h1 {
+        h1 {
           margin: 0;
-          color: #111827;
-          font-size: clamp(34px, 4vw, 54px);
+          font-size: clamp(34px, 5vw, 54px);
           line-height: 1.08;
-          font-weight: 850;
-          letter-spacing: -1px;
         }
 
-        .hmTopbar p {
-          max-width: 680px;
-          margin: 16px 0 0;
-          color: #4b5563;
-          font-size: 16px;
-          line-height: 1.7;
+        .intro {
+          max-width: 760px;
+          margin: 20px 0 0;
+          color: #b7c5e8;
+          line-height: 1.75;
+          font-size: 17px;
         }
 
-        .shopBtn {
-          flex: 0 0 auto;
-          min-height: 46px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          padding: 0 18px;
-          border-radius: 12px;
-          color: #ffffff;
-          background: #d32f2f;
+        .continueShopping {
+          white-space: nowrap;
+          padding: 14px 20px;
+          border-radius: 14px;
+          color: #061020;
           text-decoration: none;
-          font-weight: 900;
-          box-shadow: 0 8px 18px rgba(211, 47, 47, 0.14);
-        }
-
-        .shopBtn:hover {
-          background: #b91c1c;
-        }
-
-        .statGrid {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 18px;
-          margin-bottom: 24px;
-        }
-
-        .statGrid article,
-        .memberPanel,
-        .ordersPanelClean {
-          background: #ffffff;
-          border: 1px solid #e5e7eb;
-          border-radius: 18px;
-          box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
-        }
-
-        .statGrid article {
-          padding: 20px;
-        }
-
-        .statGrid span {
-          display: block;
-          color: #6b7280;
-          font-size: 13px;
-          font-weight: 800;
-          margin-bottom: 10px;
-        }
-
-        .statGrid strong {
-          display: block;
-          color: #111827;
-          font-size: 28px;
-          line-height: 1.1;
           font-weight: 950;
-          margin-bottom: 8px;
+          background: linear-gradient(135deg, #7c4dff, #00e5ff);
+          box-shadow: 0 0 24px rgba(0, 229, 255, 0.24);
         }
 
-        .statGrid p {
-          margin: 0;
-          color: #6b7280;
-          font-size: 13px;
-          line-height: 1.45;
-        }
-
-        .mainGrid {
+        .dashboardGrid {
           display: grid;
-          grid-template-columns: 360px minmax(0, 1fr);
-          gap: 24px;
+          grid-template-columns: 360px 1fr;
+          gap: 28px;
           align-items: start;
         }
 
         .memberPanel,
-        .ordersPanelClean {
+        .orderPanel {
+          border: 1px solid rgba(0, 229, 255, 0.18);
+          border-radius: 26px;
+          background: rgba(255, 255, 255, 0.055);
+          box-shadow: 0 0 34px rgba(124, 77, 255, 0.12);
+        }
+
+        .memberPanel {
           padding: 24px;
         }
 
-        .sectionHead {
+        .memberCard {
+          position: relative;
+          overflow: hidden;
+          padding: 22px;
+          min-height: 190px;
+          border-radius: 22px;
+          background:
+            radial-gradient(circle at 88% 20%, rgba(255, 79, 216, 0.28), transparent 30%),
+            linear-gradient(135deg, #7c4dff, #00e5ff);
+          color: #061020;
+        }
+
+        .memberCardGlow {
+          position: absolute;
+          right: -40px;
+          bottom: -60px;
+          width: 170px;
+          height: 170px;
+          border-radius: 999px;
+          border: 28px solid rgba(255,255,255,0.15);
+        }
+
+        .memberCardTop {
+          position: relative;
+          z-index: 1;
           display: flex;
-          gap: 12px;
-          align-items: flex-start;
-          margin-bottom: 20px;
-          padding-bottom: 18px;
-          border-bottom: 1px solid #edf0f3;
+          justify-content: space-between;
+          gap: 18px;
         }
 
-        .sectionHead > span {
-          width: 4px;
-          height: 34px;
-          border-radius: 99px;
-          background: #d32f2f;
-          flex: 0 0 auto;
+        .memberCardTop span {
+          display: inline-flex;
+          padding: 7px 10px;
+          border-radius: 8px;
+          background: rgba(5, 8, 22, 0.16);
+          color: #ffffff;
+          font-size: 11px;
+          font-weight: 950;
+          letter-spacing: 1px;
         }
 
-        .sectionHead h2 {
-          margin: 0;
-          color: #111827;
+        .memberCardTop h2 {
+          margin: 13px 0 0;
+          color: #ffffff;
           font-size: 22px;
-          line-height: 1.2;
-          font-weight: 900;
-          letter-spacing: -0.2px;
         }
 
-        .sectionHead p {
-          margin: 7px 0 0;
-          color: #6b7280;
+        .avatar {
+          width: 48px;
+          height: 48px;
+          display: grid;
+          place-items: center;
+          border-radius: 50%;
+          color: #ffffff;
+          background: rgba(5, 8, 22, 0.22);
+          font-weight: 950;
+        }
+
+        .memberCode {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          gap: 14px;
+          margin-top: 46px;
+          padding-top: 16px;
+          border-top: 1px solid rgba(255,255,255,0.28);
+        }
+
+        .memberCode small {
+          display: block;
+          color: rgba(255,255,255,0.78);
+          font-size: 11px;
+          font-weight: 850;
+          text-transform: uppercase;
+        }
+
+        .memberCode strong {
+          color: #ffffff;
+          font-family: Consolas, monospace;
+          letter-spacing: 1px;
+        }
+
+        .memberCode span {
+          padding: 5px 10px;
+          border-radius: 999px;
+          color: #061020;
+          background: #ffe169;
+          font-size: 11px;
+          font-weight: 950;
+        }
+
+        .memberInfo {
+          display: grid;
+          gap: 0;
+          margin-top: 22px;
+        }
+
+        .memberInfo div {
+          display: flex;
+          justify-content: space-between;
+          gap: 18px;
+          padding: 13px 0;
+          border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .memberInfo span {
+          color: #91a4d2;
+          font-weight: 800;
+        }
+
+        .memberInfo strong {
+          color: #ffffff;
+          text-align: right;
+          word-break: break-word;
+        }
+
+        .memberInfo .cyan {
+          color: #00e5ff;
+        }
+
+        .benefits {
+          margin-top: 24px;
+          padding: 18px;
+          border-radius: 18px;
+          background: rgba(0, 229, 255, 0.06);
+          border: 1px solid rgba(0, 229, 255, 0.14);
+        }
+
+        .benefits h3 {
+          margin: 0 0 12px;
+          color: #00e5ff;
+          font-size: 15px;
+        }
+
+        .benefits ul {
+          margin: 0;
+          padding-left: 18px;
+          color: #c5d2f2;
+          line-height: 1.7;
           font-size: 14px;
-          line-height: 1.5;
         }
 
-        .memberCardClean {
+        .orderPanel {
+          padding: 28px;
+        }
+
+        .orderHeader {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 20px;
+          margin-bottom: 24px;
+        }
+
+        .orderHeader p {
+          margin: 0 0 8px;
+          color: #00e5ff;
+          font-size: 13px;
+          font-weight: 950;
+          letter-spacing: 2px;
+        }
+
+        .orderHeader h2 {
+          margin: 0 0 8px;
+          font-size: 28px;
+        }
+
+        .orderHeader span {
+          color: #9fb0d8;
+        }
+
+        .orderHeader a {
+          color: #00e5ff;
+          text-decoration: none;
+          font-weight: 950;
+        }
+
+        .ordersList {
           display: grid;
           gap: 18px;
         }
 
-        .avatar {
-          width: 66px;
-          height: 66px;
-          display: grid;
-          place-items: center;
-          border-radius: 18px;
-          color: #ffffff;
-          background: #d32f2f;
-          font-size: 28px;
-          font-weight: 950;
-        }
-
-        .memberCardClean h3 {
-          margin: 0 0 5px;
-          color: #111827;
-          font-size: 22px;
-          line-height: 1.25;
-          font-weight: 900;
-        }
-
-        .memberCardClean p {
-          margin: 0;
-          color: #6b7280;
-          font-size: 14px;
-        }
-
-        .memberCardClean dl {
-          display: grid;
-          gap: 12px;
-          margin: 0;
-        }
-
-        .memberCardClean dl div {
-          padding: 14px;
-          border-radius: 12px;
-          background: #f9fafb;
-          border: 1px solid #edf0f3;
-        }
-
-        .memberCardClean dt {
-          margin-bottom: 5px;
-          color: #6b7280;
-          font-size: 12px;
-          font-weight: 800;
-        }
-
-        .memberCardClean dd {
-          margin: 0;
-          color: #111827;
-          font-size: 14px;
-          font-weight: 800;
-          word-break: break-word;
-        }
-
-        .orderList {
-          display: grid;
-          gap: 16px;
-        }
-
-        .orderCardClean {
+        .orderCard {
+          display: block;
           overflow: hidden;
-          border-radius: 16px;
-          background: #ffffff;
-          border: 1px solid #e5e7eb;
+          border-radius: 20px;
+          border: 1px solid rgba(0, 229, 255, 0.16);
+          background: rgba(5, 8, 22, 0.72);
+          color: #ffffff;
+          text-decoration: none;
         }
 
-        .orderCardClean header {
+        .orderCard:hover {
+          border-color: rgba(0, 229, 255, 0.48);
+          box-shadow: 0 0 24px rgba(0, 229, 255, 0.12);
+        }
+
+        .orderCardTop {
           display: flex;
           justify-content: space-between;
-          gap: 16px;
-          align-items: flex-start;
+          gap: 18px;
           padding: 18px 20px;
-          background: #fafafa;
-          border-bottom: 1px solid #edf0f3;
+          background: rgba(255, 255, 255, 0.045);
+          border-bottom: 1px solid rgba(255,255,255,0.08);
         }
 
-        .orderCardClean h3 {
-          margin: 0 0 5px;
-          color: #d32f2f;
-          font-size: 15px;
-          font-weight: 950;
+        .orderCardTop strong {
+          display: block;
+          margin-bottom: 6px;
         }
 
-        .orderCardClean header p {
-          margin: 0;
-          color: #6b7280;
+        .orderCardTop span {
+          color: #91a4d2;
           font-size: 13px;
         }
 
         .status {
-          flex: 0 0 auto;
-          min-height: 30px;
-          display: inline-flex;
-          align-items: center;
-          padding: 0 12px;
+          align-self: flex-start;
+          padding: 7px 12px;
           border-radius: 999px;
           font-size: 12px;
-          font-weight: 900;
-          border: 1px solid #e5e7eb;
-          background: #ffffff;
-          color: #374151;
-        }
-
-        .status.pending {
-          color: #92400e;
-          background: #fff8ed;
-          border-color: #fed7aa;
-        }
-
-        .status.success {
-          color: #166534;
-          background: #ecfdf3;
-          border-color: #bbf7d0;
-        }
-
-        .status.danger {
-          color: #b91c1c;
-          background: #fff5f5;
-          border-color: #f3b1b1;
-        }
-
-        .orderItems {
-          display: grid;
-          gap: 0;
-        }
-
-        .orderProduct {
-          display: flex;
-          justify-content: space-between;
-          gap: 16px;
-          padding: 15px 20px;
-          border-bottom: 1px solid #f1f3f5;
-        }
-
-        .orderProduct:last-child {
-          border-bottom: 0;
-        }
-
-        .orderProduct strong {
-          display: block;
-          color: #111827;
-          font-size: 14px;
-          line-height: 1.45;
-          font-weight: 850;
-        }
-
-        .orderProduct small {
-          display: inline-flex;
-          margin-top: 6px;
-          color: #6b7280;
-          font-size: 12px;
-          font-weight: 800;
-        }
-
-        .orderProduct span {
-          flex: 0 0 auto;
-          color: #ff5722;
-          font-size: 14px;
           font-weight: 950;
           white-space: nowrap;
         }
 
-        .orderCardClean footer {
+        .status.pending {
+          color: #ffd36e;
+          background: rgba(255, 184, 52, 0.14);
+          border: 1px solid rgba(255, 184, 52, 0.3);
+        }
+
+        .status.success {
+          color: #50efa0;
+          background: rgba(37, 194, 110, 0.15);
+          border: 1px solid rgba(37, 194, 110, 0.28);
+        }
+
+        .status.danger {
+          color: #ff96a5;
+          background: rgba(255, 75, 100, 0.14);
+          border: 1px solid rgba(255, 75, 100, 0.26);
+        }
+
+        .orderItems {
+          padding: 18px 20px;
+          display: grid;
+          gap: 12px;
+        }
+
+        .orderItem {
           display: flex;
           justify-content: space-between;
-          gap: 16px;
-          padding: 16px 20px;
-          background: #fafafa;
-          border-top: 1px solid #edf0f3;
-          color: #6b7280;
-          font-size: 14px;
+          gap: 18px;
         }
 
-        .orderCardClean footer strong {
-          color: #111827;
-          font-weight: 850;
+        .orderItem strong {
+          display: block;
+          color: #ffffff;
         }
 
-        .orderCardClean footer b {
-          color: #ff5722;
-          font-weight: 950;
+        .orderItem span,
+        .noItem {
+          color: #91a4d2;
+          font-size: 13px;
         }
 
-        .emptyState {
-          padding: 24px;
-          border-radius: 14px;
-          background: #f9fafb;
-          border: 1px dashed #d1d5db;
-          color: #6b7280;
+        .orderItem b {
+          color: #00e5ff;
+          white-space: nowrap;
         }
 
-        .emptyState h3 {
-          margin: 0 0 8px;
-          color: #111827;
-          font-size: 20px;
-          font-weight: 900;
+        .orderTotal {
+          display: flex;
+          justify-content: space-between;
+          gap: 18px;
+          padding: 17px 20px;
+          border-top: 1px dashed rgba(0, 229, 255, 0.18);
+          color: #aebde2;
         }
 
-        .emptyState p {
-          margin: 0 0 16px;
-          color: #6b7280;
-          line-height: 1.6;
+        .orderTotal strong {
+          color: #ff78d2;
         }
 
-        .emptyState a {
-          color: #d32f2f;
-          font-weight: 900;
+        .emptyOrders {
+          padding: 54px 24px;
+          text-align: center;
+          border-radius: 20px;
+          border: 1px dashed rgba(0, 229, 255, 0.28);
+          background: rgba(5, 8, 22, 0.55);
+        }
+
+        .emptyIcon {
+          width: 58px;
+          height: 58px;
+          display: grid;
+          place-items: center;
+          margin: 0 auto 16px;
+          border-radius: 50%;
+          color: #00e5ff;
+          background: rgba(0, 229, 255, 0.1);
+        }
+
+        .emptyOrders h3 {
+          margin: 0;
+          color: #ffffff;
+        }
+
+        .emptyOrders p {
+          color: #9fb0d8;
+        }
+
+        .emptyOrders a {
+          display: inline-flex;
+          margin-top: 14px;
+          padding: 13px 20px;
+          border-radius: 13px;
+          color: #061020;
           text-decoration: none;
+          font-weight: 950;
+          background: linear-gradient(135deg, #7c4dff, #00e5ff);
         }
 
-        @media (max-width: 1100px) {
-          .hmAccountPage {
-            grid-template-columns: 1fr;
-          }
-
-          .hmSidebar {
-            position: static;
-            height: auto;
-            border-right: 0;
-            border-bottom: 1px solid #e5e7eb;
-          }
-
-          .hmSidebar nav {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-          }
-
-          .hmSidebar button {
-            margin-top: 0;
-          }
-
-          .hmContent {
-            padding: 30px 20px 60px;
-          }
-
-          .mainGrid {
+        @media (max-width: 1150px) {
+          .dashboardGrid {
             grid-template-columns: 1fr;
           }
         }
 
         @media (max-width: 760px) {
-          .hmTopbar {
-            display: block;
-          }
-
-          .shopBtn {
-            margin-top: 18px;
-          }
-
-          .statGrid {
-            grid-template-columns: 1fr;
-          }
-
-          .hmSidebar nav {
-            grid-template-columns: 1fr;
-          }
-
-          .memberPanel,
-          .ordersPanelClean {
-            padding: 18px;
-          }
-
-          .orderCardClean header,
-          .orderCardClean footer,
-          .orderProduct {
+          .topbar,
+          .orderHeader,
+          .orderCardTop,
+          .orderTotal,
+          .orderItem {
             flex-direction: column;
           }
 
-          .orderProduct span {
-            white-space: normal;
+          .continueShopping {
+            width: 100%;
+            text-align: center;
           }
         }
       `}</style>
-    </main>
+    </section>
   );
 }
