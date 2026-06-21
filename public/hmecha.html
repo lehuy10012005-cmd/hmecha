@@ -2094,6 +2094,378 @@ a.backtop {
 })();
 </script>
 
+
+
+<style id="hmecha-c3-gundam-theme">
+:root {
+  --mainColor: #d32f2f !important;
+  --subColor: #ffc107 !important;
+  --hover: #ffc107 !important;
+  --textColor: #222222 !important;
+  --price: #ff5722 !important;
+  --bgHeader: #000000 !important;
+  --txtHeader: #ffffff !important;
+  --bgBody: #ffffff !important;
+  --bgBodySub: #f3f6fb !important;
+  --bgincol: linear-gradient(to right, #ea4420, rgba(234, 68, 32, 0.8), rgba(234, 68, 32, 0.3), rgba(234, 68, 32, 0)) !important;
+  --bgintime: #ffb700 !important;
+  --bgtxttime: #000000 !important;
+  --bgmoduleflash: #c6000f !important;
+  --bg_info_module: #d32f2f !important;
+  --bgFooter: #000000 !important;
+  --txtTitleFooter: #a5a5a5 !important;
+  --txtFooter: #ffffff !important;
+  --textorder: #be1f2e !important;
+}
+
+html,
+body {
+  background: #ffffff !important;
+  color: #222222 !important;
+}
+
+/* Header đen giống C3 */
+.header,
+.top-main-header,
+.main-header,
+.header-menu {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+.main-header {
+  background-color: #000000 !important;
+}
+
+.header a,
+.header span,
+.header b,
+.header-menu a,
+.header-menu span,
+.nav-link,
+#nav a {
+  color: #ffffff !important;
+}
+
+.header a:hover,
+.header-menu a:hover,
+.nav-link:hover,
+#nav a:hover {
+  color: #ffc107 !important;
+}
+
+/* Thanh menu danh mục */
+.sudes-cate-header .title,
+.sudes-list-cate .title,
+.title_menu,
+.button-promo a {
+  background: #d32f2f !important;
+  color: #ffffff !important;
+}
+
+.sudes-main-cate,
+.sudes-list-cate,
+.dropdown-menu,
+.mega-content,
+.search-suggest {
+  background: #ffffff !important;
+  color: #222222 !important;
+  border: 1px solid #eeeeee !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12) !important;
+}
+
+.sudes-main-cate a,
+.dropdown-menu a,
+.mega-content a,
+.search-suggest a,
+.search-suggest span {
+  color: #222222 !important;
+}
+
+.sudes-main-cate a:hover,
+.dropdown-menu a:hover,
+.mega-content a:hover {
+  color: #d32f2f !important;
+}
+
+/* Body sáng */
+.bodywrap,
+.section-index,
+.section-index .container,
+[class*="section_"],
+[class*="section-"] {
+  background: #ffffff !important;
+  color: #222222 !important;
+}
+
+.section_category,
+.section_collections,
+.section_blog,
+.section_brand,
+.section_product,
+.section_product_tab {
+  background: #ffffff !important;
+}
+
+/* Section nền phụ xanh nhạt giống C3 */
+.section_category,
+.section_collections {
+  background: #f3f6fb !important;
+  padding-top: 28px !important;
+  padding-bottom: 28px !important;
+}
+
+/* Tiêu đề */
+.section-title h2,
+.section-title h2 a,
+.title_module_main h2,
+.title_module_main h2 a,
+.title-module,
+.title-head,
+h1, h2, h3, h4 {
+  color: #222222 !important;
+}
+
+.section-title h2 span,
+.title_module_main h2 span {
+  color: #d32f2f !important;
+}
+
+.sub_title,
+.section-title p {
+  color: #666666 !important;
+}
+
+/* Card sản phẩm sáng, sản phẩm nổi hơn */
+.item_product_main,
+.product-action,
+.product-item,
+.product-card,
+.item-product,
+.product-box,
+.cate-item {
+  background: #ffffff !important;
+  color: #222222 !important;
+  border: 1px solid #eeeeee !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.08) !important;
+}
+
+.item_product_main:hover,
+.product-action:hover,
+.product-item:hover,
+.product-card:hover,
+.item-product:hover,
+.cate-item:hover {
+  transform: translateY(-3px);
+  border-color: rgba(211, 47, 47, 0.45) !important;
+  box-shadow: 0 14px 32px rgba(211, 47, 47, 0.16) !important;
+}
+
+.item_product_main img,
+.product-action img,
+.product-item img,
+.product-card img,
+.cate-item img {
+  background: #ffffff !important;
+}
+
+/* Tên sản phẩm */
+.product-name,
+.product-name a,
+.line-clamp-2-new a,
+.item_product_main a,
+.product-action a {
+  color: #222222 !important;
+}
+
+.product-name a:hover,
+.line-clamp-2-new a:hover {
+  color: #d32f2f !important;
+}
+
+/* Giá */
+.price,
+.special-price,
+.product-price,
+.product-price-cart .price,
+.price-box {
+  color: #ff5722 !important;
+  font-weight: 900 !important;
+}
+
+.old-price,
+.compare-price {
+  color: #999999 !important;
+}
+
+/* Tình trạng */
+.inventory_quantity,
+.inventory_quantity span,
+.stock-brand-title,
+.product-info,
+.product-info span,
+.product-vendor,
+.product-type,
+.product-summary,
+.product-description,
+.text-muted {
+  color: #555555 !important;
+}
+
+.a-stock {
+  color: #16a34a !important;
+  font-weight: 700 !important;
+}
+
+/* Nút chính đỏ */
+.btn,
+.btn-cart,
+.add_to_cart,
+button[type="submit"],
+.product-button .add_to_cart {
+  background: #d32f2f !important;
+  color: #ffffff !important;
+  border: none !important;
+  box-shadow: 0 8px 18px rgba(211, 47, 47, 0.22) !important;
+}
+
+.btn:hover,
+.btn-cart:hover,
+.add_to_cart:hover,
+button[type="submit"]:hover {
+  background: #be1f2e !important;
+  color: #ffffff !important;
+}
+
+/* Nút phụ / icon */
+.btn-views,
+.setWishlist,
+.setCompare,
+.quick-view {
+  background: #ffffff !important;
+  color: #d32f2f !important;
+  border: 1px solid #eeeeee !important;
+}
+
+.btn-views:hover,
+.setWishlist:hover,
+.setCompare:hover,
+.quick-view:hover {
+  background: #ffc107 !important;
+  color: #000000 !important;
+}
+
+/* Flash sale đỏ giống C3 */
+.section_flash_sale,
+.section_flash_sale .container,
+.block-product-sale {
+  background: #c6000f !important;
+  color: #ffffff !important;
+  border-radius: 16px !important;
+}
+
+.section_flash_sale h2,
+.section_flash_sale h2 a,
+.section_flash_sale .title,
+.section_flash_sale .title a,
+.section_flash_sale .count-down,
+.section_flash_sale .title_km,
+.section_flash_sale .ssmore {
+  color: #ffffff !important;
+}
+
+.timer-view,
+.count-down .block-timer,
+.count-down span {
+  background: #ffb700 !important;
+  color: #000000 !important;
+}
+
+.sale,
+.badge,
+.flash-sale-badge,
+.product-badge {
+  background: #ffc107 !important;
+  color: #000000 !important;
+}
+
+/* Banner top đỏ đậm */
+.banner-top {
+  background: #6d0201 !important;
+}
+
+/* Search */
+.header_tim_kiem input,
+.search-mobile input,
+input,
+select,
+textarea {
+  background: #ffffff !important;
+  color: #222222 !important;
+  border-color: #dddddd !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #777777 !important;
+}
+
+.header-search-form button,
+.search-bar button {
+  background: #d32f2f !important;
+  color: #ffffff !important;
+}
+
+/* Footer đen giống C3 */
+.hmecha-custom-footer,
+footer,
+.footer {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+.hmecha-footer-title,
+.hmecha-brand-header h2,
+.footer h3,
+.footer h4 {
+  color: #a5a5a5 !important;
+}
+
+.hmecha-footer-links a,
+.hmecha-footer-bottom,
+.hmecha-custom-footer p,
+footer p,
+footer a {
+  color: #ffffff !important;
+}
+
+.hmecha-footer-links a:hover,
+footer a:hover {
+  color: #ffc107 !important;
+}
+
+/* Mobile bottom nav */
+.fixed-bottom-mobile,
+.bottom-nav,
+.mobile-bottom-nav {
+  background: #000000 !important;
+  border-top: 1px solid #222222 !important;
+}
+
+.fixed-bottom-mobile a,
+.bottom-nav a,
+.mobile-bottom-nav a {
+  color: #ffffff !important;
+}
+
+.fixed-bottom-mobile a:hover,
+.bottom-nav a:hover,
+.mobile-bottom-nav a:hover {
+  color: #ffc107 !important;
+}
+</style>
+
 </head>
 	<body>
 		<div class="opacity_menu"></div>
