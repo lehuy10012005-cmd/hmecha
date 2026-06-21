@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 
@@ -89,28 +89,19 @@ export default function WishlistButton({
         onClick={toggleWishlist}
         disabled={loading}
         title={active ? "Đã yêu thích" : "Thêm vào yêu thích"}
-        className={active ? "wishCompact active" : "wishCompact"}
+        style={{
+          width: 42,
+          height: 42,
+          borderRadius: 999,
+          border: 0,
+          background: "#ffffff",
+          color: active ? "#ff4fd8" : "#061020",
+          fontSize: 22,
+          cursor: "pointer",
+          fontWeight: 950,
+        }}
       >
         {active ? "♥" : "♡"}
-
-        <style jsx>{`
-          .wishCompact {
-            width: 38px;
-            height: 38px;
-            border-radius: 999px;
-            border: 1px solid #e5e7eb;
-            background: #ffffff;
-            color: #111827;
-            font-size: 20px;
-            cursor: pointer;
-            font-weight: 900;
-            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
-          }
-
-          .wishCompact.active {
-            color: #d32f2f;
-          }
-        `}</style>
       </button>
     );
   }
@@ -120,31 +111,22 @@ export default function WishlistButton({
       type="button"
       onClick={toggleWishlist}
       disabled={loading}
-      className={active ? "wishButton active" : "wishButton"}
+      style={{
+        width: "100%",
+        minHeight: 56,
+        borderRadius: 14,
+        border: "1px solid rgba(0,229,255,.24)",
+        background: active
+          ? "linear-gradient(135deg, rgba(255,79,216,.28), rgba(0,229,255,.12))"
+          : "rgba(255,255,255,.045)",
+        color: "#ffffff",
+        fontSize: 18,
+        fontWeight: 900,
+        cursor: "pointer",
+        boxShadow: active ? "0 0 24px rgba(255,79,216,.2)" : "none",
+      }}
     >
       {loading ? "Đang xử lý..." : active ? "♥ Đã yêu thích" : "♡ Thêm vào yêu thích"}
-
-      <style jsx>{`
-        .wishButton {
-          width: 100%;
-          min-height: 50px;
-          border-radius: 10px;
-          border: 1px solid #e5e7eb;
-          background: #ffffff;
-          color: #111827;
-          font-size: 15px;
-          font-weight: 800;
-          cursor: pointer;
-          transition: 0.18s ease;
-        }
-
-        .wishButton:hover,
-        .wishButton.active {
-          border-color: #d32f2f;
-          color: #d32f2f;
-          background: #fff7f7;
-        }
-      `}</style>
     </button>
   );
 }
