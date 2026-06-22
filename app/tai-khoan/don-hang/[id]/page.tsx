@@ -229,6 +229,45 @@ export default async function OrderDetailPage({ params }: PageProps) {
             </Link>
           </section>
         ) : null}
+
+        {isCompletedOrder ? (
+          <section className="afterSaleSuggest">
+            <div className="suggestHead">
+              <p>NEXT BUILD SUGGESTION</p>
+              <h2>Gợi ý phụ kiện cho lần build tiếp theo</h2>
+              <span>
+                Sau khi hoàn tất đơn hàng, HMECHA gợi ý thêm một số phụ kiện thường được dùng khi lắp ráp và trưng bày mô hình.
+              </span>
+            </div>
+
+            <div className="suggestGrid">
+              <Link href="/products" className="suggestCard">
+                <b>Kìm cắt mô hình</b>
+                <span>Hỗ trợ tách part gọn hơn, hạn chế làm xước chi tiết.</span>
+              </Link>
+
+              <Link href="/products" className="suggestCard">
+                <b>Decal & sticker</b>
+                <span>Tăng độ chi tiết và giúp mô hình nhìn nổi bật hơn khi trưng bày.</span>
+              </Link>
+
+              <Link href="/products" className="suggestCard">
+                <b>Đế trưng bày</b>
+                <span>Phù hợp cho các mẫu có dáng bay, pose hành động hoặc cần cố định chắc hơn.</span>
+              </Link>
+
+              <Link href="/products" className="suggestCard">
+                <b>Phụ kiện custom</b>
+                <span>Gợi ý thêm vũ khí, hiệu ứng, tay thay thế hoặc chi tiết nâng cấp.</span>
+              </Link>
+
+              <Link href="/products" className="suggestCard">
+                <b>Mô hình cùng dòng</b>
+                <span>Tiếp tục hoàn thiện bộ sưu tập theo series hoặc cùng cấp HG, RG, MG.</span>
+              </Link>
+            </div>
+          </section>
+        ) : null}
       </div>
 
       <style>{`
@@ -464,10 +503,87 @@ export default async function OrderDetailPage({ params }: PageProps) {
           transform: translateY(-1px);
           filter: brightness(1.08);
         }
+
+        .afterSaleSuggest {
+          margin-top: 18px;
+          padding: 26px;
+          border-radius: 22px;
+          border: 1px solid rgba(124, 77, 255, 0.28);
+          background:
+            radial-gradient(circle at 0% 0%, rgba(124,77,255,.18), transparent 34%),
+            radial-gradient(circle at 100% 0%, rgba(255,102,217,.12), transparent 36%),
+            rgba(7, 12, 32, 0.88);
+          box-shadow: 0 18px 42px rgba(0,0,0,.24);
+        }
+
+        .suggestHead {
+          margin-bottom: 20px;
+        }
+
+        .suggestHead p {
+          margin: 0 0 8px;
+          color: #ff66d9;
+          font-size: 12px;
+          font-weight: 950;
+          letter-spacing: 4px;
+        }
+
+        .suggestHead h2 {
+          margin: 0 0 10px;
+          color: #ffffff;
+          font-size: clamp(26px, 3vw, 38px);
+          line-height: 1.12;
+        }
+
+        .suggestHead span {
+          display: block;
+          max-width: 860px;
+          color: #c5d2f2;
+          line-height: 1.7;
+        }
+
+        .suggestGrid {
+          display: grid;
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+          gap: 12px;
+        }
+
+        .suggestCard {
+          min-height: 150px;
+          padding: 18px;
+          border-radius: 18px;
+          border: 1px solid rgba(255,255,255,.12);
+          background: rgba(255,255,255,.055);
+          color: #ffffff;
+          text-decoration: none;
+          transition: .2s ease;
+        }
+
+        .suggestCard:hover {
+          transform: translateY(-3px);
+          border-color: rgba(0,229,255,.42);
+          background: rgba(0,229,255,.08);
+        }
+
+        .suggestCard b {
+          display: block;
+          margin-bottom: 10px;
+          color: #ffffff;
+          font-size: 16px;
+        }
+
+        .suggestCard span {
+          display: block;
+          color: #c5d2f2;
+          font-size: 13px;
+          line-height: 1.6;
+        }
         @media (max-width: 980px) {
           .statusGrid,
           .contentGrid,
-          .reviewReminder {
+          .reviewReminder,
+          .afterSaleSuggest,
+          .suggestGrid {
             grid-template-columns: 1fr;
           }
         }
