@@ -2103,3 +2103,143 @@ body:has(a[href*="/tai-khoan"]) main [class*="Status"] {
 }
 
 /* END HMECHA ACCOUNT SIDEBAR FONT FINAL */
+
+
+
+/* HMECHA ADMIN DARK PANEL FIX */
+
+/* Nền tổng thể admin */
+body:has(a[href*="/admin"]),
+body:has(a[href*="/admin"]) main {
+  background: #050b1f !important;
+  color: #ffffff !important;
+}
+
+/* Đổi các khối trắng trong dashboard về nền tối */
+body:has(a[href*="/admin"]) main > div,
+body:has(a[href*="/admin"]) main > section,
+body:has(a[href*="/admin"]) main article,
+body:has(a[href*="/admin"]) main section > div,
+body:has(a[href*="/admin"]) main div[class*="card"],
+body:has(a[href*="/admin"]) main div[class*="Card"],
+body:has(a[href*="/admin"]) main div[class*="panel"],
+body:has(a[href*="/admin"]) main div[class*="Panel"],
+body:has(a[href*="/admin"]) main div[class*="box"],
+body:has(a[href*="/admin"]) main div[class*="Box"] {
+  background: #080e24 !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(0, 210, 255, 0.35) !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.28) !important;
+}
+
+/* Card lớn như Doanh thu / Bán chạy nhất / Thanh toán / Đơn hàng mới nhất */
+body:has(a[href*="/admin"]) main div[class*="chart"],
+body:has(a[href*="/admin"]) main div[class*="Chart"],
+body:has(a[href*="/admin"]) main div[class*="revenue"],
+body:has(a[href*="/admin"]) main div[class*="Revenue"],
+body:has(a[href*="/admin"]) main div[class*="product"],
+body:has(a[href*="/admin"]) main div[class*="Product"],
+body:has(a[href*="/admin"]) main div[class*="order"],
+body:has(a[href*="/admin"]) main div[class*="Order"],
+body:has(a[href*="/admin"]) main div[class*="payment"],
+body:has(a[href*="/admin"]) main div[class*="Payment"] {
+  background: #080e24 !important;
+  color: #ffffff !important;
+  border-color: rgba(0, 210, 255, 0.32) !important;
+}
+
+/* Chữ trong admin */
+body:has(a[href*="/admin"]) main h1,
+body:has(a[href*="/admin"]) main h2,
+body:has(a[href*="/admin"]) main h3,
+body:has(a[href*="/admin"]) main h4,
+body:has(a[href*="/admin"]) main strong,
+body:has(a[href*="/admin"]) main b {
+  color: #ffffff !important;
+  text-shadow: none !important;
+}
+
+body:has(a[href*="/admin"]) main p,
+body:has(a[href*="/admin"]) main span,
+body:has(a[href*="/admin"]) main small,
+body:has(a[href*="/admin"]) main li {
+  color: #b9c7ee !important;
+  text-shadow: none !important;
+}
+
+/* Tiêu đề nhỏ màu cyan */
+body:has(a[href*="/admin"]) main [class*="label"],
+body:has(a[href*="/admin"]) main [class*="Label"],
+body:has(a[href*="/admin"]) main [class*="eyebrow"],
+body:has(a[href*="/admin"]) main [class*="Eyebrow"],
+body:has(a[href*="/admin"]) main h5 {
+  color: #00d9ff !important;
+  letter-spacing: 4px !important;
+  font-weight: 800 !important;
+}
+
+/* Giá tiền / số liệu */
+body:has(a[href*="/admin"]) main [class*="price"],
+body:has(a[href*="/admin"]) main [class*="Price"],
+body:has(a[href*="/admin"]) main [class*="money"],
+body:has(a[href*="/admin"]) main [class*="Money"],
+body:has(a[href*="/admin"]) main [class*="total"],
+body:has(a[href*="/admin"]) main [class*="Total"] {
+  color: #00e5ff !important;
+  font-weight: 900 !important;
+}
+
+/* Bảng đơn hàng mới nhất */
+body:has(a[href*="/admin"]) table,
+body:has(a[href*="/admin"]) thead,
+body:has(a[href*="/admin"]) tbody,
+body:has(a[href*="/admin"]) tr,
+body:has(a[href*="/admin"]) th,
+body:has(a[href*="/admin"]) td {
+  background: transparent !important;
+}
+
+body:has(a[href*="/admin"]) th {
+  color: #8ea2d8 !important;
+  font-weight: 700 !important;
+}
+
+body:has(a[href*="/admin"]) td {
+  color: #ffffff !important;
+  border-color: rgba(0, 210, 255, 0.12) !important;
+}
+
+/* Box gợi ý chủ shop */
+body:has(a[href*="/admin"]) main [class*="suggest"],
+body:has(a[href*="/admin"]) main [class*="Suggest"],
+body:has(a[href*="/admin"]) main [class*="advice"],
+body:has(a[href*="/admin"]) main [class*="Advice"] {
+  background: rgba(0, 217, 255, 0.08) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(0, 217, 255, 0.28) !important;
+}
+
+/* Thanh chart / progress giữ neon */
+body:has(a[href*="/admin"]) main [class*="bar"],
+body:has(a[href*="/admin"]) main [class*="Bar"],
+body:has(a[href*="/admin"]) main [class*="progress"],
+body:has(a[href*="/admin"]) main [class*="Progress"] {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+body:has(a[href*="/admin"]) main [class*="fill"],
+body:has(a[href*="/admin"]) main [class*="Fill"] {
+  background: linear-gradient(90deg, #7c4dff, #00d9ff) !important;
+}
+
+/* Nút admin */
+body:has(a[href*="/admin"]) main button,
+body:has(a[href*="/admin"]) main a[class*="btn"],
+body:has(a[href*="/admin"]) main a[class*="button"] {
+  background: linear-gradient(135deg, #7c4dff, #00d9ff) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* END HMECHA ADMIN DARK PANEL FIX */
