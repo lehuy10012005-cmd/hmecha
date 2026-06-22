@@ -12,6 +12,7 @@ import RelatedProducts from "../../components/RelatedProducts";
 import ProductReviews from "../../components/ProductReviews";
 import ProductEventTracker from "../../components/ProductEventTracker";
 import ProductSideActions from "../../components/ProductSideActions";
+import MarketingSubscribeBox from "../../components/MarketingSubscribeBox";
 
 function normalizeProductText(value: unknown) {
   return String(value || "").toLowerCase();
@@ -257,6 +258,12 @@ const product = dbProduct
                 <li>🎁 Freeship cho đơn từ 1.000.000đ</li>
               </ul>
             </div>
+
+            <MarketingSubscribeBox
+              productId={product.id}
+              productName={product.name}
+              productSlug={product.slug}
+            />
 
             <div className="policy">
               <h3>✅ CHÍNH SÁCH HỖ TRỢ</h3>
