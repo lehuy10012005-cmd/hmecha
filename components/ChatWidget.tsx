@@ -219,7 +219,19 @@ export default function ChatWidget() {
         return;
       }
 
-      await refreshMessages(sessionId);
+      
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: makeMsgId(),
+          role: "bot",
+          content:
+            data.reply ||
+            "Mình đã nhận được câu hỏi. Bạn hỏi rõ hơn để mình hỗ trợ chính xác nhé.",
+        },
+      ]);
+
+      refreshMessages(sessionId).catch(() => {});
     } catch {
       setMessages((prev) => [
         ...prev,
