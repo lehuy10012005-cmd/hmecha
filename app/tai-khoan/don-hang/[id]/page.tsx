@@ -101,6 +101,11 @@ export default async function OrderDetailPage({ params }: PageProps) {
 
   const items = order.order_items || [];
 
+  const cleanOrderStatus = displayStatusText(order.status);
+  const isCompletedOrder =
+    cleanOrderStatus === "Hoàn thành" ||
+    String(order.status || "").toLowerCase() === "completed";
+
   return (
     <main className="orderDetailPage">
       <div className="container">
@@ -117,7 +122,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
         <section className="statusGrid">
           <div>
             <span>Trạng thái đơn</span>
-            <strong>{order.status || "Đang cập nhật"}</strong>
+            <strong>{displayStatusText(order.status) || "Đang cập nhật"}</strong>
           </div>
 
           <div>
@@ -129,7 +134,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
 
           <div>
             <span>Tình trạng thanh toán</span>
-            <strong>{order.payment_status || "Đang cập nhật"}</strong>
+            <strong>{displayStatusText(order.payment_status) || "Đang cập nhật"}</strong>
           </div>
         </section>
 
@@ -203,6 +208,27 @@ export default async function OrderDetailPage({ params }: PageProps) {
             </div>
           </div>
         </section>
+        {isCompletedOrder ? (
+          <section className="reviewReminder">
+            <div>
+              <p>AFTER-SALE CARE</p>
+              <h2>Đánh giá sản phẩm để nhận thêm quyền lợi</h2>
+              <span>
+                Cảm ơn bạn đã hoàn tất đơn hàng tại HMECHA. Bạn có thể chia sẻ trải nghiệm về sản phẩm đã mua để giúp shop cải thiện dịch vụ và giúp khách hàng mới yên tâm hơn.
+              </span>
+
+              <ul>
+                <li>Nhận thêm điểm thưởng cho tài khoản thành viên.</li>
+                <li>Giúp HMECHA cải thiện chất lượng đóng gói và tư vấn.</li>
+                <li>Hỗ trợ người mua mới chọn mô hình phù hợp hơn.</li>
+              </ul>
+            </div>
+
+            <Link className="reviewButton" href="/products">
+              Đánh giá sản phẩm
+            </Link>
+          </section>
+        ) : null}
       </div>
 
       <style>{`
@@ -369,9 +395,79 @@ export default async function OrderDetailPage({ params }: PageProps) {
           line-height: 1.6;
         }
 
+
+        .reviewReminder {
+          margin-top: 18px;
+          padding: 26px;
+          border-radius: 22px;
+          border: 1px solid rgba(0, 229, 255, 0.24);
+          background:
+            radial-gradient(circle at 0% 0%, rgba(0,229,255,.16), transparent 34%),
+            radial-gradient(circle at 100% 0%, rgba(124,77,255,.18), transparent 36%),
+            rgba(7, 12, 32, 0.88);
+          box-shadow: 0 18px 42px rgba(0,0,0,.24);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 24px;
+        }
+
+        .reviewReminder p {
+          margin: 0 0 8px;
+          color: #00e5ff;
+          font-size: 12px;
+          font-weight: 950;
+          letter-spacing: 4px;
+        }
+
+        .reviewReminder h2 {
+          margin: 0 0 10px;
+          color: #ffffff;
+          font-size: clamp(26px, 3vw, 38px);
+          line-height: 1.12;
+        }
+
+        .reviewReminder span {
+          display: block;
+          max-width: 820px;
+          color: #c5d2f2;
+          line-height: 1.7;
+        }
+
+        .reviewReminder ul {
+          margin: 18px 0 0;
+          padding-left: 18px;
+          color: #dce6ff;
+          line-height: 1.8;
+        }
+
+        .reviewReminder li {
+          margin: 4px 0;
+        }
+
+        .reviewButton {
+          flex: 0 0 auto;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 48px;
+          padding: 0 22px;
+          border-radius: 999px;
+          color: #050816;
+          background: linear-gradient(135deg, #00e5ff, #7c4dff);
+          text-decoration: none;
+          font-weight: 950;
+          box-shadow: 0 14px 30px rgba(0,229,255,.22);
+        }
+
+        .reviewButton:hover {
+          transform: translateY(-1px);
+          filter: brightness(1.08);
+        }
         @media (max-width: 980px) {
           .statusGrid,
-          .contentGrid {
+          .contentGrid,
+          .reviewReminder {
             grid-template-columns: 1fr;
           }
         }
