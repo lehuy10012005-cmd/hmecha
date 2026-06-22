@@ -1,7 +1,13 @@
 import { NextResponse } from "next/server";
+
 import crypto from "crypto";
+
 import qs from "qs";
-import { supabase } from "../../../../lib/supabase"; import { createAuthServerClient } from "../../../../lib/supabase-auth/server";
+
+import { supabase } from "../../../../lib/supabase"; 
+import { createAuthServerClient } from "../../../../lib/supabase-auth/server";
+import { validateCartStock } from "../../../../lib/checkoutStock";
+
 
 type CartItem = {
   id: string;
@@ -64,6 +70,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: "Thiáº¿u thÃ´ng tin khÃ¡ch hÃ ng." }, { status: 400 });
     }
 
+    const stockCheck = await validateCartStock(cart);
+
+    if (!stockCheck.ok) {
+      return NextResponse.json(
+        {
+          message: stockCheck.message,
+          items: stockCheck.items,
+        },
+        { status: 409 }
+      );
+    }
     const subtotal = cart.reduce(
       (sum, item) => sum + Number(item.price) * Number(item.quantity),
       0
