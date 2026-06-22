@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAuthServerClient } from "../../../../../lib/supabase-auth/server";
 import { supabaseAdmin } from "../../../../../lib/supabase-admin";
 import { awardPointsForCompletedOrder } from "../../../../../lib/customerRewards";
+import {
+  createAfterSaleVoucher,
+  sendOrderStatusEmail,
+} from "../../../../../lib/afterSaleMarketing";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +23,11 @@ async function requireAdmin() {
   }
 
   return user;
+}
+
+function isCompletedStatus(status: string) {
+  const value = String(status || "").trim();
+  return value === "Hoàn thành" || value === "completed" || value === "Hoan thanh";
 }
 
 export async function PATCH(request: NextRequest) {
@@ -59,17 +68,39 @@ export async function PATCH(request: NextRequest) {
     );
   }
 
-  let rewardResult = null;
+  let rewardResult: any = null;
+  let voucherResult: any = null;
+  let emailResult: any = null;
 
-  if (status === "Hoàn thành") {
-    rewardResult = await awardPointsForCompletedOrder(orderId);
+  if (isCompletedStatus(status)) {
+    rewardResult = await awardPointsForCompletedOrder(orderId).catch((err) => ({
+      awarded: false,
+      message: err?.message || "Không cộng được điểm.",
+    }));
+
+    voucherResult = await createAfterSaleVoucher(orderId).catch((err) => ({
+      created: false,
+      voucher: null,
+      message: err?.message || "Không tạo được voucher hậu mãi.",
+    }));
   }
+
+  emailResult = await sendOrderStatusEmail(orderId, status, {
+    voucher: voucherResult?.voucher || null,
+    rewardMessage: rewardResult?.message || null,
+  }).catch((err) => ({
+    sent: false,
+    skipped: false,
+    message: err?.message || "Không gửi được email trạng thái.",
+  }));
 
   return NextResponse.json({
     order,
     reward: rewardResult,
+    voucher: voucherResult,
+    email: emailResult,
     message:
-      status === "Hoàn thành" && rewardResult?.awarded
+      isCompletedStatus(status) && rewardResult?.awarded
         ? rewardResult.message
         : "Đã cập nhật trạng thái đơn hàng.",
   });
