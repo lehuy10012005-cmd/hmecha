@@ -3212,6 +3212,76 @@ a[href^="tel:"] {
 
 
 
+<style id="hero-title-clear-fix">
+/* Chỉ sửa chữ hero, không đụng ảnh nền */
+.hmecha-final-hero h1,
+.hmecha-final-hero .hero-title,
+.hmecha-final-hero .banner-title {
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* 3 dòng chữ lớn phía trên: ĐAM MÊ / GUNDAM / BẮT ĐẦU TỪ */
+.hmecha-final-hero h1,
+.hmecha-final-hero h1 span,
+.hmecha-final-hero .hero-title,
+.hmecha-final-hero .hero-title span,
+.hmecha-final-hero .banner-title,
+.hmecha-final-hero .banner-title span {
+  color: #d8dde6 !important;
+  -webkit-text-fill-color: #d8dde6 !important;
+  opacity: 1 !important;
+  text-shadow:
+    0 1px 0 rgba(255,255,255,.75),
+    0 3px 0 rgba(90,98,112,.88),
+    0 6px 0 rgba(20,24,32,.82),
+    0 12px 22px rgba(0,0,0,.9),
+    0 0 18px rgba(255,255,255,.18) !important;
+  -webkit-text-stroke: .7px rgba(255,255,255,.18) !important;
+}
+
+/* Nếu code đang dùng từng dòng riêng thì ép 3 dòng đầu thành bạc rõ */
+.hmecha-final-hero h1 span:nth-child(1),
+.hmecha-final-hero h1 span:nth-child(2),
+.hmecha-final-hero h1 span:nth-child(3),
+.hmecha-final-hero .hero-title span:nth-child(1),
+.hmecha-final-hero .hero-title span:nth-child(2),
+.hmecha-final-hero .hero-title span:nth-child(3) {
+  color: #d8dde6 !important;
+  -webkit-text-fill-color: #d8dde6 !important;
+  opacity: 1 !important;
+}
+
+/* Chữ HMECHA vẫn đỏ, nhưng rõ và nổi hơn */
+.hmecha-final-hero h1 span:nth-child(4),
+.hmecha-final-hero h1 span:last-child,
+.hmecha-final-hero h1 strong,
+.hmecha-final-hero .hero-title span:nth-child(4),
+.hmecha-final-hero .hero-title span:last-child,
+.hmecha-final-hero .hero-title strong {
+  color: #ff2525 !important;
+  -webkit-text-fill-color: #ff2525 !important;
+  opacity: 1 !important;
+  text-shadow:
+    0 1px 0 rgba(255,210,210,.9),
+    0 3px 0 rgba(155,0,0,.95),
+    0 6px 0 rgba(60,0,0,.9),
+    0 13px 24px rgba(0,0,0,.92),
+    0 0 26px rgba(255,0,0,.45) !important;
+  -webkit-text-stroke: .6px rgba(255,255,255,.16) !important;
+}
+
+/* Dòng mô tả dưới title */
+.hmecha-final-hero p,
+.hmecha-final-hero .subtitle,
+.hmecha-final-hero .hero-subtitle {
+  color: #ffffff !important;
+  opacity: 1 !important;
+  text-shadow:
+    0 2px 5px rgba(0,0,0,.9),
+    0 0 12px rgba(255,255,255,.16) !important;
+}
+</style>
 </head>
 	<body>
 		<div class="opacity_menu"></div>
