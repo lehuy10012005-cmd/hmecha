@@ -2487,3 +2487,68 @@ textarea {
 }
 
 /* hmecha-customer-font-unify-end */
+
+/* hmecha-mobile-icon-white-red-start */
+
+@media (max-width: 768px) {
+  /* Giữ nguyên thanh mobile, chỉ đổi icon */
+  .mobileBottomNav svg,
+  .mobile-bottom-nav svg,
+  .bottomMobileNav svg,
+  .bottom-mobile-nav svg,
+  .mobileTabBar svg,
+  .mobile-tab-bar svg,
+  .bottomNav svg,
+  .bottom-nav svg,
+  nav[class*="mobile"] svg,
+  div[class*="mobile"][class*="nav"] svg,
+  div[class*="bottom"][class*="nav"] svg {
+    width: 42px !important;
+    height: 42px !important;
+    padding: 8px !important;
+    box-sizing: border-box !important;
+    border-radius: 999px !important;
+    background: #ffffff !important;
+    border: 1.5px solid #dc2626 !important;
+    color: #dc2626 !important;
+    fill: #dc2626 !important;
+    stroke: #dc2626 !important;
+    box-shadow: 0 6px 16px rgba(220, 38, 38, 0.18) !important;
+  }
+
+  /* Chữ bên dưới vẫn đỏ, không đổi nền thanh */
+  .mobileBottomNav a,
+  .mobile-bottom-nav a,
+  .bottomMobileNav a,
+  .bottom-mobile-nav a,
+  .mobileTabBar a,
+  .mobile-tab-bar a,
+  .bottomNav a,
+  .bottom-nav a,
+  nav[class*="mobile"] a,
+  div[class*="mobile"][class*="nav"] a,
+  div[class*="bottom"][class*="nav"] a {
+    color: #dc2626 !important;
+    font-weight: 850 !important;
+  }
+
+  /* Số badge vẫn nổi rõ */
+  .mobileBottomNav .badge,
+  .mobile-bottom-nav .badge,
+  .bottomMobileNav .badge,
+  .bottom-mobile-nav .badge,
+  .mobileTabBar .badge,
+  .mobile-tab-bar .badge,
+  .bottomNav .badge,
+  .bottom-nav .badge,
+  nav[class*="mobile"] .badge,
+  div[class*="mobile"][class*="nav"] .badge,
+  div[class*="bottom"][class*="nav"] .badge {
+    background: #facc15 !important;
+    color: #111827 !important;
+    border: 1px solid #ffffff !important;
+    font-weight: 950 !important;
+  }
+}
+
+/* hmecha-mobile-icon-white-red-end */
