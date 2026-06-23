@@ -1,8 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { products, formatPrice } from "../../../data/products";
+import { supabase } from "../../../lib/supabase";
 import { findFaqAnswer } from "../../../lib/chatbot/faq";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+type ChatProduct = {
+  id?: string | number;
+  name: string;
+  slug: string;
+  sku?: string | null;
+  price: number;
+  brand?: string | null;
+  category?: string | null;
+  status?: string | null;
+  stock_quantity?: number | null;
+  badge?: string | null;
+};
 
 type PriceRange = {
   min?: number;
@@ -39,13 +53,31 @@ function isGreeting(text: string) {
 }
 
 function money(value: number) {
-  return formatPrice(Math.round(value)).replace("₫", "đ");
+  return `${Math.round(value).toLocaleString("vi-VN")}đ`;
 }
 
 function parseNumber(value: string) {
   const normalized = String(value || "").replace(",", ".");
   const number = Number(normalized);
   return Number.isFinite(number) ? number : 0;
+}
+
+function preprocessPriceText(text: string) {
+  let result = normalizeText(text);
+
+  result = result
+    .replace(/mot\s*(trieu|tr|m)\s*ruoi/g, "1.5 trieu")
+    .replace(/hai\s*(trieu|tr|m)\s*ruoi/g, "2.5 trieu")
+    .replace(/ba\s*(trieu|tr|m)\s*ruoi/g, "3.5 trieu")
+    .replace(/bon\s*(trieu|tr|m)\s*ruoi/g, "4.5 trieu")
+    .replace(/nam\s*(trieu|tr|m)\s*ruoi/g, "5.5 trieu");
+
+  result = result.replace(
+    /(\d+(?:[.,]\d+)?)\s*(trieu|tr|m)\s*ruoi/g,
+    (_match, numberText) => `${parseNumber(numberText) + 0.5} trieu`
+  );
+
+  return result;
 }
 
 function moneyValue(numberText: string, unitText?: string) {
@@ -70,6 +102,8 @@ function moneyValue(numberText: string, unitText?: string) {
 }
 
 function extractRequestedCount(text: string) {
+  if (hasAny(text, ["re nhat", "dat nhat", "cao nhat", "thap nhat"])) return 1;
+
   const match = text.match(/(\d+)\s*(san pham|sp|mon|mau|lua chon|goi y)/i);
   const count = match?.[1] ? Number(match[1]) : 3;
 
@@ -78,12 +112,14 @@ function extractRequestedCount(text: string) {
 }
 
 function getFirstMoneyValue(text: string) {
-  const match = text.match(/(\d+(?:[.,]\d+)?)\s*(trieu|tr|m|k|nghin|ngan|d|vnd)?/i);
+  const priceText = preprocessPriceText(text);
+  const match = priceText.match(/(\d+(?:[.,]\d+)?)\s*(trieu|tr|m|k|nghin|ngan|d|vnd)?/i);
   if (!match) return 0;
   return moneyValue(match[1], match[2]);
 }
 
-function extractPriceRange(text: string): PriceRange {
+function extractPriceRange(message: string): PriceRange {
+  const text = preprocessPriceText(message);
   const range: PriceRange = { mode: "none" };
   const unit = "(trieu|tr|m|k|nghin|ngan|d|vnd)?";
   const number = "(\\d+(?:[.,]\\d+)?)";
@@ -123,18 +159,97 @@ function extractPriceRange(text: string): PriceRange {
 
   const amount = getFirstMoneyValue(text);
 
-  if (amount > 0 && hasAny(text, ["gia", "tam gia", "ngan sach", "trieu", "k", "vnd", "d", "co"])) {
-    const tolerance = amount >= 1000000 ? 0.15 : 0.2;
+  if (amount > 0) {
+    if (
+      hasAny(text, [
+        "toi co",
+        "minh co",
+        "ngan sach",
+        "budget",
+        "co tam",
+        "co khoang",
+        "mua duoc",
+      ])
+    ) {
+      range.max = amount;
+      range.mode = "max";
+      return range;
+    }
 
-    range.target = amount;
-    range.min = Math.max(0, Math.round(amount * (1 - tolerance)));
-    range.max = Math.round(amount * (1 + tolerance));
-    range.mode = "around";
+    if (hasAny(text, ["gia", "tam gia", "trieu", "k", "vnd", "d", "co hang nao"])) {
+      const tolerance = amount >= 1000000 ? 0.2 : 0.25;
 
-    return range;
+      range.target = amount;
+      range.min = Math.max(0, Math.round(amount * (1 - tolerance)));
+      range.max = Math.round(amount * (1 + tolerance));
+      range.mode = "around";
+      return range;
+    }
   }
 
   return range;
+}
+
+function getProductStatus(product: ChatProduct) {
+  const status = normalizeText(product.status || "");
+
+  if (status.includes("con hang")) return "Còn hàng";
+  if (status.includes("het hang")) return "Hết hàng";
+  if (status.includes("dat truoc") || status.includes("preorder")) return "Đặt trước";
+
+  if (typeof product.stock_quantity === "number") {
+    if (product.stock_quantity > 0) return "Còn hàng";
+    if (product.stock_quantity <= 0) return "Hết hàng";
+  }
+
+  return product.status || "Chưa rõ";
+}
+
+async function getCatalogProducts() {
+  const { data, error } = await supabase
+    .from("products")
+    .select(`
+      id,
+      name,
+      slug,
+      sku,
+      price,
+      brand,
+      category,
+      status,
+      stock_quantity,
+      badge,
+      is_active,
+      created_at
+    `)
+    .eq("is_active", true)
+    .order("created_at", { ascending: false })
+    .limit(300);
+
+  if (error) {
+    console.error("Chatbot products query error:", error.message);
+    return [];
+  }
+
+  return (data || [])
+    .map((item: any) => ({
+      id: item.id,
+      name: String(item.name || ""),
+      slug: String(item.slug || ""),
+      sku: item.sku,
+      price: Number(item.price || 0),
+      brand: item.brand,
+      category: item.category,
+      status: item.status,
+      stock_quantity:
+        typeof item.stock_quantity === "number"
+          ? item.stock_quantity
+          : Number.isFinite(Number(item.stock_quantity))
+            ? Number(item.stock_quantity)
+            : null,
+      badge: item.badge,
+    }))
+    .filter((item) => item.name && item.slug && item.price > 0);
 }
 
 function getSmartFaqReply(text: string) {
@@ -187,9 +302,9 @@ function getSmartFaqReply(text: string) {
   return null;
 }
 
-function productMatchesKeyword(product: (typeof products)[number], text: string) {
+function productMatchesKeyword(product: ChatProduct, text: string) {
   const haystack = normalizeText(
-    `${product.name} ${product.category} ${product.brand} ${product.status} ${product.sku} ${product.badge || ""}`
+    `${product.name} ${product.category || ""} ${product.brand || ""} ${product.status || ""} ${product.sku || ""} ${product.badge || ""}`
   );
 
   const keywordMap = [
@@ -220,7 +335,7 @@ function productMatchesKeyword(product: (typeof products)[number], text: string)
   });
 }
 
-function findProducts(message: string) {
+function findProducts(message: string, catalogProducts: ChatProduct[]) {
   const text = normalizeText(message);
   const count = extractRequestedCount(text);
   const range = extractPriceRange(text);
@@ -229,7 +344,7 @@ function findProducts(message: string) {
   const wantPreorder = hasAny(text, ["preorder", "dat truoc", "sap ve"]);
   const wantSale = hasAny(text, ["sale", "khuyen mai", "san pham giam gia", "dang giam"]);
 
-  let result = products.filter((product) => {
+  let result = catalogProducts.filter((product) => {
     if (!product.price || product.price <= 0) return false;
 
     if (range.min && product.price < range.min) return false;
@@ -237,7 +352,7 @@ function findProducts(message: string) {
 
     if (!productMatchesKeyword(product, text)) return false;
 
-    const status = normalizeText(product.status || "");
+    const status = normalizeText(getProductStatus(product));
     const badge = normalizeText(product.badge || "");
 
     if (wantInStock && !status.includes("con hang")) return false;
@@ -248,8 +363,8 @@ function findProducts(message: string) {
   });
 
   result = result.sort((a, b) => {
-    const aInStock = normalizeText(a.status || "").includes("con hang") ? 0 : 1;
-    const bInStock = normalizeText(b.status || "").includes("con hang") ? 0 : 1;
+    const aInStock = normalizeText(getProductStatus(a)).includes("con hang") ? 0 : 1;
+    const bInStock = normalizeText(getProductStatus(b)).includes("con hang") ? 0 : 1;
 
     if (aInStock !== bInStock) return aInStock - bInStock;
 
@@ -277,11 +392,15 @@ function describePriceRange(range: PriceRange) {
   return "phù hợp";
 }
 
-function buildProductReply(message: string) {
+function buildProductReply(message: string, catalogProducts: ChatProduct[]) {
   const text = normalizeText(message);
   const count = extractRequestedCount(text);
   const range = extractPriceRange(text);
-  const matched = findProducts(message);
+  const matched = findProducts(message, catalogProducts);
+
+  if (!catalogProducts.length) {
+    return "Mình chưa tải được dữ liệu sản phẩm từ hệ thống. Bạn thử lại sau vài giây nhé.";
+  }
 
   if (!matched.length) {
     if (range.mode === "around" && range.target) {
@@ -299,7 +418,7 @@ function buildProductReply(message: string) {
 
   const list = matched
     .map((product, index) => {
-      const status = product.status || "Chưa rõ";
+      const status = getProductStatus(product);
       return `${index + 1}. ${product.name} - ${money(product.price)} (${status})\nXem: /${product.slug}`;
     })
     .join("\n\n");
@@ -367,7 +486,7 @@ function isServiceQuestion(text: string) {
 }
 
 function shouldRecommendProducts(text: string) {
-  if (isServiceQuestion(text) && !hasAny(text, ["toi co", "ngan sach", "gia", "duoi", "tren", "tam", "khoang", "goi y", "san pham", "mau nao"])) {
+  if (isServiceQuestion(text) && !hasAny(text, ["toi co", "minh co", "ngan sach", "gia", "duoi", "tren", "tam", "khoang", "goi y", "san pham", "mau nao", "mua duoc"])) {
     return false;
   }
 
@@ -404,6 +523,7 @@ function shouldRecommendProducts(text: string) {
       "con hang",
       "preorder",
       "dat truoc",
+      "mua duoc",
     ])
   );
 }
@@ -412,7 +532,7 @@ function getFallbackReply() {
   return "Mình chưa hiểu rõ câu hỏi đó. Bạn có thể hỏi ngắn hơn như: “shop bán gì”, “phí ship bao nhiêu”, “có mã giảm giá không”, “tôi quên mật khẩu”, “đánh giá sản phẩm ở đâu” hoặc “gợi ý sản phẩm dưới 500k”.";
 }
 
-function getReply(message: string) {
+async function getReply(message: string) {
   const text = normalizeText(message);
 
   if (!text) {
@@ -432,14 +552,16 @@ function getReply(message: string) {
   }
 
   if (shouldRecommendProducts(text)) {
-    return buildProductReply(message);
+    const catalogProducts = await getCatalogProducts();
+    return buildProductReply(message, catalogProducts);
   }
 
   const faqAnswer = findFaqAnswer(message);
   if (faqAnswer) return faqAnswer;
 
   if (hasAny(text, ["gi cung duoc", "sao cung duoc", "tuy", "bat ky"])) {
-    return buildProductReply("gợi ý 3 sản phẩm còn hàng");
+    const catalogProducts = await getCatalogProducts();
+    return buildProductReply("gợi ý 3 sản phẩm còn hàng", catalogProducts);
   }
 
   return getFallbackReply();
@@ -449,7 +571,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const message = String(body.message || "");
-    const reply = getReply(message);
+    const reply = await getReply(message);
 
     return NextResponse.json({
       intent: "hmecha_chatbot",
