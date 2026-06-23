@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "../../../lib/supabase";
 import { findFaqAnswer } from "../../../lib/chatbot/faq";
 
+export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -24,6 +25,14 @@ type PriceRange = {
   target?: number;
   mode?: "max" | "min" | "range" | "around" | "none";
 };
+
+type ProductContext = {
+  baseMessage: string;
+  shownSlugs: string[];
+  createdAt: number;
+};
+
+const PRODUCT_CONTEXT_COOKIE = "hmecha_chatbot_product_context";
 
 function normalizeText(value: string) {
   return String(value || "")
@@ -66,6 +75,9 @@ function preprocessPriceText(text: string) {
   let result = normalizeText(text);
 
   result = result
+    .replace(/(\d+)\s*tr\s*(\d)/g, "$1.$2 trieu")
+    .replace(/(\d+)\s*tri\s*(\d)/g, "$1.$2 trieu")
+    .replace(/(\d+)\s*m\s*(\d)/g, "$1.$2 trieu")
     .replace(/mot\s*(trieu|tri|tr|m)\s*ruoi/g, "1.5 trieu")
     .replace(/hai\s*(trieu|tri|tr|m)\s*ruoi/g, "2.5 trieu")
     .replace(/ba\s*(trieu|tri|tr|m)\s*ruoi/g, "3.5 trieu")
@@ -104,11 +116,66 @@ function moneyValue(numberText: string, unitText?: string) {
 function extractRequestedCount(text: string) {
   if (hasAny(text, ["re nhat", "dat nhat", "cao nhat", "thap nhat"])) return 1;
 
-  const match = text.match(/(\d+)\s*(san pham|sp|mon|mau|lua chon|goi y)/i);
+  const cleanText = normalizeText(text);
+
+  const match =
+    cleanText.match(/(?:cho|goi y|lay|tim)?\s*(?:toi|minh)?\s*(\d+)\s*(san pham|sp|mon|mau|lua chon)/i) ||
+    cleanText.match(/(?:them|cho them)\s*(\d+)/i);
+
   const count = match?.[1] ? Number(match[1]) : 3;
 
   if (!Number.isFinite(count)) return 3;
-  return Math.max(1, Math.min(8, count));
+  return Math.max(1, Math.min(10, count));
+}
+
+function getPlainCountRequest(text: string) {
+  const cleanText = normalizeText(text);
+
+  const match =
+    cleanText.match(/(?:^|\s)(?:cho|goi y|lay|tim)?\s*(?:toi|minh)?\s*(\d+)\s*(san pham|sp|mon|mau|lua chon)(?:\s|$)/i) ||
+    cleanText.match(/(?:^|\s)(?:them|cho them)\s*(\d+)(?:\s|$)/i);
+
+  if (!match?.[1]) return null;
+
+  const hasExplicitFilter = hasAny(cleanText, [
+    "gia",
+    "tam gia",
+    "ngan sach",
+    "budget",
+    "duoi",
+    "tren",
+    "hon",
+    "tu",
+    "toi da",
+    "khong qua",
+    "trieu",
+    "tri",
+    "tr",
+    "m",
+    "k",
+    "nghin",
+    "ngan",
+    "vnd",
+    "con hang",
+    "het hang",
+    "dat truoc",
+    "hg",
+    "rg",
+    "mg",
+    "pg",
+    "sd",
+    "gundam",
+    "gunpla",
+    "pokemon",
+    "onepiece",
+  ]);
+
+  if (hasExplicitFilter) return null;
+
+  return {
+    count: Math.max(1, Math.min(10, Number(match[1]))),
+    isMore: hasAny(cleanText, ["them", "cho them"]),
+  };
 }
 
 function getFirstMoneyValue(text: string) {
@@ -121,33 +188,6 @@ function getFirstMoneyValue(text: string) {
 function extractPriceRange(message: string): PriceRange {
   const text = preprocessPriceText(message);
   const range: PriceRange = { mode: "none" };
-
-  const onlyProductCount =
-    /(^|\s)(cho|toi|minh)?\s*\d+\s*(san pham|sp|mon|mau|lua chon|goi y)(\s|$)/i.test(text) &&
-    !hasAny(text, [
-      "gia",
-      "tam gia",
-      "ngan sach",
-      "budget",
-      "duoi",
-      "tren",
-      "hon",
-      "tu",
-      "toi da",
-      "khong qua",
-      "trieu",
-      "tri",
-      "tr",
-      "m",
-      "k",
-      "nghin",
-      "ngan",
-      "vnd",
-    ]);
-
-  if (onlyProductCount) {
-    return range;
-  }
   const unit = "(trieu|tri|tr|m|k|nghin|ngan|d|vnd)?";
   const number = "(\\d+(?:[.,]\\d+)?)";
 
@@ -362,10 +402,18 @@ function productMatchesKeyword(product: ChatProduct, text: string) {
   });
 }
 
-function findProducts(message: string, catalogProducts: ChatProduct[]) {
+function findProducts(
+  message: string,
+  catalogProducts: ChatProduct[],
+  options?: {
+    forcedCount?: number;
+    skipSlugs?: string[];
+  }
+) {
   const text = normalizeText(message);
-  const count = extractRequestedCount(text);
+  const count = options?.forcedCount || extractRequestedCount(text);
   const range = extractPriceRange(text);
+  const skipSlugs = new Set(options?.skipSlugs || []);
 
   const wantInStock = hasAny(text, ["con hang", "hang san", "co san"]);
   const wantPreorder = hasAny(text, ["preorder", "dat truoc", "sap ve"]);
@@ -373,6 +421,7 @@ function findProducts(message: string, catalogProducts: ChatProduct[]) {
 
   let result = catalogProducts.filter((product) => {
     if (!product.price || product.price <= 0) return false;
+    if (skipSlugs.has(product.slug)) return false;
 
     if (range.min && product.price < range.min) return false;
     if (range.max && product.price > range.max) return false;
@@ -419,29 +468,56 @@ function describePriceRange(range: PriceRange) {
   return "phù hợp";
 }
 
-function buildProductReply(message: string, catalogProducts: ChatProduct[]) {
-  const text = normalizeText(message);
-  const count = extractRequestedCount(text);
-  const range = extractPriceRange(text);
-  const matched = findProducts(message, catalogProducts);
+function buildProductReply(
+  message: string,
+  catalogProducts: ChatProduct[],
+  options?: {
+    forcedCount?: number;
+    skipSlugs?: string[];
+    followUp?: boolean;
+    isMore?: boolean;
+  }
+) {
+  const range = extractPriceRange(message);
+  const matched = findProducts(message, catalogProducts, {
+    forcedCount: options?.forcedCount,
+    skipSlugs: options?.skipSlugs,
+  });
 
   if (!catalogProducts.length) {
-    return "Mình chưa tải được dữ liệu sản phẩm từ hệ thống. Bạn thử lại sau vài giây nhé.";
+    return {
+      reply: "Mình chưa tải được dữ liệu sản phẩm từ hệ thống. Bạn thử lại sau vài giây nhé.",
+      products: [],
+    };
   }
 
   if (!matched.length) {
     if (range.mode === "around" && range.target) {
-      return `Mình chưa thấy sản phẩm nào quanh mức ${money(range.target)}. Bạn có thể thử hỏi “dưới ${money(range.target)}”, “trên ${money(range.target)}” hoặc chọn khoảng giá khác nhé.`;
+      return {
+        reply: `Mình chưa thấy sản phẩm nào quanh mức ${money(range.target)}. Bạn có thể thử hỏi “dưới ${money(range.target)}”, “trên ${money(range.target)}” hoặc chọn khoảng giá khác nhé.`,
+        products: [],
+      };
     }
 
     if (range.min || range.max) {
-      return `Mình chưa tìm thấy sản phẩm ${describePriceRange(range)}. Bạn thử đổi khoảng giá hoặc hỏi “gợi ý 3 sản phẩm còn hàng” nhé.`;
+      return {
+        reply: `Mình chưa tìm thấy sản phẩm ${describePriceRange(range)}. Bạn thử đổi khoảng giá hoặc hỏi “gợi ý 3 sản phẩm còn hàng” nhé.`,
+        products: [],
+      };
     }
 
-    return "Mình chưa tìm thấy sản phẩm đúng yêu cầu đó. Bạn thử hỏi theo dòng HG/RG/MG, tên Gundam, hoặc khoảng giá như “dưới 500k” nhé.";
+    return {
+      reply: "Mình chưa tìm thấy sản phẩm đúng yêu cầu đó. Bạn thử hỏi theo dòng HG/RG/MG, tên Gundam, hoặc khoảng giá như “dưới 500k” nhé.",
+      products: [],
+    };
   }
 
-  const intro = `Mình gợi ý ${matched.length} sản phẩm ${describePriceRange(range)}:`;
+  const rangeText = describePriceRange(range);
+  const intro = options?.isMore
+    ? `Mình gợi ý thêm ${matched.length} sản phẩm ${rangeText}:`
+    : options?.followUp
+      ? `Mình gợi ý ${matched.length} sản phẩm theo điều kiện trước đó (${rangeText}):`
+      : `Mình gợi ý ${matched.length} sản phẩm ${rangeText}:`;
 
   const list = matched
     .map((product, index) => {
@@ -450,12 +526,16 @@ function buildProductReply(message: string, catalogProducts: ChatProduct[]) {
     })
     .join("\n\n");
 
+  const requestedCount = options?.forcedCount || extractRequestedCount(message);
   const more =
-    matched.length < count
+    matched.length < requestedCount
       ? "\n\nHiện mình chỉ tìm được từng đó sản phẩm phù hợp với điều kiện bạn nhập."
       : "";
 
-  return `${intro}\n\n${list}${more}`;
+  return {
+    reply: `${intro}\n\n${list}${more}`,
+    products: matched,
+  };
 }
 
 function isServiceQuestion(text: string) {
@@ -559,51 +639,157 @@ function getFallbackReply() {
   return "Mình chưa hiểu rõ câu hỏi đó. Bạn có thể hỏi ngắn hơn như: “shop bán gì”, “phí ship bao nhiêu”, “có mã giảm giá không”, “tôi quên mật khẩu”, “đánh giá sản phẩm ở đâu” hoặc “gợi ý sản phẩm dưới 500k”.";
 }
 
-async function getReply(message: string) {
+function readProductContext(request: NextRequest): ProductContext | null {
+  try {
+    const raw = request.cookies.get(PRODUCT_CONTEXT_COOKIE)?.value;
+    if (!raw) return null;
+
+    const parsed = JSON.parse(Buffer.from(raw, "base64url").toString("utf8")) as ProductContext;
+
+    if (!parsed?.baseMessage || Date.now() - parsed.createdAt > 1000 * 60 * 20) {
+      return null;
+    }
+
+    return {
+      baseMessage: parsed.baseMessage,
+      shownSlugs: Array.isArray(parsed.shownSlugs) ? parsed.shownSlugs.slice(0, 20) : [],
+      createdAt: parsed.createdAt,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function encodeProductContext(context: ProductContext) {
+  return Buffer.from(JSON.stringify(context)).toString("base64url");
+}
+
+async function getReply(message: string, previousContext: ProductContext | null) {
   const text = normalizeText(message);
 
   if (!text) {
-    return "Bạn nhập nội dung cần hỏi nhé. HMECHA có thể hỗ trợ về sản phẩm, phí ship, thanh toán, mã giảm giá, đặt hàng, tài khoản và đổi trả.";
+    return {
+      reply: "Bạn nhập nội dung cần hỏi nhé. HMECHA có thể hỗ trợ về sản phẩm, phí ship, thanh toán, mã giảm giá, đặt hàng, tài khoản và đổi trả.",
+      productContext: null as ProductContext | null,
+    };
   }
 
   if (isGreeting(text)) {
-    return "Chào bạn, mình là HMECHA Assistant. Bạn cần tư vấn sản phẩm, phí ship, mã giảm giá, tài khoản hay gặp admin?";
+    return {
+      reply: "Chào bạn, mình là HMECHA Assistant. Bạn cần tư vấn sản phẩm, phí ship, mã giảm giá, tài khoản hay gặp admin?",
+      productContext: null as ProductContext | null,
+    };
   }
 
   const smartFaq = getSmartFaqReply(text);
-  if (smartFaq) return smartFaq;
+  if (smartFaq) {
+    return {
+      reply: smartFaq,
+      productContext: null as ProductContext | null,
+    };
+  }
 
   if (isServiceQuestion(text)) {
     const faqAnswer = findFaqAnswer(message);
-    if (faqAnswer) return faqAnswer;
+    if (faqAnswer) {
+      return {
+        reply: faqAnswer,
+        productContext: null as ProductContext | null,
+      };
+    }
+  }
+
+  const plainCount = getPlainCountRequest(text);
+
+  if (plainCount && previousContext) {
+    const catalogProducts = await getCatalogProducts();
+    const queryMessage = `${previousContext.baseMessage} cho ${plainCount.count} sản phẩm`;
+    const skipSlugs = plainCount.isMore ? previousContext.shownSlugs : [];
+
+    const productResult = buildProductReply(queryMessage, catalogProducts, {
+      forcedCount: plainCount.count,
+      skipSlugs,
+      followUp: !plainCount.isMore,
+      isMore: plainCount.isMore,
+    });
+
+    const shownSlugs = plainCount.isMore
+      ? [...previousContext.shownSlugs, ...productResult.products.map((item) => item.slug)]
+      : productResult.products.map((item) => item.slug);
+
+    return {
+      reply: productResult.reply,
+      productContext: {
+        baseMessage: previousContext.baseMessage,
+        shownSlugs: Array.from(new Set(shownSlugs)).slice(0, 20),
+        createdAt: Date.now(),
+      },
+    };
   }
 
   if (shouldRecommendProducts(text)) {
     const catalogProducts = await getCatalogProducts();
-    return buildProductReply(message, catalogProducts);
+    const productResult = buildProductReply(message, catalogProducts);
+
+    return {
+      reply: productResult.reply,
+      productContext: {
+        baseMessage: message,
+        shownSlugs: productResult.products.map((item) => item.slug),
+        createdAt: Date.now(),
+      },
+    };
   }
 
   const faqAnswer = findFaqAnswer(message);
-  if (faqAnswer) return faqAnswer;
+  if (faqAnswer) {
+    return {
+      reply: faqAnswer,
+      productContext: null as ProductContext | null,
+    };
+  }
 
   if (hasAny(text, ["gi cung duoc", "sao cung duoc", "tuy", "bat ky"])) {
     const catalogProducts = await getCatalogProducts();
-    return buildProductReply("gợi ý 3 sản phẩm còn hàng", catalogProducts);
+    const productResult = buildProductReply("gợi ý 3 sản phẩm còn hàng", catalogProducts);
+
+    return {
+      reply: productResult.reply,
+      productContext: {
+        baseMessage: "gợi ý 3 sản phẩm còn hàng",
+        shownSlugs: productResult.products.map((item) => item.slug),
+        createdAt: Date.now(),
+      },
+    };
   }
 
-  return getFallbackReply();
+  return {
+    reply: getFallbackReply(),
+    productContext: null as ProductContext | null,
+  };
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const message = String(body.message || "");
-    const reply = await getReply(message);
+    const previousContext = readProductContext(request);
+    const result = await getReply(message, previousContext);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       intent: "hmecha_chatbot",
-      reply,
+      reply: result.reply,
     });
+
+    if (result.productContext) {
+      response.cookies.set(PRODUCT_CONTEXT_COOKIE, encodeProductContext(result.productContext), {
+        path: "/",
+        maxAge: 60 * 20,
+        sameSite: "lax",
+      });
+    }
+
+    return response;
   } catch (error) {
     console.error("Chatbot route error:", error);
 
