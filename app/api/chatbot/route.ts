@@ -150,11 +150,6 @@ function getPlainCountRequest(text: string) {
 
   if (!match?.[1]) return null;
 
-  /*
-    Quan trọng:
-    Không dùng hasAny(["m", "tr"]) ở đây, vì chữ "thêm" có chữ "m"
-    làm chatbot tưởng "cho thêm 3 đi" là điều kiện giá mới.
-  */
   const hasPriceExpression =
     /\d+(?:[.,]\d+)?\s*(trieu|tri|tr|m|k|nghin|ngan|vnd|d)\b/i.test(cleanText) ||
     hasAny(cleanText, [
@@ -179,6 +174,7 @@ function getPlainCountRequest(text: string) {
       "gunpla",
       "pokemon",
       "onepiece",
+      "bandai",
     ]) ||
     hasWord(cleanText, "hg") ||
     hasWord(cleanText, "rg") ||
@@ -191,6 +187,88 @@ function getPlainCountRequest(text: string) {
   return {
     count: Math.max(1, Math.min(10, Number(match[1]))),
     isMore: hasAny(cleanText, ["them", "cho them"]),
+  };
+}
+
+function getProductFollowUpRequest(text: string) {
+  const cleanText = normalizeText(text);
+
+  const hasPriceExpression =
+    /\d+(?:[.,]\d+)?\s*(trieu|tri|tr|m|k|nghin|ngan|vnd|d)\b/i.test(cleanText) ||
+    hasAny(cleanText, [
+      "gia",
+      "tam gia",
+      "ngan sach",
+      "budget",
+      "duoi",
+      "tren",
+      "hon",
+      "tu",
+      "toi da",
+      "khong qua",
+    ]);
+
+  const hasProductFilter =
+    hasAny(cleanText, [
+      "con hang",
+      "het hang",
+      "dat truoc",
+      "gundam",
+      "gunpla",
+      "pokemon",
+      "onepiece",
+      "bandai",
+    ]) ||
+    hasWord(cleanText, "hg") ||
+    hasWord(cleanText, "rg") ||
+    hasWord(cleanText, "mg") ||
+    hasWord(cleanText, "pg") ||
+    hasWord(cleanText, "sd");
+
+  // Nếu khách đưa điều kiện mới rõ ràng, không dùng ngữ cảnh cũ
+  if (hasPriceExpression || hasProductFilter) return null;
+
+  const countMatch =
+    cleanText.match(/(?:^|\s)(?:thoi\s*)?(?:cho|goi y|lay|tim)?\s*(?:toi|minh)?\s*(\d+)\s*(san pham|sp|mon|mau|lua chon)?(?:\s|$)/i) ||
+    cleanText.match(/(?:^|\s)(?:them|cho them)\s*(\d+)(?:\s|$)/i);
+
+  const isMorePhrase = hasAny(cleanText, [
+    "khac di",
+    "cai khac",
+    "mau khac",
+    "san pham khac",
+    "sp khac",
+    "doi mau khac",
+    "con nua",
+    "nua khong",
+    "nua di",
+    "cho nua",
+    "cho tiep",
+    "tiep di",
+    "tiep tuc",
+    "them di",
+    "cho them",
+    "goi y them",
+    "tu van them",
+    "san pham nua",
+    "mau nua",
+    "vai san pham nua",
+    "may san pham nua",
+  ]);
+
+  const isPlainCount = Boolean(countMatch?.[1]);
+
+  if (!isMorePhrase && !isPlainCount) return null;
+
+  const count = countMatch?.[1]
+    ? Math.max(1, Math.min(10, Number(countMatch[1])))
+    : getRandomDefaultCount();
+
+  return {
+    count,
+    isMore:
+      isMorePhrase ||
+      hasAny(cleanText, ["them", "nua", "khac", "tiep"]),
   };
 }
 function getFirstMoneyValue(text: string) {
@@ -743,21 +821,21 @@ async function getReply(message: string, previousContext: ProductContext | null)
     }
   }
 
-  const plainCount = getPlainCountRequest(text);
+  const followUpRequest = getProductFollowUpRequest(text);
 
-  if (plainCount && previousContext) {
+  if (followUpRequest && previousContext) {
     const catalogProducts = await getCatalogProducts();
-    const queryMessage = `${previousContext.baseMessage} cho ${plainCount.count} sản phẩm`;
-    const skipSlugs = plainCount.isMore ? previousContext.shownSlugs : [];
+    const queryMessage = `${previousContext.baseMessage} cho ${followUpRequest.count} sản phẩm`;
+    const skipSlugs = followUpRequest.isMore ? previousContext.shownSlugs : [];
 
     const productResult = buildProductReply(queryMessage, catalogProducts, {
-      forcedCount: plainCount.count,
+      forcedCount: followUpRequest.count,
       skipSlugs,
-      followUp: !plainCount.isMore,
-      isMore: plainCount.isMore,
+      followUp: !followUpRequest.isMore,
+      isMore: followUpRequest.isMore,
     });
 
-    const shownSlugs = plainCount.isMore
+    const shownSlugs = followUpRequest.isMore
       ? [...previousContext.shownSlugs, ...productResult.products.map((item) => item.slug)]
       : productResult.products.map((item) => item.slug);
 
@@ -765,12 +843,28 @@ async function getReply(message: string, previousContext: ProductContext | null)
       reply: productResult.reply,
       productContext: {
         baseMessage: previousContext.baseMessage,
-        shownSlugs: Array.from(new Set(shownSlugs)).slice(0, 20),
+        shownSlugs: Array.from(new Set(shownSlugs)).slice(0, 30),
         createdAt: Date.now(),
       },
     };
   }
 
+  if (followUpRequest && !previousContext) {
+    const catalogProducts = await getCatalogProducts();
+    const baseMessage = `gợi ý ${followUpRequest.count} sản phẩm còn hàng`;
+    const productResult = buildProductReply(baseMessage, catalogProducts, {
+      forcedCount: followUpRequest.count,
+    });
+
+    return {
+      reply: productResult.reply,
+      productContext: {
+        baseMessage,
+        shownSlugs: productResult.products.map((item) => item.slug),
+        createdAt: Date.now(),
+      },
+    };
+  }
   if (shouldRecommendProducts(text)) {
     const catalogProducts = await getCatalogProducts();
     const productResult = buildProductReply(message, catalogProducts);
