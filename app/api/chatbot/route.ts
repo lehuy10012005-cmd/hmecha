@@ -142,40 +142,43 @@ function getPlainCountRequest(text: string) {
 
   if (!match?.[1]) return null;
 
-  const hasExplicitFilter = hasAny(cleanText, [
-    "gia",
-    "tam gia",
-    "ngan sach",
-    "budget",
-    "duoi",
-    "tren",
-    "hon",
-    "tu",
-    "toi da",
-    "khong qua",
-    "trieu",
-    "tri",
-    "tr",
-    "m",
-    "k",
-    "nghin",
-    "ngan",
-    "vnd",
-    "con hang",
-    "het hang",
-    "dat truoc",
-    "hg",
-    "rg",
-    "mg",
-    "pg",
-    "sd",
-    "gundam",
-    "gunpla",
-    "pokemon",
-    "onepiece",
-  ]);
+  /*
+    Quan trọng:
+    Không dùng hasAny(["m", "tr"]) ở đây, vì chữ "thêm" có chữ "m"
+    làm chatbot tưởng "cho thêm 3 đi" là điều kiện giá mới.
+  */
+  const hasPriceExpression =
+    /\d+(?:[.,]\d+)?\s*(trieu|tri|tr|m|k|nghin|ngan|vnd|d)\b/i.test(cleanText) ||
+    hasAny(cleanText, [
+      "gia",
+      "tam gia",
+      "ngan sach",
+      "budget",
+      "duoi",
+      "tren",
+      "hon",
+      "tu",
+      "toi da",
+      "khong qua",
+    ]);
 
-  if (hasExplicitFilter) return null;
+  const hasProductFilter =
+    hasAny(cleanText, [
+      "con hang",
+      "het hang",
+      "dat truoc",
+      "gundam",
+      "gunpla",
+      "pokemon",
+      "onepiece",
+    ]) ||
+    hasWord(cleanText, "hg") ||
+    hasWord(cleanText, "rg") ||
+    hasWord(cleanText, "mg") ||
+    hasWord(cleanText, "pg") ||
+    hasWord(cleanText, "sd");
+
+  if (hasPriceExpression || hasProductFilter) return null;
 
   return {
     count: Math.max(1, Math.min(10, Number(match[1]))),
