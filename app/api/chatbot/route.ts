@@ -316,8 +316,143 @@ function getProductKind(text: string): ProductFilters["productKind"] {
   return "any";
 }
 
-function parseFilters(message: string): ProductFilters {
+function expandScenarioText(message: string) {
   const text = preprocessPriceText(message);
+  const extras: string[] = [];
+
+  if (hasAny(text, [
+    "nguoi moi",
+    "moi choi",
+    "moi tap rap",
+    "moi lap",
+    "moi choi gunpla",
+    "nguoi moi nen mua",
+    "de lap",
+    "de rap",
+    "de choi",
+    "it chi tiet",
+    "khong qua kho",
+  ])) {
+    extras.push("mo hinh thoi hg sd 1/144 gia re con hang");
+  }
+
+  if (hasAny(text, [
+    "lam qua",
+    "mua tang",
+    "qua tang",
+    "sinh nhat",
+    "tang ban",
+    "tang ban trai",
+    "tang ban gai",
+    "tang em",
+    "tang anh",
+    "tang nguoi yeu",
+  ])) {
+    extras.push("mo hinh thoi gundam bandai con hang");
+  }
+
+  if (hasAny(text, [
+    "nho gon",
+    "de ban",
+    "trung bay",
+    "de ke sach",
+    "khong qua to",
+    "mau nho",
+    "nho nho",
+  ])) {
+    extras.push("mo hinh thoi sd hg 1/144 con hang");
+  }
+
+  if (hasAny(text, [
+    "cao cap",
+    "xin",
+    "xin nhat",
+    "dep nhat",
+    "ngau",
+    "ngau nhat",
+    "suu tam",
+    "trung bay dep",
+    "co gia tri suu tam",
+  ])) {
+    extras.push("mo hinh thoi rg mg pg metal build mechanicore con hang");
+  }
+
+  if (hasAny(text, [
+    "re nhat",
+    "gia re",
+    "sinh vien",
+    "it tien",
+    "kinh te",
+    "mem tien",
+    "vua tien",
+  ])) {
+    extras.push("gia re con hang");
+  }
+
+  if (hasAny(text, [
+    "ban chay",
+    "hot",
+    "pho bien",
+    "nhieu nguoi mua",
+    "dang hot",
+  ])) {
+    extras.push("gundam bandai mo hinh thoi con hang");
+  }
+
+  if (hasAny(text, [
+    "khong onepiece",
+    "khong one piece",
+    "dung lay onepiece",
+    "dung lay one piece",
+    "khong lay onepiece",
+    "khong lay one piece",
+  ])) {
+    extras.push("khong onepiece");
+  }
+
+  if (hasAny(text, [
+    "khong pokemon",
+    "dung lay pokemon",
+    "khong lay pokemon",
+  ])) {
+    extras.push("khong pokemon");
+  }
+
+  if (hasAny(text, [
+    "khong lay the bai",
+    "khong the bai",
+    "dung lay the bai",
+    "khong card",
+    "dung lay card",
+  ])) {
+    extras.push("khong the bai");
+  }
+
+  if (hasAny(text, [
+    "khong lay moc khoa",
+    "khong moc khoa",
+    "dung lay moc khoa",
+    "khong keychain",
+  ])) {
+    extras.push("khong moc khoa");
+  }
+
+  if (hasAny(text, [
+    "khong lay keo",
+    "khong keo",
+    "dung lay keo",
+    "khong lay dung cu",
+    "khong dung cu",
+    "khong tool",
+  ])) {
+    extras.push("khong lay keo khong dung cu");
+  }
+
+  return [text, ...extras].join(" ");
+}
+
+function parseFilters(message: string): ProductFilters {
+  const text = expandScenarioText(message);
   const productKind = getProductKind(text);
 
   return {
@@ -332,16 +467,15 @@ function parseFilters(message: string): ProductFilters {
       hasAny(text, ["khong lay phu kien", "dung lay phu kien", "khong phu kien"]),
     excludeCards:
       productKind === "model" ||
-      hasAny(text, ["khong the bai", "dung lay the bai", "khong lay card"]),
+      hasAny(text, ["khong the bai", "dung lay the bai", "khong lay card", "khong card"]),
     excludeKeychains:
       productKind === "model" ||
-      hasAny(text, ["khong moc khoa", "dung lay moc khoa"]),
+      hasAny(text, ["khong moc khoa", "dung lay moc khoa", "khong keychain"]),
     excludeTools:
       productKind === "model" ||
-      hasAny(text, ["khong lay keo", "dung lay keo", "khong lay tool", "khong dung cu"]),
+      hasAny(text, ["khong lay keo", "dung lay keo", "khong lay tool", "khong dung cu", "khong tool"]),
   };
 }
-
 function mergeRefinement(previousFilters: ProductFilters, message: string): ProductFilters {
   const next = parseFilters(`${previousFilters.rawText} ${message}`);
 
@@ -382,6 +516,28 @@ function hasSpecificProductFilter(text: string) {
       "moc khoa",
       "keo",
       "panel line",
+      "nguoi moi",
+      "moi choi",
+      "moi tap rap",
+      "de lap",
+      "de rap",
+      "lam qua",
+      "mua tang",
+      "sinh nhat",
+      "qua tang",
+      "nho gon",
+      "de ban",
+      "trung bay",
+      "cao cap",
+      "suu tam",
+      "ngau",
+      "dep nhat",
+      "ban chay",
+      "pho bien",
+      "hot",
+      "re nhat",
+      "gia re",
+      "sinh vien",
     ]) ||
     hasWord(text, "hg") ||
     hasWord(text, "rg") ||
@@ -390,7 +546,6 @@ function hasSpecificProductFilter(text: string) {
     hasWord(text, "sd")
   );
 }
-
 function isRefinementOnly(text: string) {
   const cleanText = normalizeText(text);
 
@@ -402,17 +557,35 @@ function isRefinementOnly(text: string) {
     "dung lay keo",
     "khong lay phu kien",
     "dung lay phu kien",
+    "khong phu kien",
+    "khong lay the bai",
     "khong the bai",
     "dung lay the bai",
+    "khong lay card",
+    "khong card",
+    "khong lay moc khoa",
     "khong moc khoa",
     "dung lay moc khoa",
+    "khong keychain",
+    "khong onepiece",
+    "khong one piece",
+    "dung lay onepiece",
+    "dung lay one piece",
+    "khong pokemon",
+    "dung lay pokemon",
     "y la mo hinh",
     "khong y la mo hinh",
     "con hang thoi",
     "hang san thoi",
+    "de lap thoi",
+    "de rap thoi",
+    "cho nguoi moi",
+    "mau cao cap hon",
+    "mau re hon",
+    "mau ngau hon",
+    "mau dep hon",
   ]);
 }
-
 function getFollowUpRequest(text: string): FollowUpRequest | null {
   const cleanText = normalizeText(text);
 
@@ -461,6 +634,14 @@ function getFollowUpRequest(text: string): FollowUpRequest | null {
     "may san pham nua",
     "co mau nao nua",
     "co cai nao nua",
+    "mau nao on hon",
+    "cai nao on hon",
+    "co cai nao on hon",
+    "co mau nao on hon",
+    "mau nao khac on hon",
+    "cai nao khac on hon",
+    "doi mau khac",
+    "doi cai khac",
   ]);
 
   if (moreCountMatch?.[1]) {
@@ -580,6 +761,38 @@ function isModelLikeProduct(product: ChatProduct) {
   ]);
 }
 
+function isExcludedByNegativeCustomerRequest(product: ChatProduct, rawText: string) {
+  const haystack = normalizeText(
+    `${product.name} ${product.category || ""} ${product.brand || ""} ${product.sku || ""} ${product.badge || ""}`
+  );
+
+  const negativeGroups = [
+    {
+      triggers: ["khong onepiece", "khong one piece", "dung lay onepiece", "dung lay one piece", "khong lay onepiece", "khong lay one piece"],
+      aliases: ["onepiece", "one piece", "grandship", "grand ship"],
+    },
+    {
+      triggers: ["khong pokemon", "dung lay pokemon", "khong lay pokemon"],
+      aliases: ["pokemon", "poke"],
+    },
+    {
+      triggers: ["khong the bai", "dung lay the bai", "khong lay the bai", "khong card", "dung lay card"],
+      aliases: ["the bai", "card game", "premium card", "booster"],
+    },
+    {
+      triggers: ["khong moc khoa", "dung lay moc khoa", "khong lay moc khoa", "khong keychain"],
+      aliases: ["moc khoa", "keychain", "rubber mascot"],
+    },
+    {
+      triggers: ["khong lay keo", "dung lay keo", "khong keo", "khong dung cu", "khong tool"],
+      aliases: ["keo dan", "cement", "tamiya", "panel line", "marker", "tool", "dung cu"],
+    },
+  ];
+
+  return negativeGroups.some((group) => {
+    return hasAny(rawText, group.triggers) && hasAny(haystack, group.aliases);
+  });
+}
 function getProductStatus(product: ChatProduct) {
   const status = normalizeText(product.status || "");
 
@@ -708,6 +921,7 @@ function findProducts(
   let result = catalogProducts.filter((product) => {
     if (!product.price || product.price <= 0) return false;
     if (skipSlugs.has(product.slug)) return false;
+    if (isExcludedByNegativeCustomerRequest(product, filters.rawText)) return false;
 
     if (filters.range.min && product.price < filters.range.min) return false;
     if (filters.range.max && product.price > filters.range.max) return false;
