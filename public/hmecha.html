@@ -12691,7 +12691,7 @@ var ajaxCart = (function(module, $) {
 
   async function loadHomeProducts() {
     try {
-      const response = await fetch("/api/home-products", {
+      const response = await fetch("/api/home-products?t=" + Date.now(), {
         cache: "no-store"
       });
 
