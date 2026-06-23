@@ -131,9 +131,14 @@ function extractRequestedCount(text: string) {
 function getPlainCountRequest(text: string) {
   const cleanText = normalizeText(text);
 
-  const match =
-    cleanText.match(/(?:^|\s)(?:cho|goi y|lay|tim)?\s*(?:toi|minh)?\s*(\d+)\s*(san pham|sp|mon|mau|lua chon)(?:\s|$)/i) ||
+  const explicitCountMatch =
+    cleanText.match(/(?:^|\s)(?:thoi\s*)?(?:cho|goi y|lay|tim)?\s*(?:toi|minh)?\s*(\d+)\s*(san pham|sp|mon|mau|lua chon)(?:\s|$)/i) ||
     cleanText.match(/(?:^|\s)(?:them|cho them)\s*(\d+)(?:\s|$)/i);
+
+  const shortFollowUpMatch =
+    cleanText.match(/(?:^|\s)(?:thoi\s*)?(?:cho|lay|tim)?\s*(\d+)\s*(?:di|nha|nhe|thoi)?(?:\s|$)/i);
+
+  const match = explicitCountMatch || shortFollowUpMatch;
 
   if (!match?.[1]) return null;
 
@@ -177,7 +182,6 @@ function getPlainCountRequest(text: string) {
     isMore: hasAny(cleanText, ["them", "cho them"]),
   };
 }
-
 function getFirstMoneyValue(text: string) {
   const priceText = preprocessPriceText(text);
   const match = priceText.match(/(\d+(?:[.,]\d+)?)\s*(trieu|tri|tr|m|k|nghin|ngan|d|vnd)?/i);
