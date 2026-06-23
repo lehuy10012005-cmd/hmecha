@@ -155,9 +155,7 @@ export default function ProductFilterGrid({
     <>
       <section className="filters" aria-label="Bộ lọc sản phẩm">
         <div className="filterGroup">
-          <label htmlFor="product-category">Loại sản phẩm</label>
-
-          <select
+<select
             id="product-category"
             value={category}
             onChange={(event) => setCategory(event.target.value)}
@@ -173,9 +171,7 @@ export default function ProductFilterGrid({
         </div>
 
         <div className="filterGroup">
-          <label htmlFor="product-price">Khoảng giá</label>
-
-          <select
+<select
             id="product-price"
             value={priceRange}
             onChange={(event) =>
@@ -195,11 +191,7 @@ export default function ProductFilterGrid({
             Xóa bộ lọc
           </button>
         )}
-
-        <p className="filterCount">
-          Hiển thị <strong>{filteredProducts.length}</strong> sản phẩm
-        </p>
-      </section>
+</section>
 
       {filteredProducts.length > 0 ? (
         <div className="grid">
@@ -320,8 +312,8 @@ export default function ProductFilterGrid({
       <style jsx>{`
         .filters {
           display: grid;
-          grid-template-columns: minmax(240px, 1fr) minmax(240px, 0.7fr) auto auto;
-          align-items: end;
+          grid-template-columns: minmax(240px, 1fr) minmax(240px, 1fr) auto;
+          align-items: center;
           gap: 18px;
           margin-bottom: 30px;
           padding: 22px;

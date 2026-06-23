@@ -82,30 +82,6 @@ export default async function ProductsPage() {
           <span>›</span>
           <strong>Tất cả sản phẩm</strong>
         </div>
-
-        <section className="hero">
-          <div className="heroText">
-            <p>HMECHA COLLECTION</p>
-            <h1>Tất cả sản phẩm</h1>
-            <span>
-              Tổng hợp đầy đủ mô hình Gundam, Gunpla, Mecha và phụ kiện đang có
-              tại HMECHA.
-            </span>
-          </div>
-
-          <div className="heroStats">
-            <div>
-              <strong>{allProducts.length}</strong>
-              <span>Sản phẩm</span>
-            </div>
-
-            <div>
-              <strong>HMECHA</strong>
-              <span>Gunpla & Model Kit</span>
-            </div>
-          </div>
-        </section>
-
         <ProductFilterGrid products={allProducts} />
       </div>
 
