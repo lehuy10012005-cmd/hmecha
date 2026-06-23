@@ -94,15 +94,15 @@ function preprocessPriceText(text: string) {
   let result = normalizeText(text);
 
   result = result
-    .replace(/(\d+)\s*(trieu|tri|tr|m)\s*(\d)\b/g, "$1.$3 trieu")
-    .replace(/mot\s*(trieu|tri|tr|m)\s*ruoi/g, "1.5 trieu")
-    .replace(/hai\s*(trieu|tri|tr|m)\s*ruoi/g, "2.5 trieu")
-    .replace(/ba\s*(trieu|tri|tr|m)\s*ruoi/g, "3.5 trieu")
-    .replace(/bon\s*(trieu|tri|tr|m)\s*ruoi/g, "4.5 trieu")
-    .replace(/nam\s*(trieu|tri|tr|m)\s*ruoi/g, "5.5 trieu");
+    .replace(/(\d+)\s*(trieu|tri|tr|m|cu)\s*(\d)\b/g, "$1.$3 trieu")
+    .replace(/mot\s*(trieu|tri|tr|m|cu)\s*ruoi/g, "1.5 trieu")
+    .replace(/hai\s*(trieu|tri|tr|m|cu)\s*ruoi/g, "2.5 trieu")
+    .replace(/ba\s*(trieu|tri|tr|m|cu)\s*ruoi/g, "3.5 trieu")
+    .replace(/bon\s*(trieu|tri|tr|m|cu)\s*ruoi/g, "4.5 trieu")
+    .replace(/nam\s*(trieu|tri|tr|m|cu)\s*ruoi/g, "5.5 trieu");
 
   result = result.replace(
-    /(\d+(?:[.,]\d+)?)\s*(trieu|tri|tr|m)\s*ruoi/g,
+    /(\d+(?:[.,]\d+)?)\s*(trieu|tri|tr|m|cu)\s*ruoi/g,
     (_match, numberText) => `${parseNumber(numberText) + 0.5} trieu`
   );
 
@@ -115,7 +115,7 @@ function moneyValue(numberText: string, unitText?: string) {
 
   if (!number) return 0;
 
-  if (unit.includes("trieu") || unit === "tri" || unit === "tr" || unit === "m") {
+  if (unit.includes("trieu") || unit === "tri" || unit === "tr" || unit === "m" || unit === "cu") {
     return Math.round(number * 1000000);
   }
 
@@ -134,7 +134,7 @@ function hasPriceFilter(text: string) {
   const cleanText = preprocessPriceText(text);
 
   return (
-    /\d+(?:[.,]\d+)?\s*(trieu|tri|tr|m|k|nghin|ngan|vnd|d)\b/i.test(cleanText) ||
+    /\d+(?:[.,]\d+)?\s*(trieu|tri|tr|m|cu|k|nghin|ngan|vnd|d)\b/i.test(cleanText) ||
     hasAny(cleanText, [
       "gia",
       "tam gia",
@@ -174,7 +174,7 @@ function extractRequestedCount(text: string) {
 
 function getFirstMoneyValue(text: string) {
   const priceText = preprocessPriceText(text);
-  const match = priceText.match(/(\d+(?:[.,]\d+)?)\s*(trieu|tri|tr|m|k|nghin|ngan|d|vnd)?\b/i);
+  const match = priceText.match(/(\d+(?:[.,]\d+)?)\s*(trieu|tri|tr|m|cu|k|nghin|ngan|d|vnd)?\b/i);
 
   if (!match) return 0;
   return moneyValue(match[1], match[2]);
@@ -183,7 +183,7 @@ function getFirstMoneyValue(text: string) {
 function extractPriceRange(message: string): PriceRange {
   const text = preprocessPriceText(message);
   const range: PriceRange = { mode: "none" };
-  const unit = "(trieu|tri|tr|m|k|nghin|ngan|d|vnd)?";
+  const unit = "(trieu|tri|tr|m|cu|k|nghin|ngan|d|vnd)?";
   const number = "(\\d+(?:[.,]\\d+)?)";
 
   const between = text.match(
@@ -308,14 +308,36 @@ function wantsKeychainOnly(text: string) {
   ]);
 }
 
+function wantsToolOnly(text: string) {
+  return hasAny(text, [
+    "dung cu",
+    "tool",
+    "keo dan",
+    "keo lap rap",
+    "panel line",
+    "marker",
+    "but ke",
+    "kim cat",
+    "kem cat",
+    "nhip",
+    "dao",
+    "can mua kem gi",
+    "mua kem gi",
+    "can dung cu gi",
+    "rap can gi",
+    "lap can gi",
+    "do nghe lap rap",
+  ]);
+}
+
 function getProductKind(text: string): ProductFilters["productKind"] {
   if (wantsModelOnly(text)) return "model";
   if (wantsCardOnly(text)) return "card";
   if (wantsKeychainOnly(text)) return "keychain";
+  if (wantsToolOnly(text)) return "tool";
   if (wantsAccessoryOnly(text)) return "accessory";
   return "any";
 }
-
 function expandScenarioText(message: string) {
   const text = preprocessPriceText(message);
   const extras: string[] = [];
@@ -325,8 +347,6 @@ function expandScenarioText(message: string) {
     "moi choi",
     "moi tap rap",
     "moi lap",
-    "moi choi gunpla",
-    "nguoi moi nen mua",
     "de lap",
     "de rap",
     "de choi",
@@ -352,13 +372,39 @@ function expandScenarioText(message: string) {
   }
 
   if (hasAny(text, [
+    "tre em",
+    "hoc sinh",
+    "cho be",
+    "cho chau",
+    "cho em nho",
+    "tre moi choi",
+  ])) {
+    extras.push("mo hinh thoi sd hg de lap gia re con hang");
+  }
+
+  if (hasAny(text, [
+    "lap nhanh",
+    "rap nhanh",
+    "it chi tiet",
+    "khong mat nhieu thoi gian",
+    "khong qua phuc tap",
+    "don gian thoi",
+    "de hoan thanh",
+  ])) {
+    extras.push("mo hinh thoi sd hg de rap de lap con hang");
+  }
+
+  if (hasAny(text, [
     "nho gon",
     "de ban",
     "trung bay",
-    "de ke sach",
     "khong qua to",
     "mau nho",
     "nho nho",
+    "mini",
+    "be be",
+    "de tren ban",
+    "khong chiem cho",
   ])) {
     extras.push("mo hinh thoi sd hg 1/144 con hang");
   }
@@ -373,8 +419,14 @@ function expandScenarioText(message: string) {
     "suu tam",
     "trung bay dep",
     "co gia tri suu tam",
+    "xin hon",
+    "cao cap hon",
+    "ngau hon",
+    "dep hon",
+    "chat hon",
+    "on hon",
   ])) {
-    extras.push("mo hinh thoi rg mg pg metal build mechanicore con hang");
+    extras.push("mo hinh thoi cao cap rg mg pg metal build mechanicore con hang");
   }
 
   if (hasAny(text, [
@@ -385,18 +437,85 @@ function expandScenarioText(message: string) {
     "kinh te",
     "mem tien",
     "vua tien",
+    "dat qua",
+    "hoi dat",
+    "mac qua",
+    "re hon",
+    "mau re hon",
+    "co cai nao re hon",
+    "vua tien hon",
+    "mem hon",
   ])) {
     extras.push("gia re con hang");
   }
 
   if (hasAny(text, [
-    "ban chay",
-    "hot",
-    "pho bien",
-    "nhieu nguoi mua",
-    "dang hot",
+    "to hon",
+    "mau to",
+    "size to",
+    "kich thuoc lon",
+    "mo hinh to",
+    "ban to",
+    "ti le lon",
   ])) {
-    extras.push("gundam bandai mo hinh thoi con hang");
+    extras.push("mo hinh thoi mg pg 1/100 1/60 full mechanics con hang");
+  }
+
+  if (hasAny(text, [
+    "mau moi",
+    "hang moi",
+    "moi ve",
+    "san pham moi",
+    "mau vua ve",
+    "co gi moi",
+  ])) {
+    extras.push("moi ve con hang");
+  }
+
+  if (hasAny(text, [
+    "ban hiem",
+    "hang hiem",
+    "limited",
+    "gioi han",
+    "p bandai",
+    "p-bandai",
+    "premium bandai",
+    "suu tam hon",
+  ])) {
+    extras.push("p-bandai limited premium bandai mo hinh thoi");
+  }
+
+  if (hasAny(text, [
+    "mua kem gi",
+    "can mua kem gi",
+    "rap can gi",
+    "lap can gi",
+    "can dung cu gi",
+    "co can kim khong",
+    "co can kem khong",
+    "co can panel line khong",
+  ])) {
+    extras.push("dung cu tool keo dan panel line con hang");
+  }
+
+  if (hasAny(text, [
+    "khong can keo",
+    "khong can son",
+    "snap fit",
+    "lap khong can keo",
+    "rap khong can keo",
+  ])) {
+    extras.push("mo hinh thoi gundam bandai gunpla con hang");
+  }
+
+  if (hasAny(text, [
+    "chi bandai",
+    "bandai thoi",
+    "hang bandai",
+    "bandai chinh hang",
+    "chinh hang bandai",
+  ])) {
+    extras.push("bandai gundam gunpla mo hinh thoi con hang");
   }
 
   if (hasAny(text, [
@@ -449,93 +568,6 @@ function expandScenarioText(message: string) {
   }
 
   if (hasAny(text, [
-    "dat qua",
-    "hoi dat",
-    "mac qua",
-    "re hon",
-    "mau re hon",
-    "co cai nao re hon",
-    "vua tien hon",
-    "mem hon",
-    "kinh te hon",
-  ])) {
-    extras.push("gia re con hang");
-  }
-
-  if (hasAny(text, [
-    "xin hon",
-    "cao cap hon",
-    "mau cao cap hon",
-    "ngau hon",
-    "dep hon",
-    "chat hon",
-    "co gi ngon hon",
-    "co cai nao on hon",
-    "mau nao on hon",
-  ])) {
-    extras.push("mo hinh thoi cao cap rg mg pg metal build mechanicore con hang");
-  }
-
-  if (hasAny(text, [
-    "to hon",
-    "mau to",
-    "size to",
-    "kich thuoc lon",
-    "mo hinh to",
-    "ban to",
-    "ti le lon",
-  ])) {
-    extras.push("mo hinh thoi mg pg 1/100 1/60 full mechanics con hang");
-  }
-
-  if (hasAny(text, [
-    "nho hon",
-    "nho gon hon",
-    "mini",
-    "be be",
-    "mau be",
-    "de tren ban",
-    "khong chiem cho",
-  ])) {
-    extras.push("mo hinh thoi sd hg 1/144 con hang");
-  }
-
-  if (hasAny(text, [
-    "mau moi",
-    "hang moi",
-    "moi ve",
-    "san pham moi",
-    "mau vua ve",
-    "co gi moi",
-  ])) {
-    extras.push("moi ve con hang");
-  }
-
-  if (hasAny(text, [
-    "ban hiem",
-    "hang hiem",
-    "limited",
-    "gioi han",
-    "p bandai",
-    "p-bandai",
-    "premium bandai",
-    "suu tam hon",
-  ])) {
-    extras.push("p-bandai limited premium bandai mo hinh thoi");
-  }
-
-  if (hasAny(text, [
-    "khop chac",
-    "de tao dang",
-    "pose tot",
-    "nhieu phu kien kem theo",
-    "nhieu vu khi",
-    "nhieu option",
-  ])) {
-    extras.push("rg mg gundam bandai mo hinh thoi con hang");
-  }
-
-  if (hasAny(text, [
     "thich seed",
     "gundam seed",
     "freedom",
@@ -576,7 +608,6 @@ function expandScenarioText(message: string) {
 
   return [text, ...extras].join(" ");
 }
-
 function parseFilters(message: string): ProductFilters {
   const text = expandScenarioText(message);
   const productKind = getProductKind(text);
@@ -642,6 +673,13 @@ function hasSpecificProductFilter(text: string) {
       "moc khoa",
       "keo",
       "panel line",
+      "dung cu",
+      "tool",
+      "kim cat",
+      "kem cat",
+      "nhip",
+      "dao",
+      "marker",
 
       "nguoi moi",
       "moi choi",
@@ -652,6 +690,11 @@ function hasSpecificProductFilter(text: string) {
       "mua tang",
       "sinh nhat",
       "qua tang",
+      "tre em",
+      "hoc sinh",
+      "lap nhanh",
+      "rap nhanh",
+      "it chi tiet",
       "nho gon",
       "de ban",
       "trung bay",
@@ -665,6 +708,12 @@ function hasSpecificProductFilter(text: string) {
       "re nhat",
       "gia re",
       "sinh vien",
+
+      "mua kem gi",
+      "can mua kem gi",
+      "can dung cu gi",
+      "rap can gi",
+      "lap can gi",
 
       "re hon",
       "dat qua",
@@ -764,6 +813,25 @@ function isRefinementOnly(text: string) {
     "hang moi hon",
     "ban hiem hon",
     "limited hon",
+
+    "mua kem gi",
+    "can mua kem gi",
+    "can dung cu gi",
+    "rap can gi",
+    "lap can gi",
+    "do nghe lap rap",
+    "dung cu thoi",
+    "keo thoi",
+    "panel line thoi",
+    "khong can keo",
+    "khong can son",
+    "bandai thoi",
+    "chi bandai",
+    "tre em",
+    "hoc sinh",
+    "lap nhanh",
+    "rap nhanh",
+    "it chi tiet",
   ]);
 }
 function getFollowUpRequest(text: string): FollowUpRequest | null {
@@ -814,6 +882,15 @@ function getFollowUpRequest(text: string): FollowUpRequest | null {
     "may san pham nua",
     "co mau nao nua",
     "co cai nao nua",
+    "con hang nao khac",
+    "con san pham nao khac",
+    "con mau nao nua",
+    "het chua",
+    "het roi a",
+    "xem tiep",
+    "cho xem tiep",
+    "next",
+    "more",
     "mau nao on hon",
     "cai nao on hon",
     "co cai nao on hon",
@@ -1335,6 +1412,25 @@ function getSmartFaqReply(text: string) {
   const isAskingToBuy =
     hasAny(text, ["goi y", "tu van", "mua", "chon", "san pham", "mau nao", "co mau"]);
 
+  if (!isAskingToBuy && hasAny(text, ["hang chinh hang khong", "bandai chinh hang", "co phai hang that", "hang fake khong", "hang real khong"])) {
+    return "HMECHA ưu tiên sản phẩm chính hãng và hiển thị thông tin sản phẩm rõ trên từng trang chi tiết. Nếu bạn cần kiểm tra mẫu cụ thể, hãy gửi tên sản phẩm cho shop hoặc liên hệ hotline 0945632321.";
+  }
+
+  if (!isAskingToBuy && hasAny(text, ["co can keo khong", "co can son khong", "gunpla co can keo", "lap co can keo", "rap co can keo"])) {
+    return "Phần lớn Gunpla/Bandai model kit là dạng snap-fit, thường không bắt buộc dùng keo hoặc sơn để lắp cơ bản. Tuy vậy, kìm cắt, nhíp, dao gọt nub và panel line sẽ giúp thành phẩm đẹp hơn.";
+  }
+
+  if (!isAskingToBuy && hasAny(text, ["can dung cu gi", "moi choi can mua gi", "rap gunpla can gi", "lap gunpla can gi"])) {
+    return "Người mới nên có kìm cắt nhựa, dao gọt nub hoặc giấy nhám mịn. Nếu muốn đẹp hơn có thể mua thêm panel line, nhíp và decal. Bạn cũng có thể hỏi “gợi ý dụng cụ lắp ráp” để mình lọc sản phẩm phù hợp.";
+  }
+
+  if (!isAskingToBuy && hasAny(text, ["dong goi the nao", "shop dong goi", "co boc bong bong", "so mop hop"])) {
+    return "Shop sẽ đóng gói để hạn chế móp méo khi vận chuyển. Nếu nhận hàng có vấn đề như móp nặng, giao sai hoặc lỗi sản phẩm, bạn nên quay/chụp lại tình trạng kiện hàng và liên hệ HMECHA sớm.";
+  }
+
+  if (!isAskingToBuy && hasAny(text, ["co nhan rap ho khong", "co nhan son khong", "rap ho", "son ho", "build ho"])) {
+    return "Hiện phần này bạn nên liên hệ trực tiếp HMECHA qua hotline 0945632321 để shop xác nhận có hỗ trợ ráp hộ/sơn hộ theo từng thời điểm hay không.";
+  }
   if (!isAskingToBuy && hasAny(text, ["hg la gi", "rg la gi", "mg la gi", "pg la gi", "sd la gi", "hg rg mg", "cac dong gundam", "grade la gi"])) {
     return "Các dòng phổ biến gồm: HG thường dễ lắp, giá mềm, hợp người mới; RG chi tiết hơn ở tỉ lệ 1/144; MG thường lớn hơn 1/100, chi tiết và trưng bày đẹp; PG là dòng cao cấp, kích thước lớn; SD nhỏ gọn, dễ thương và dễ sưu tầm.";
   }
