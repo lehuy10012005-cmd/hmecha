@@ -32,7 +32,11 @@ type ProductFilters = {
   wantInStock: boolean;
   wantPreorder: boolean;
   wantSale: boolean;
-  modelOnly: boolean;
+  productKind: "any" | "model" | "accessory" | "card" | "keychain" | "tool";
+  excludeAccessories: boolean;
+  excludeCards: boolean;
+  excludeKeychains: boolean;
+  excludeTools: boolean;
 };
 
 type ProductContext = {
@@ -143,6 +147,7 @@ function hasPriceFilter(text: string) {
       "toi da",
       "khong qua",
       "mua duoc",
+      "co bao nhieu",
     ])
   );
 }
@@ -151,7 +156,7 @@ function extractExplicitCount(text: string) {
   const cleanText = normalizeText(text);
 
   const match =
-    cleanText.match(/(?:cho|goi y|lay|tim|tu van)\s*(?:toi|minh)?\s*(\d+)\s*(san pham|sp|mon|mau|lua chon|mo hinh)/i) ||
+    cleanText.match(/(?:cho|goi y|lay|tim|tu van|chon)\s*(?:toi|minh)?\s*(\d+)\s*(san pham|sp|mon|mau|lua chon|mo hinh)/i) ||
     cleanText.match(/(\d+)\s*(san pham|sp|mon|mau|lua chon|mo hinh)/i);
 
   if (!match?.[1]) return null;
@@ -204,7 +209,7 @@ function extractPriceRange(message: string): PriceRange {
   }
 
   const upper = text.match(
-    new RegExp(`(?:duoi|nho hon|toi da|khong qua)\\s*${number}\\s*${unit}`, "i")
+    new RegExp(`(?:duoi|nho hon|toi da|khong qua|trong tam)\\s*${number}\\s*${unit}`, "i")
   );
 
   if (upper) {
@@ -226,6 +231,7 @@ function extractPriceRange(message: string): PriceRange {
         "co tam",
         "co khoang",
         "mua duoc",
+        "nen mua gi",
       ])
     ) {
       range.max = amount;
@@ -233,7 +239,7 @@ function extractPriceRange(message: string): PriceRange {
       return range;
     }
 
-    if (hasAny(text, ["gia", "tam gia", "trieu", "tri", "k", "vnd", "co hang nao"])) {
+    if (hasAny(text, ["gia", "tam gia", "khoang", "trieu", "tri", "k", "vnd", "co hang nao"])) {
       const tolerance = amount >= 1000000 ? 0.2 : 0.25;
 
       range.target = amount;
@@ -261,29 +267,96 @@ function wantsModelOnly(text: string) {
     "gunpla thoi",
     "gundam thoi",
     "khong y la mo hinh",
-    "khong mo hinh ay",
+    "khong phai keo",
+    "khong lay keo",
+    "dung lay keo",
+    "khong lay phu kien",
+    "dung lay phu kien",
+    "khong the bai",
+    "dung lay the bai",
     "y la mo hinh",
   ]);
 }
 
+function wantsAccessoryOnly(text: string) {
+  return hasAny(text, [
+    "phu kien thoi",
+    "goi y phu kien",
+    "dung cu",
+    "tool",
+    "keo dan",
+    "panel line",
+    "decal",
+    "custom parts",
+    "option parts",
+  ]);
+}
+
+function wantsCardOnly(text: string) {
+  return hasAny(text, [
+    "the bai",
+    "card game",
+    "booster",
+    "premium card",
+  ]);
+}
+
+function wantsKeychainOnly(text: string) {
+  return hasAny(text, [
+    "moc khoa",
+    "keychain",
+  ]);
+}
+
+function getProductKind(text: string): ProductFilters["productKind"] {
+  if (wantsModelOnly(text)) return "model";
+  if (wantsCardOnly(text)) return "card";
+  if (wantsKeychainOnly(text)) return "keychain";
+  if (wantsAccessoryOnly(text)) return "accessory";
+  return "any";
+}
+
 function parseFilters(message: string): ProductFilters {
   const text = preprocessPriceText(message);
+  const productKind = getProductKind(text);
 
   return {
     rawText: text,
     range: extractPriceRange(text),
-    wantInStock: hasAny(text, ["con hang", "hang san", "co san"]),
+    wantInStock: hasAny(text, ["con hang", "hang san", "co san", "san khong"]),
     wantPreorder: hasAny(text, ["preorder", "dat truoc", "sap ve"]),
     wantSale: hasAny(text, ["sale", "khuyen mai", "dang giam", "giam gia"]),
-    modelOnly: wantsModelOnly(text),
+    productKind,
+    excludeAccessories:
+      productKind === "model" ||
+      hasAny(text, ["khong lay phu kien", "dung lay phu kien", "khong phu kien"]),
+    excludeCards:
+      productKind === "model" ||
+      hasAny(text, ["khong the bai", "dung lay the bai", "khong lay card"]),
+    excludeKeychains:
+      productKind === "model" ||
+      hasAny(text, ["khong moc khoa", "dung lay moc khoa"]),
+    excludeTools:
+      productKind === "model" ||
+      hasAny(text, ["khong lay keo", "dung lay keo", "khong lay tool", "khong dung cu"]),
   };
 }
 
-function mergeModelOnlyFilter(previousFilters: ProductFilters, message: string): ProductFilters {
+function mergeRefinement(previousFilters: ProductFilters, message: string): ProductFilters {
+  const next = parseFilters(`${previousFilters.rawText} ${message}`);
+
   return {
     ...previousFilters,
-    rawText: `${previousFilters.rawText} ${preprocessPriceText(message)} mo hinh thoi`,
-    modelOnly: true,
+    rawText: `${previousFilters.rawText} ${preprocessPriceText(message)}`,
+    range: next.range.mode !== "none" ? next.range : previousFilters.range,
+    wantInStock: previousFilters.wantInStock || next.wantInStock,
+    wantPreorder: next.wantPreorder || previousFilters.wantPreorder,
+    wantSale: next.wantSale || previousFilters.wantSale,
+    productKind: next.productKind !== "any" ? next.productKind : previousFilters.productKind,
+    excludeAccessories: previousFilters.excludeAccessories || next.excludeAccessories,
+    excludeCards: previousFilters.excludeCards || next.excludeCards,
+    excludeKeychains: previousFilters.excludeKeychains || next.excludeKeychains,
+    excludeTools: previousFilters.excludeTools || next.excludeTools,
   };
 }
 
@@ -300,6 +373,15 @@ function hasSpecificProductFilter(text: string) {
       "mechanicore",
       "metal build",
       "30mm",
+      "30ms",
+      "30mf",
+      "figure rise",
+      "figure-rise",
+      "phu kien",
+      "the bai",
+      "moc khoa",
+      "keo",
+      "panel line",
     ]) ||
     hasWord(text, "hg") ||
     hasWord(text, "rg") ||
@@ -309,18 +391,40 @@ function hasSpecificProductFilter(text: string) {
   );
 }
 
+function isRefinementOnly(text: string) {
+  const cleanText = normalizeText(text);
+
+  return hasAny(cleanText, [
+    "mo hinh thoi",
+    "chi mo hinh",
+    "khong phai keo",
+    "khong lay keo",
+    "dung lay keo",
+    "khong lay phu kien",
+    "dung lay phu kien",
+    "khong the bai",
+    "dung lay the bai",
+    "khong moc khoa",
+    "dung lay moc khoa",
+    "y la mo hinh",
+    "khong y la mo hinh",
+    "con hang thoi",
+    "hang san thoi",
+  ]);
+}
+
 function getFollowUpRequest(text: string): FollowUpRequest | null {
   const cleanText = normalizeText(text);
 
-  if (hasPriceFilter(cleanText) || hasSpecificProductFilter(cleanText) || wantsModelOnly(cleanText)) {
+  if (hasPriceFilter(cleanText) || hasSpecificProductFilter(cleanText) || isRefinementOnly(cleanText)) {
     return null;
   }
 
   const moreCountMatch =
-    cleanText.match(/(?:^|\s)(?:cho them|them)\s*(\d+)(?:\s|$)/i);
+    cleanText.match(/(?:^|\s)(?:cho them|them|lay them|tim them)\s*(\d+)(?:\s|$)/i);
 
   const replaceCountMatch =
-    cleanText.match(/(?:^|\s)(?:thoi\s*)?(?:cho|lay|tim)?\s*(\d+)\s*(san pham|sp|mon|mau|lua chon)?\s*(?:di|nha|nhe|thoi)?(?:\s|$)/i);
+    cleanText.match(/(?:^|\s)(?:thoi\s*)?(?:cho|lay|tim|chon)?\s*(\d+)\s*(san pham|sp|mon|mau|lua chon)?\s*(?:di|nha|nhe|thoi)?(?:\s|$)/i);
 
   const morePhrase = hasAny(cleanText, [
     "khac di",
@@ -355,6 +459,8 @@ function getFollowUpRequest(text: string): FollowUpRequest | null {
     "mau nua",
     "vai san pham nua",
     "may san pham nua",
+    "co mau nao nua",
+    "co cai nao nua",
   ]);
 
   if (moreCountMatch?.[1]) {
@@ -415,6 +521,21 @@ function isAccessoryLikeProduct(product: ChatProduct) {
     "tool",
     "dung cu",
   ]);
+}
+
+function isCardProduct(product: ChatProduct) {
+  const haystack = normalizeText(`${product.name} ${product.category || ""}`);
+  return hasAny(haystack, ["the bai", "card game", "premium card", "booster", "booster box"]);
+}
+
+function isKeychainProduct(product: ChatProduct) {
+  const haystack = normalizeText(`${product.name} ${product.category || ""}`);
+  return hasAny(haystack, ["moc khoa", "keychain", "rubber mascot"]);
+}
+
+function isToolProduct(product: ChatProduct) {
+  const haystack = normalizeText(`${product.name} ${product.category || ""}`);
+  return hasAny(haystack, ["keo dan", "cement", "tamiya", "panel line", "lo ke", "marker", "tool", "dung cu"]);
 }
 
 function isModelLikeProduct(product: ChatProduct) {
@@ -547,6 +668,8 @@ function productMatchesKeyword(product: ChatProduct, filters: ProductFilters) {
     ["pg", ["pg", "perfect grade"]],
     ["sd", ["sd", "sdw", "sd gundam"]],
     ["30mm", ["30mm", "30 minutes"]],
+    ["30ms", ["30ms"]],
+    ["30mf", ["30mf"]],
     ["metal build", ["metal build"]],
     ["gundam", ["gundam"]],
     ["gunpla", ["gunpla", "gundam"]],
@@ -556,6 +679,8 @@ function productMatchesKeyword(product: ChatProduct, filters: ProductFilters) {
     ["grandship", ["grandship", "grand ship"]],
     ["mechanicore", ["mechanicore"]],
     ["phu kien", ["phu kien", "decal", "tool", "option parts", "accessory"]],
+    ["the bai", ["the bai", "card game", "booster"]],
+    ["moc khoa", ["moc khoa", "keychain"]],
   ] as const;
 
   const activeGroups = keywordMap.filter(([keyword, aliases]) => {
@@ -587,7 +712,17 @@ function findProducts(
     if (filters.range.min && product.price < filters.range.min) return false;
     if (filters.range.max && product.price > filters.range.max) return false;
 
-    if (filters.modelOnly && !isModelLikeProduct(product)) return false;
+    if (filters.productKind === "model" && !isModelLikeProduct(product)) return false;
+    if (filters.productKind === "accessory" && !isAccessoryLikeProduct(product)) return false;
+    if (filters.productKind === "card" && !isCardProduct(product)) return false;
+    if (filters.productKind === "keychain" && !isKeychainProduct(product)) return false;
+    if (filters.productKind === "tool" && !isToolProduct(product)) return false;
+
+    if (filters.excludeAccessories && isAccessoryLikeProduct(product)) return false;
+    if (filters.excludeCards && isCardProduct(product)) return false;
+    if (filters.excludeKeychains && isKeychainProduct(product)) return false;
+    if (filters.excludeTools && isToolProduct(product)) return false;
+
     if (!productMatchesKeyword(product, filters)) return false;
 
     const status = normalizeText(getProductStatus(product));
@@ -629,7 +764,7 @@ function findProducts(
   ]);
 
   if (!strictOrder) {
-    const poolSize = Math.min(result.length, Math.max(count * 4, 20));
+    const poolSize = Math.min(result.length, Math.max(count * 5, 30));
     const topPool = result.slice(0, poolSize);
     const rest = result.slice(poolSize);
 
@@ -647,15 +782,27 @@ function describePriceRange(range: PriceRange) {
   return "phù hợp";
 }
 
+function describeProductKind(kind: ProductFilters["productKind"]) {
+  if (kind === "model") return "mô hình/model kit";
+  if (kind === "accessory") return "phụ kiện/dụng cụ";
+  if (kind === "card") return "thẻ bài";
+  if (kind === "keychain") return "móc khóa";
+  if (kind === "tool") return "dụng cụ/keo";
+  return "";
+}
+
 function describeFilters(filters: ProductFilters) {
   const parts: string[] = [];
 
-  if (filters.modelOnly) parts.push("mô hình/model kit");
+  const kind = describeProductKind(filters.productKind);
+  if (kind) parts.push(kind);
 
   const price = describePriceRange(filters.range);
   if (price !== "phù hợp") parts.push(price);
 
   if (filters.wantInStock) parts.push("còn hàng");
+  if (filters.wantPreorder) parts.push("đặt trước");
+  if (filters.wantSale) parts.push("đang khuyến mãi");
 
   return parts.length ? parts.join(", ") : "phù hợp";
 }
@@ -686,7 +833,7 @@ function buildProductReply(
   if (!matched.length) {
     if (options?.isMore) {
       return {
-        reply: `Mình chưa thấy thêm sản phẩm khác ${describeFilters(filters)}. Bạn thử đổi khoảng giá hoặc nói rõ dòng sản phẩm như HG, RG, MG nhé.`,
+        reply: `Mình chưa thấy thêm sản phẩm khác ${describeFilters(filters)}. Bạn thử đổi khoảng giá, đổi dòng sản phẩm hoặc hỏi “gợi ý mô hình khác” nhé.`,
         products: [],
       };
     }
@@ -843,6 +990,11 @@ function shouldRecommendProducts(text: string) {
       "mua duoc",
       "mo hinh",
       "model kit",
+      "bandai",
+      "hg",
+      "rg",
+      "mg",
+      "sd",
     ])
   ) {
     return false;
@@ -850,7 +1002,8 @@ function shouldRecommendProducts(text: string) {
 
   return (
     hasPriceFilter(cleanText) ||
-    wantsModelOnly(cleanText) ||
+    isRefinementOnly(cleanText) ||
+    hasSpecificProductFilter(cleanText) ||
     hasAny(cleanText, [
       "san pham",
       "sp",
@@ -858,6 +1011,7 @@ function shouldRecommendProducts(text: string) {
       "mau",
       "goi y",
       "de xuat",
+      "tu van",
       "tu van san pham",
       "tu van mo hinh",
       "mua mo hinh",
@@ -870,26 +1024,20 @@ function shouldRecommendProducts(text: string) {
       "tren",
       "tam gia",
       "ngan sach",
-      "hg",
-      "rg",
-      "mg",
-      "pg",
-      "sd",
-      "30mm",
-      "pokemon",
-      "onepiece",
       "gia re",
       "gia tot",
       "con hang",
       "preorder",
       "dat truoc",
       "mua duoc",
+      "nen mua gi",
+      "chon gi",
     ])
   );
 }
 
 function getFallbackReply() {
-  return "Mình chưa hiểu rõ câu hỏi đó. Bạn có thể hỏi ngắn hơn như: “shop bán gì”, “phí ship bao nhiêu”, “gợi ý sản phẩm dưới 500k”, “cho 5 mô hình dưới 1 triệu” hoặc “còn sản phẩm khác không”.";
+  return "Mình chưa hiểu rõ câu hỏi đó. Bạn có thể hỏi ngắn hơn như: “gợi ý sản phẩm dưới 500k”, “cho 5 mô hình dưới 1 triệu”, “còn sản phẩm khác không”, “không lấy keo, chỉ mô hình thôi”.";
 }
 
 function readProductContext(request: NextRequest): ProductContext | null {
@@ -905,7 +1053,7 @@ function readProductContext(request: NextRequest): ProductContext | null {
 
     return {
       filters: parsed.filters,
-      shownSlugs: Array.isArray(parsed.shownSlugs) ? parsed.shownSlugs.slice(0, 40) : [],
+      shownSlugs: Array.isArray(parsed.shownSlugs) ? parsed.shownSlugs.slice(0, 60) : [],
       lastCount: Number(parsed.lastCount || 3),
       createdAt: parsed.createdAt,
     };
@@ -943,10 +1091,10 @@ async function getReply(message: string, previousContext: ProductContext | null)
     };
   }
 
-  if (previousContext && wantsModelOnly(text) && !hasPriceFilter(text)) {
+  if (previousContext && isRefinementOnly(text)) {
     const catalogProducts = await getCatalogProducts();
     const count = extractExplicitCount(text) || previousContext.lastCount || getRandomDefaultCount();
-    const filters = mergeModelOnlyFilter(previousContext.filters, message);
+    const filters = mergeRefinement(previousContext.filters, message);
 
     const productResult = buildProductReply(filters, catalogProducts, {
       count,
@@ -986,7 +1134,7 @@ async function getReply(message: string, previousContext: ProductContext | null)
       reply: productResult.reply,
       productContext: {
         filters: previousContext.filters,
-        shownSlugs: Array.from(new Set(nextShownSlugs)).slice(0, 40),
+        shownSlugs: Array.from(new Set(nextShownSlugs)).slice(0, 60),
         lastCount: followUpRequest.count,
         createdAt: Date.now(),
       },
