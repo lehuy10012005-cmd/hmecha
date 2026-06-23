@@ -1,9 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import ChatWidget from "@/components/ChatWidget";
-
-
-
 import FeaturedImagePreviewLock from "@/components/FeaturedImagePreviewLock";
 
 export const metadata: Metadata = {
@@ -21,9 +17,7 @@ export default function RootLayout({
         
         
         {children}
-        
-        <ChatWidget />
-      </body>
+</body>
     </html>
   );
 }
