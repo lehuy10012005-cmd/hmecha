@@ -235,11 +235,23 @@ function getProductFollowUpRequest(text: string) {
   const isMorePhrase = hasAny(cleanText, [
     "khac di",
     "cai khac",
+    "con cai khac",
+    "con cai nao khac",
+    "cai nao khac",
     "mau khac",
+    "con mau khac",
+    "mau nao khac",
     "san pham khac",
+    "san pham nao khac",
+    "khac nua",
+    "khac nua khong",
     "sp khac",
     "doi mau khac",
     "con nua",
+    "con nua khong",
+    "con gi khac",
+    "con cai khac khong",
+    "con mau khac khong",
     "nua khong",
     "nua di",
     "cho nua",
@@ -475,6 +487,79 @@ function getSmartFaqReply(text: string) {
   return null;
 }
 
+function wantsModelOnly(text: string) {
+  const cleanText = normalizeText(text);
+
+  return hasAny(cleanText, [
+    "mo hinh thoi",
+    "chi mo hinh",
+    "goi y mo hinh",
+    "tu van mo hinh",
+    "mau mo hinh",
+    "model kit",
+    "gunpla thoi",
+    "gundam thoi",
+    "khong mo hinh ay",
+    "khong y la mo hinh",
+    "y la mo hinh",
+  ]);
+}
+
+function isAccessoryLikeProduct(product: ChatProduct) {
+  const haystack = normalizeText(
+    `${product.name} ${product.category || ""} ${product.brand || ""} ${product.sku || ""} ${product.badge || ""}`
+  );
+
+  return hasAny(haystack, [
+    "keo dan",
+    "tamiya",
+    "panel line",
+    "lo ke",
+    "marker",
+    "moc khoa",
+    "keychain",
+    "the bai",
+    "card game",
+    "premium card",
+    "booster",
+    "custom parts",
+    "option parts",
+    "customize material",
+    "decal",
+    "phu kien",
+    "accessory",
+    "tool",
+    "dung cu",
+  ]);
+}
+
+function isModelLikeProduct(product: ChatProduct) {
+  const haystack = normalizeText(
+    `${product.name} ${product.category || ""} ${product.brand || ""} ${product.sku || ""} ${product.badge || ""}`
+  );
+
+  if (isAccessoryLikeProduct(product)) return false;
+
+  return hasAny(haystack, [
+    "gundam",
+    "gunpla",
+    "hg ",
+    "rg ",
+    "mg ",
+    "pg ",
+    "sd ",
+    "hgtwfm",
+    "hgbf",
+    "hguc",
+    "mgsd",
+    "mgex",
+    "full mechanics",
+    "figure-rise",
+    "grandship",
+    "onepiece grandship",
+    "model kit",
+  ]);
+}
 function productMatchesKeyword(product: ChatProduct, text: string) {
   const haystack = normalizeText(
     `${product.name} ${product.category || ""} ${product.brand || ""} ${product.status || ""} ${product.sku || ""} ${product.badge || ""}`
@@ -524,6 +609,7 @@ function findProducts(
   const wantInStock = hasAny(text, ["con hang", "hang san", "co san"]);
   const wantPreorder = hasAny(text, ["preorder", "dat truoc", "sap ve"]);
   const wantSale = hasAny(text, ["sale", "khuyen mai", "san pham giam gia", "dang giam"]);
+  const wantModelOnly = wantsModelOnly(text);
 
   let result = catalogProducts.filter((product) => {
     if (!product.price || product.price <= 0) return false;
@@ -531,6 +617,8 @@ function findProducts(
 
     if (range.min && product.price < range.min) return false;
     if (range.max && product.price > range.max) return false;
+
+    if (wantModelOnly && !isModelLikeProduct(product)) return false;
 
     if (!productMatchesKeyword(product, text)) return false;
 
@@ -753,6 +841,11 @@ function shouldRecommendProducts(text: string) {
       "preorder",
       "dat truoc",
       "mua duoc",
+      "mo hinh thoi",
+      "chi mo hinh",
+      "goi y mo hinh",
+      "tu van mo hinh",
+      "model kit",
     ])
   );
 }
@@ -825,7 +918,9 @@ async function getReply(message: string, previousContext: ProductContext | null)
 
   if (followUpRequest && previousContext) {
     const catalogProducts = await getCatalogProducts();
-    const queryMessage = `${previousContext.baseMessage} cho ${followUpRequest.count} sản phẩm`;
+    const queryMessage = wantsModelOnly(text)
+      ? `${previousContext.baseMessage} mô hình thôi cho ${followUpRequest.count} sản phẩm`
+      : `${previousContext.baseMessage} cho ${followUpRequest.count} sản phẩm`;
     const skipSlugs = followUpRequest.isMore ? previousContext.shownSlugs : [];
 
     const productResult = buildProductReply(queryMessage, catalogProducts, {
