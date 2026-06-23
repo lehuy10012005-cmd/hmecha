@@ -2552,3 +2552,70 @@ textarea {
 }
 
 /* hmecha-mobile-icon-white-red-end */
+
+/* hmecha-cart-price-readable-start */
+
+/* Chỉ sửa màu số tiền trong trang giỏ hàng, không đổi layout */
+.cartPage [class*="price"],
+.cartPage [class*="Price"],
+.cartPage [class*="total"],
+.cartPage [class*="Total"],
+.cartPage [class*="amount"],
+.cartPage [class*="Amount"] {
+  color: #dc2626 !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+
+/* Số tổng cộng nổi bật hơn */
+.cartPage [class*="summary"] [class*="total"],
+.cartPage [class*="summary"] [class*="Total"],
+.cartPage [class*="orderSummary"] [class*="total"],
+.cartPage [class*="orderSummary"] [class*="Total"] {
+  color: #dc2626 !important;
+  font-weight: 950 !important;
+}
+
+/* Các số phụ như tạm tính / phí vận chuyển: chuyển thành đen dễ đọc */
+.cartPage [class*="summary"] span,
+.cartPage [class*="summary"] strong,
+.cartPage [class*="summary"] b,
+.cartPage [class*="orderSummary"] span,
+.cartPage [class*="orderSummary"] strong,
+.cartPage [class*="orderSummary"] b {
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+
+/* Trường hợp số đang bị ép màu cyan bằng style cũ */
+.cartPage aside span,
+.cartPage aside b,
+.cartPage aside strong {
+  color: #111827 !important;
+  opacity: 1 !important;
+}
+
+.cartPage aside [class*="total"],
+.cartPage aside [class*="Total"],
+.cartPage aside [class*="price"],
+.cartPage aside [class*="Price"],
+.cartPage aside [class*="amount"],
+.cartPage aside [class*="Amount"] {
+  color: #dc2626 !important;
+  font-weight: 950 !important;
+}
+
+/* Giá ở từng sản phẩm: đỏ rõ hơn thay vì xanh */
+.cartPage article [class*="price"],
+.cartPage article [class*="Price"],
+.cartPage article [class*="total"],
+.cartPage article [class*="Total"],
+.cartPage li [class*="price"],
+.cartPage li [class*="Price"],
+.cartPage li [class*="total"],
+.cartPage li [class*="Total"] {
+  color: #dc2626 !important;
+  font-weight: 900 !important;
+}
+
+/* hmecha-cart-price-readable-end */
