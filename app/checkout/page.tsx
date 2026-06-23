@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -29,6 +29,65 @@ function formatPrice(price: number) {
   return Number(price || 0).toLocaleString("vi-VN") + "₫";
 }
 
+
+const CHECKOUT_INFO_KEY = "hmecha-last-checkout-info";
+
+type SavedCheckoutInfo = {
+  email: string;
+  name: string;
+  phone: string;
+  address: string;
+  city: string;
+  district: string;
+  ward: string;
+  payment: PaymentMethod;
+};
+
+function readSavedCheckoutInfo(): Partial<SavedCheckoutInfo> | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = localStorage.getItem(CHECKOUT_INFO_KEY);
+    if (!raw) return null;
+
+    const data = JSON.parse(raw);
+
+    return {
+      email: String(data.email || ""),
+      name: String(data.name || ""),
+      phone: String(data.phone || ""),
+      address: String(data.address || ""),
+      city: String(data.city || ""),
+      district: String(data.district || ""),
+      ward: String(data.ward || ""),
+      payment: data.payment === "cod" ? "cod" : "vnpay",
+    };
+  } catch {
+    return null;
+  }
+}
+
+function saveCheckoutCustomerInfo(customer: Partial<SavedCheckoutInfo> & { note?: string }) {
+  if (typeof window === "undefined") return;
+
+  try {
+    const data: SavedCheckoutInfo = {
+      email: String(customer.email || ""),
+      name: String(customer.name || ""),
+      phone: String(customer.phone || ""),
+      address: String(customer.address || ""),
+      city: String(customer.city || ""),
+      district: String(customer.district || ""),
+      ward: String(customer.ward || ""),
+      payment: customer.payment === "cod" ? "cod" : "vnpay",
+    };
+
+    localStorage.setItem(CHECKOUT_INFO_KEY, JSON.stringify(data));
+  } catch {
+    // Không chặn đặt hàng nếu trình duyệt không cho lưu localStorage.
+  }
+}
+
 export default function CheckoutPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [placing, setPlacing] = useState(false);
@@ -56,6 +115,16 @@ export default function CheckoutPage() {
       setCart(JSON.parse(savedCart));
     }
 
+    const savedCheckoutInfo = readSavedCheckoutInfo();
+
+    if (savedCheckoutInfo) {
+      setCustomer((current) => ({
+        ...current,
+        ...savedCheckoutInfo,
+        note: "",
+      }));
+    }
+
     async function loadProfile() {
       try {
         const response = await fetch("/api/account/profile", { cache: "no-store" });
@@ -64,10 +133,10 @@ export default function CheckoutPage() {
         if (data?.profile) {
           setCustomer((current) => ({
             ...current,
-            email: data.profile.email || current.email,
-            name: data.profile.full_name || current.name,
-            phone: data.profile.phone || current.phone,
-            address: data.profile.address || current.address,
+            email: current.email || data.profile.email || "",
+            name: current.name || data.profile.full_name || "",
+            phone: current.phone || data.profile.phone || "",
+            address: current.address || data.profile.address || "",
           }));
         }
       } catch {
@@ -221,7 +290,9 @@ export default function CheckoutPage() {
           return;
         }
 
-        localStorage.removeItem("hmecha-cart");
+        saveCheckoutCustomerInfo(customer);
+        saveCheckoutCustomerInfo(customer);
+      localStorage.removeItem("hmecha-cart");
         window.open(data.paymentUrl, "_top");
         return;
       } catch {
@@ -263,6 +334,7 @@ export default function CheckoutPage() {
         return;
       }
 
+      saveCheckoutCustomerInfo(customer);
       localStorage.removeItem("hmecha-cart");
       window.open(data.successUrl, "_top");
       return;
