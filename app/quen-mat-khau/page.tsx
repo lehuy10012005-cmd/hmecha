@@ -19,10 +19,7 @@ export default function ForgotPasswordPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const emailParam = params.get("email");
-
-    if (emailParam) {
-      setEmail(emailParam);
-    }
+    if (emailParam) setEmail(emailParam);
   }, []);
 
   async function sendCode(event: FormEvent<HTMLFormElement>) {
@@ -32,30 +29,30 @@ export default function ForgotPasswordPage() {
     setMessage("");
     setError("");
 
-    const response = await fetch("/api/auth/forgot-password-custom", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email }),
-    });
+    try {
+      const response = await fetch("/api/auth/forgot-password-custom", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      setError(data.message || "Không gửi được mã xác nhận.");
-      setLoading(false);
-      return;
-    }
+      if (!response.ok) {
+        setError(data.message || "Không gửi được mã xác nhận.");
+        return;
+      }
 
-    setMessage(data.message);
-
-    if (data.challengeToken) {
-      setChallengeToken(data.challengeToken);
+      setMessage(data.message || "Mã xác nhận đã được gửi đến email.");
+      setChallengeToken(data.challengeToken || "");
       setStep("code");
+    } catch {
+      setError("Không gửi được mã xác nhận. Vui lòng thử lại.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   }
 
   async function resetPassword(event: FormEvent<HTMLFormElement>) {
@@ -64,6 +61,18 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     setMessage("");
     setError("");
+
+    if (!challengeToken) {
+      setError("Thiếu phiên xác nhận. Vui lòng gửi lại mã mới.");
+      setLoading(false);
+      return;
+    }
+
+    if (!/^\d{6}$/.test(code)) {
+      setError("Vui lòng nhập đúng mã 6 chữ số.");
+      setLoading(false);
+      return;
+    }
 
     if (password.length < 6) {
       setError("Mật khẩu mới phải có ít nhất 6 ký tự.");
@@ -77,31 +86,35 @@ export default function ForgotPasswordPage() {
       return;
     }
 
-    const response = await fetch("/api/auth/reset-password-custom", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        challengeToken,
-        code,
-        password,
-      }),
-    });
+    try {
+      const response = await fetch("/api/auth/reset-password-custom", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          challengeToken,
+          code,
+          password,
+        }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      setError(data.message || "Không đổi được mật khẩu.");
+      if (!response.ok) {
+        setError(data.message || "Không đổi được mật khẩu.");
+        return;
+      }
+
+      setMessage(data.message || "Đổi mật khẩu thành công.");
+      setCode("");
+      setPassword("");
+      setConfirmPassword("");
+    } catch {
+      setError("Không đổi được mật khẩu. Vui lòng thử lại.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    setMessage(data.message);
-    setCode("");
-    setPassword("");
-    setConfirmPassword("");
-    setLoading(false);
   }
 
   return (
@@ -118,7 +131,7 @@ export default function ForgotPasswordPage() {
         <p className="hmOtpDesc">
           {step === "email"
             ? "Nhập email đã đăng ký. HMECHA sẽ gửi mã xác nhận 6 chữ số để bạn tạo mật khẩu mới."
-            : "Nhập mã xác nhận trong email và tạo mật khẩu mới cho tài khoản của bạn."}
+            : "Nhập mã xác nhận trong email, sau đó tạo mật khẩu mới cho tài khoản của bạn."}
         </p>
 
         {message ? <div className="hmOtpSuccess">{message}</div> : null}
@@ -146,6 +159,7 @@ export default function ForgotPasswordPage() {
             <label>
               Mã xác nhận 6 chữ số
               <input
+                className="hmOtpCodeInput"
                 type="text"
                 inputMode="numeric"
                 maxLength={6}
@@ -153,7 +167,7 @@ export default function ForgotPasswordPage() {
                 onChange={(event) =>
                   setCode(event.target.value.replace(/\D/g, "").slice(0, 6))
                 }
-                placeholder="Nhập 6 số"
+                placeholder="638516"
                 required
               />
             </label>
@@ -220,7 +234,7 @@ export default function ForgotPasswordPage() {
         }
 
         .hmOtpCard {
-          width: min(520px, 100%);
+          width: min(560px, 100%);
           box-sizing: border-box;
           padding: 38px;
           border-radius: 28px;
@@ -322,6 +336,13 @@ export default function ForgotPasswordPage() {
         .hmOtpForm input:focus {
           border-color: #00e5ff;
           box-shadow: 0 0 0 3px rgba(0,229,255,.13);
+        }
+
+        .hmOtpCodeInput {
+          text-align: center;
+          font-size: 28px !important;
+          font-weight: 950;
+          letter-spacing: 8px;
         }
 
         .hmOtpForm button {
