@@ -413,8 +413,8 @@ export default async function AdminProductAnalyticsPage() {
         <MetricCard title="Sản phẩm có dữ liệu" value={stats.length} caption="Có view, giỏ, mua hoặc review" />
       </section>
 
-      <section className="analyticsGrid">
-        <section className="panel">
+      <section className="analyticsGrid analyticsGridSingle">
+        <section className="panel compactPanel">
           <div className="panelHead">
             <p>FUNNEL</p>
             <h2>Hành trình khách hàng</h2>
@@ -425,32 +425,6 @@ export default async function AdminProductAnalyticsPage() {
             <FunnelBar label="Click / xem nhanh" value={totalClicks} max={maxFunnel} />
             <FunnelBar label="Thêm vào giỏ" value={totalAddToCart} max={maxFunnel} />
             <FunnelBar label="Mua ngay" value={totalBuyNow} max={maxFunnel} />
-          </div>
-        </section>
-
-        <section className="panel">
-          <div className="panelHead">
-            <p>GỢI Ý NHANH</p>
-            <h2>Admin nên làm gì?</h2>
-          </div>
-
-          <div className="adviceList">
-            {topAdvice.length ? (
-              topAdvice.map((item) => (
-                <article className={`adviceCard ${item.actionTone}`} key={item.productSlug}>
-                  <div>
-                    <Link href={`/${item.productSlug}`}>{item.productName}</Link>
-                    <span>
-                      View {item.views} · Giỏ {item.addToCart} · Mua {item.buyNow} · CVR{" "}
-                      {pct(item.buyRate)}
-                    </span>
-                  </div>
-                  <p>{item.action}</p>
-                </article>
-              ))
-            ) : (
-              <div className="emptyBox">Chưa có dữ liệu để tạo gợi ý.</div>
-            )}
           </div>
         </section>
       </section>
@@ -892,6 +866,46 @@ export default async function AdminProductAnalyticsPage() {
           color: #9fb0d8;
         }
 
+        /* admin-compact-analytics-start */
+        .analyticsGrid {
+          align-items: start !important;
+        }
+
+        .analyticsGrid .panel,
+        .decisionGrid .decisionCard {
+          align-self: start !important;
+        }
+
+        .analyticsGridSingle {
+          grid-template-columns: minmax(0, 760px) !important;
+        }
+
+        .compactPanel {
+          height: auto !important;
+          min-height: 0 !important;
+        }
+
+        .compactPanel .panelHead {
+          padding: 18px 22px 10px !important;
+        }
+
+        .compactPanel .panelHead h2 {
+          font-size: 26px !important;
+        }
+
+        .compactPanel .funnelBox {
+          padding: 16px 22px 20px !important;
+        }
+
+        .compactPanel .funnelBar {
+          padding: 12px 14px !important;
+        }
+
+        .compactPanel .funnelBar i,
+        .compactPanel .rowBar {
+          height: 10px !important;
+        }
+        /* admin-compact-analytics-end */
         @media (max-width: 1180px) {
           .metricGrid {
             grid-template-columns: repeat(3, minmax(0, 1fr));
