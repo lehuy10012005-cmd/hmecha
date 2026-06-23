@@ -113,6 +113,11 @@ function moneyValue(numberText: string, unitText?: string) {
   return Math.round(number);
 }
 
+function getRandomDefaultCount() {
+  const options = [2, 3, 4, 5, 6];
+  return options[Math.floor(Math.random() * options.length)];
+}
+
 function extractRequestedCount(text: string) {
   if (hasAny(text, ["re nhat", "dat nhat", "cao nhat", "thap nhat"])) return 1;
 
@@ -122,12 +127,15 @@ function extractRequestedCount(text: string) {
     cleanText.match(/(?:cho|goi y|lay|tim)?\s*(?:toi|minh)?\s*(\d+)\s*(san pham|sp|mon|mau|lua chon)/i) ||
     cleanText.match(/(?:them|cho them)\s*(\d+)/i);
 
-  const count = match?.[1] ? Number(match[1]) : 3;
+  if (!match?.[1]) {
+    return getRandomDefaultCount();
+  }
 
-  if (!Number.isFinite(count)) return 3;
+  const count = Number(match[1]);
+
+  if (!Number.isFinite(count)) return getRandomDefaultCount();
   return Math.max(1, Math.min(10, count));
 }
-
 function getPlainCountRequest(text: string) {
   const cleanText = normalizeText(text);
 
@@ -264,6 +272,19 @@ function extractPriceRange(message: string): PriceRange {
   return range;
 }
 
+
+function shuffleProducts<T>(items: T[]) {
+  const result = [...items];
+
+  for (let index = result.length - 1; index > 0; index--) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    const current = result[index];
+    result[index] = result[randomIndex];
+    result[randomIndex] = current;
+  }
+
+  return result;
+}
 function getProductStatus(product: ChatProduct) {
   const status = normalizeText(product.status || "");
 
@@ -463,6 +484,22 @@ function findProducts(
 
     return a.price - b.price;
   });
+
+  const shouldKeepStrictOrder = hasAny(text, [
+    "re nhat",
+    "gia thap nhat",
+    "dat nhat",
+    "gia cao nhat",
+    "cao cap nhat",
+  ]);
+
+  if (!shouldKeepStrictOrder) {
+    const poolSize = Math.max(count * 4, 20);
+    const topPool = result.slice(0, poolSize);
+    const rest = result.slice(poolSize);
+
+    result = [...shuffleProducts(topPool), ...rest];
+  }
 
   return result.slice(0, count);
 }
