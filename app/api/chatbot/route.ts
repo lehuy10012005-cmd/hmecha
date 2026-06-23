@@ -448,6 +448,132 @@ function expandScenarioText(message: string) {
     extras.push("khong lay keo khong dung cu");
   }
 
+  if (hasAny(text, [
+    "dat qua",
+    "hoi dat",
+    "mac qua",
+    "re hon",
+    "mau re hon",
+    "co cai nao re hon",
+    "vua tien hon",
+    "mem hon",
+    "kinh te hon",
+  ])) {
+    extras.push("gia re con hang");
+  }
+
+  if (hasAny(text, [
+    "xin hon",
+    "cao cap hon",
+    "mau cao cap hon",
+    "ngau hon",
+    "dep hon",
+    "chat hon",
+    "co gi ngon hon",
+    "co cai nao on hon",
+    "mau nao on hon",
+  ])) {
+    extras.push("mo hinh thoi cao cap rg mg pg metal build mechanicore con hang");
+  }
+
+  if (hasAny(text, [
+    "to hon",
+    "mau to",
+    "size to",
+    "kich thuoc lon",
+    "mo hinh to",
+    "ban to",
+    "ti le lon",
+  ])) {
+    extras.push("mo hinh thoi mg pg 1/100 1/60 full mechanics con hang");
+  }
+
+  if (hasAny(text, [
+    "nho hon",
+    "nho gon hon",
+    "mini",
+    "be be",
+    "mau be",
+    "de tren ban",
+    "khong chiem cho",
+  ])) {
+    extras.push("mo hinh thoi sd hg 1/144 con hang");
+  }
+
+  if (hasAny(text, [
+    "mau moi",
+    "hang moi",
+    "moi ve",
+    "san pham moi",
+    "mau vua ve",
+    "co gi moi",
+  ])) {
+    extras.push("moi ve con hang");
+  }
+
+  if (hasAny(text, [
+    "ban hiem",
+    "hang hiem",
+    "limited",
+    "gioi han",
+    "p bandai",
+    "p-bandai",
+    "premium bandai",
+    "suu tam hon",
+  ])) {
+    extras.push("p-bandai limited premium bandai mo hinh thoi");
+  }
+
+  if (hasAny(text, [
+    "khop chac",
+    "de tao dang",
+    "pose tot",
+    "nhieu phu kien kem theo",
+    "nhieu vu khi",
+    "nhieu option",
+  ])) {
+    extras.push("rg mg gundam bandai mo hinh thoi con hang");
+  }
+
+  if (hasAny(text, [
+    "thich seed",
+    "gundam seed",
+    "freedom",
+    "destiny",
+    "strike",
+    "justice",
+  ])) {
+    extras.push("seed freedom destiny strike justice gundam mo hinh thoi");
+  }
+
+  if (hasAny(text, [
+    "thich unicorn",
+    "unicorn",
+    "banshee",
+    "phenex",
+  ])) {
+    extras.push("unicorn banshee phenex gundam mo hinh thoi");
+  }
+
+  if (hasAny(text, [
+    "thich barbatos",
+    "barbatos",
+    "iron blooded",
+    "ibo",
+  ])) {
+    extras.push("barbatos iron blooded orphans gundam mo hinh thoi");
+  }
+
+  if (hasAny(text, [
+    "thich aerial",
+    "aerial",
+    "lfrith",
+    "witch from mercury",
+    "wfm",
+  ])) {
+    extras.push("aerial lfrith witch from mercury hgtwfm gundam mo hinh thoi");
+  }
+
   return [text, ...extras].join(" ");
 }
 
@@ -481,7 +607,7 @@ function mergeRefinement(previousFilters: ProductFilters, message: string): Prod
 
   return {
     ...previousFilters,
-    rawText: `${previousFilters.rawText} ${preprocessPriceText(message)}`,
+    rawText: next.rawText,
     range: next.range.mode !== "none" ? next.range : previousFilters.range,
     wantInStock: previousFilters.wantInStock || next.wantInStock,
     wantPreorder: next.wantPreorder || previousFilters.wantPreorder,
@@ -516,6 +642,7 @@ function hasSpecificProductFilter(text: string) {
       "moc khoa",
       "keo",
       "panel line",
+
       "nguoi moi",
       "moi choi",
       "moi tap rap",
@@ -538,6 +665,36 @@ function hasSpecificProductFilter(text: string) {
       "re nhat",
       "gia re",
       "sinh vien",
+
+      "re hon",
+      "dat qua",
+      "mac qua",
+      "xin hon",
+      "cao cap hon",
+      "ngau hon",
+      "dep hon",
+      "to hon",
+      "nho hon",
+      "mau moi",
+      "hang moi",
+      "moi ve",
+      "limited",
+      "p bandai",
+      "p-bandai",
+      "premium bandai",
+
+      "seed",
+      "freedom",
+      "destiny",
+      "strike",
+      "justice",
+      "unicorn",
+      "banshee",
+      "phenex",
+      "barbatos",
+      "aerial",
+      "lfrith",
+      "witch from mercury",
     ]) ||
     hasWord(text, "hg") ||
     hasWord(text, "rg") ||
@@ -577,13 +734,36 @@ function isRefinementOnly(text: string) {
     "khong y la mo hinh",
     "con hang thoi",
     "hang san thoi",
+
+    "dat qua",
+    "hoi dat",
+    "mac qua",
+    "re hon",
+    "mau re hon",
+    "vua tien hon",
+    "mem hon",
+
+    "xin hon",
+    "cao cap hon",
+    "ngau hon",
+    "dep hon",
+    "chat hon",
+    "on hon",
+
+    "to hon",
+    "mau to hon",
+    "size to hon",
+    "nho hon",
+    "nho gon hon",
+
     "de lap thoi",
     "de rap thoi",
     "cho nguoi moi",
-    "mau cao cap hon",
-    "mau re hon",
-    "mau ngau hon",
-    "mau dep hon",
+    "nguoi moi choi",
+    "mau moi hon",
+    "hang moi hon",
+    "ban hiem hon",
+    "limited hon",
   ]);
 }
 function getFollowUpRequest(text: string): FollowUpRequest | null {
@@ -891,6 +1071,14 @@ function productMatchesKeyword(product: ChatProduct, filters: ProductFilters) {
     ["onepiece", ["onepiece", "one piece"]],
     ["grandship", ["grandship", "grand ship"]],
     ["mechanicore", ["mechanicore"]],
+    ["p bandai", ["p-bandai", "p bandai", "premium bandai"]],
+    ["limited", ["limited", "premium", "p-bandai"]],
+    ["seed", ["seed", "freedom", "destiny", "strike", "justice"]],
+    ["freedom", ["freedom"]],
+    ["destiny", ["destiny"]],
+    ["unicorn", ["unicorn", "banshee", "phenex"]],
+    ["barbatos", ["barbatos", "iron-blooded", "iron blooded", "ibo"]],
+    ["aerial", ["aerial", "lfrith", "witch from mercury", "hgtwfm"]],
     ["phu kien", ["phu kien", "decal", "tool", "option parts", "accessory"]],
     ["the bai", ["the bai", "card game", "booster"]],
     ["moc khoa", ["moc khoa", "keychain"]],
@@ -961,7 +1149,8 @@ function findProducts(
     }
 
     if (hasAny(filters.rawText, ["re nhat", "gia thap", "gia re"])) return a.price - b.price;
-    if (hasAny(filters.rawText, ["dat nhat", "cao cap", "gia cao"])) return b.price - a.price;
+    if (hasAny(filters.rawText, ["dat nhat", "cao cap", "gia cao", "xin hon", "ngau hon"])) return b.price - a.price;
+    if (hasAny(filters.rawText, ["moi ve", "hang moi", "mau moi", "san pham moi"])) return 0;
 
     if (filters.range.mode === "max") return b.price - a.price;
     if (filters.range.mode === "min") return a.price - b.price;
@@ -975,6 +1164,10 @@ function findProducts(
     "dat nhat",
     "gia cao nhat",
     "cao cap nhat",
+    "moi ve",
+    "hang moi",
+    "mau moi",
+    "san pham moi",
   ]);
 
   if (!strictOrder) {
@@ -1139,6 +1332,17 @@ function isServiceQuestion(text: string) {
 }
 
 function getSmartFaqReply(text: string) {
+  const isAskingToBuy =
+    hasAny(text, ["goi y", "tu van", "mua", "chon", "san pham", "mau nao", "co mau"]);
+
+  if (!isAskingToBuy && hasAny(text, ["hg la gi", "rg la gi", "mg la gi", "pg la gi", "sd la gi", "hg rg mg", "cac dong gundam", "grade la gi"])) {
+    return "Các dòng phổ biến gồm: HG thường dễ lắp, giá mềm, hợp người mới; RG chi tiết hơn ở tỉ lệ 1/144; MG thường lớn hơn 1/100, chi tiết và trưng bày đẹp; PG là dòng cao cấp, kích thước lớn; SD nhỏ gọn, dễ thương và dễ sưu tầm.";
+  }
+
+  if (!isAskingToBuy && hasAny(text, ["nguoi moi nen choi dong nao", "moi choi nen mua dong nao", "hg hay rg", "nen mua hg hay rg"])) {
+    return "Nếu mới chơi, bạn nên bắt đầu với HG hoặc SD vì dễ lắp, giá nhẹ và ít áp lực. Khi quen hơn có thể lên RG hoặc MG để có độ chi tiết và trải nghiệm lắp tốt hơn.";
+  }
+
   if (
     hasAny(text, ["shop ban gi", "shop bann gi", "shop ban gif", "ban giay khong", "co phai ban giay"]) ||
     (hasAny(text, ["shop"]) && hasAny(text, ["ban gi", "ban gif", "ban gi vay"]))
