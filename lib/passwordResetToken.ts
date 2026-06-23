@@ -1,9 +1,11 @@
 import crypto from "crypto";
 
-type ResetPayload = {
+type ResetChallengePayload = {
   email: string;
+  codeHash: string;
+  nonce: string;
   exp: number;
-  purpose: "password-reset";
+  purpose: "password-reset-otp";
 };
 
 function getSecret() {
@@ -19,57 +21,99 @@ function getSecret() {
   return secret;
 }
 
-function base64Url(value: string | Buffer) {
+function sign(value: string) {
+  return crypto
+    .createHmac("sha256", getSecret())
+    .update(value)
+    .digest("base64url");
+}
+
+function hashCode(email: string, code: string, nonce: string) {
+  return crypto
+    .createHmac("sha256", getSecret())
+    .update(`${email.trim().toLowerCase()}:${code}:${nonce}`)
+    .digest("hex");
+}
+
+function base64Url(value: string) {
   return Buffer.from(value).toString("base64url");
 }
 
-export function createPasswordResetToken(email: string) {
-  const payload: ResetPayload = {
-    email: email.trim().toLowerCase(),
-    exp: Date.now() + 1000 * 60 * 30,
-    purpose: "password-reset",
+export function createPasswordResetChallenge(email: string) {
+  const cleanEmail = email.trim().toLowerCase();
+  const code = crypto.randomInt(100000, 1000000).toString();
+  const nonce = crypto.randomBytes(16).toString("hex");
+
+  const payload: ResetChallengePayload = {
+    email: cleanEmail,
+    codeHash: hashCode(cleanEmail, code, nonce),
+    nonce,
+    exp: Date.now() + 1000 * 60 * 10,
+    purpose: "password-reset-otp",
   };
 
   const encodedPayload = base64Url(JSON.stringify(payload));
-  const signature = crypto
-    .createHmac("sha256", getSecret())
-    .update(encodedPayload)
-    .digest("base64url");
+  const signature = sign(encodedPayload);
 
-  return `${encodedPayload}.${signature}`;
+  return {
+    code,
+    challengeToken: `${encodedPayload}.${signature}`,
+  };
 }
 
-export function verifyPasswordResetToken(token: string) {
+export function verifyPasswordResetChallenge(token: string, code: string) {
   const [encodedPayload, signature] = String(token || "").split(".");
 
   if (!encodedPayload || !signature) {
-    throw new Error("Token không hợp lệ.");
+    throw new Error("Mã xác nhận không hợp lệ.");
   }
 
-  const expectedSignature = crypto
-    .createHmac("sha256", getSecret())
-    .update(encodedPayload)
-    .digest("base64url");
+  const expectedSignature = sign(encodedPayload);
 
-  const valid = crypto.timingSafeEqual(
+  if (signature.length !== expectedSignature.length) {
+    throw new Error("Mã xác nhận không hợp lệ.");
+  }
+
+  const validSignature = crypto.timingSafeEqual(
     Buffer.from(signature),
     Buffer.from(expectedSignature)
   );
 
-  if (!valid) {
-    throw new Error("Token không hợp lệ.");
+  if (!validSignature) {
+    throw new Error("Mã xác nhận không hợp lệ.");
   }
 
   const payload = JSON.parse(
     Buffer.from(encodedPayload, "base64url").toString("utf8")
-  ) as ResetPayload;
+  ) as ResetChallengePayload;
 
-  if (payload.purpose !== "password-reset") {
-    throw new Error("Token không đúng mục đích.");
+  if (payload.purpose !== "password-reset-otp") {
+    throw new Error("Mã xác nhận không đúng mục đích.");
   }
 
   if (!payload.email || Date.now() > payload.exp) {
-    throw new Error("Link đặt lại mật khẩu đã hết hạn.");
+    throw new Error("Mã xác nhận đã hết hạn. Vui lòng gửi lại mã mới.");
+  }
+
+  const cleanCode = String(code || "").trim();
+
+  if (!/^\d{6}$/.test(cleanCode)) {
+    throw new Error("Vui lòng nhập đúng mã 6 chữ số.");
+  }
+
+  const expectedCodeHash = hashCode(payload.email, cleanCode, payload.nonce);
+
+  if (expectedCodeHash.length !== payload.codeHash.length) {
+    throw new Error("Mã xác nhận không đúng.");
+  }
+
+  const validCode = crypto.timingSafeEqual(
+    Buffer.from(expectedCodeHash),
+    Buffer.from(payload.codeHash)
+  );
+
+  if (!validCode) {
+    throw new Error("Mã xác nhận không đúng.");
   }
 
   return payload;

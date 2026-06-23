@@ -1,48 +1,31 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, Suspense, useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
+
+type Step = "email" | "code";
 
 export default function ForgotPasswordPage() {
-  return (
-    <Suspense
-      fallback={
-        <main
-          style={{
-            minHeight: "100vh",
-            display: "grid",
-            placeItems: "center",
-            background: "#050816",
-            color: "#ffffff",
-            fontWeight: 800,
-          }}
-        >
-          Đang tải trang quên mật khẩu...
-        </main>
-      }
-    >
-      <ForgotPasswordContent />
-    </Suspense>
-  );
-}
-
-function ForgotPasswordContent() {
-  const params = useSearchParams();
+  const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
+  const [challengeToken, setChallengeToken] = useState("");
+  const [code, setCode] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
     const emailParam = params.get("email");
 
     if (emailParam) {
       setEmail(emailParam);
     }
-  }, [params]);
+  }, []);
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  async function sendCode(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     setLoading(true);
@@ -60,57 +43,171 @@ function ForgotPasswordContent() {
     const data = await response.json();
 
     if (!response.ok) {
-      setError(data.message || "Không gửi được email đặt lại mật khẩu.");
+      setError(data.message || "Không gửi được mã xác nhận.");
       setLoading(false);
       return;
     }
 
     setMessage(data.message);
+
+    if (data.challengeToken) {
+      setChallengeToken(data.challengeToken);
+      setStep("code");
+    }
+
+    setLoading(false);
+  }
+
+  async function resetPassword(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    setLoading(true);
+    setMessage("");
+    setError("");
+
+    if (password.length < 6) {
+      setError("Mật khẩu mới phải có ít nhất 6 ký tự.");
+      setLoading(false);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Mật khẩu nhập lại không khớp.");
+      setLoading(false);
+      return;
+    }
+
+    const response = await fetch("/api/auth/reset-password-custom", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        challengeToken,
+        code,
+        password,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setError(data.message || "Không đổi được mật khẩu.");
+      setLoading(false);
+      return;
+    }
+
+    setMessage(data.message);
+    setCode("");
+    setPassword("");
+    setConfirmPassword("");
     setLoading(false);
   }
 
   return (
-    <main className="hmAuthPage">
-      <section className="hmAuthCard">
-        <Link href="/" className="hmAuthBrand">
+    <main className="hmOtpPage">
+      <section className="hmOtpCard">
+        <Link href="/" className="hmOtpBrand">
           <b>HMECHA</b>
           <span>MEMBER CENTER</span>
         </Link>
 
-        <p className="hmEyebrow">PASSWORD RECOVERY</p>
+        <p className="hmOtpEyebrow">PASSWORD RECOVERY</p>
         <h1>Quên mật khẩu</h1>
 
-        <p className="hmDesc">
-          Nhập email đã đăng ký. HMECHA sẽ gửi link để bạn tạo mật khẩu mới.
+        <p className="hmOtpDesc">
+          {step === "email"
+            ? "Nhập email đã đăng ký. HMECHA sẽ gửi mã xác nhận 6 chữ số để bạn tạo mật khẩu mới."
+            : "Nhập mã xác nhận trong email và tạo mật khẩu mới cho tài khoản của bạn."}
         </p>
 
-        {message ? <div className="hmSuccess">{message}</div> : null}
-        {error ? <div className="hmError">{error}</div> : null}
+        {message ? <div className="hmOtpSuccess">{message}</div> : null}
+        {error ? <div className="hmOtpError">{error}</div> : null}
 
-        <form onSubmit={submit} className="hmForm">
-          <label>
-            Email tài khoản
-            <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="email@example.com"
-              required
-            />
-          </label>
+        {step === "email" ? (
+          <form onSubmit={sendCode} className="hmOtpForm">
+            <label>
+              Email tài khoản
+              <input
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="email@example.com"
+                required
+              />
+            </label>
 
-          <button disabled={loading}>
-            {loading ? "Đang gửi..." : "Gửi link đặt lại mật khẩu"}
-          </button>
-        </form>
+            <button disabled={loading}>
+              {loading ? "Đang gửi..." : "Gửi mã xác nhận"}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={resetPassword} className="hmOtpForm">
+            <label>
+              Mã xác nhận 6 chữ số
+              <input
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                value={code}
+                onChange={(event) =>
+                  setCode(event.target.value.replace(/\D/g, "").slice(0, 6))
+                }
+                placeholder="Nhập 6 số"
+                required
+              />
+            </label>
 
-        <p className="hmSwitch">
+            <label>
+              Mật khẩu mới
+              <input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="Tối thiểu 6 ký tự"
+                required
+              />
+            </label>
+
+            <label>
+              Nhập lại mật khẩu mới
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                placeholder="Nhập lại mật khẩu"
+                required
+              />
+            </label>
+
+            <button disabled={loading}>
+              {loading ? "Đang đổi..." : "Xác nhận và đổi mật khẩu"}
+            </button>
+
+            <button
+              type="button"
+              className="hmOtpGhost"
+              onClick={() => {
+                setStep("email");
+                setCode("");
+                setPassword("");
+                setConfirmPassword("");
+                setMessage("");
+                setError("");
+              }}
+            >
+              Gửi lại mã khác
+            </button>
+          </form>
+        )}
+
+        <p className="hmOtpSwitch">
           Nhớ mật khẩu rồi? <Link href="/dang-nhap">Đăng nhập</Link>
         </p>
       </section>
 
       <style>{`
-        .hmAuthPage {
+        .hmOtpPage {
           min-height: 100vh;
           display: grid;
           place-items: center;
@@ -122,7 +219,7 @@ function ForgotPasswordContent() {
           color: #ffffff;
         }
 
-        .hmAuthCard {
+        .hmOtpCard {
           width: min(520px, 100%);
           box-sizing: border-box;
           padding: 38px;
@@ -132,21 +229,21 @@ function ForgotPasswordContent() {
           box-shadow: 0 28px 90px rgba(0,0,0,.45);
         }
 
-        .hmAuthBrand {
+        .hmOtpBrand {
           display: inline-flex;
           flex-direction: column;
           margin-bottom: 28px;
           text-decoration: none;
         }
 
-        .hmAuthBrand b {
+        .hmOtpBrand b {
           color: #00e5ff;
           font-size: 27px;
           letter-spacing: 4px;
           font-weight: 950;
         }
 
-        .hmAuthBrand span {
+        .hmOtpBrand span {
           margin-top: 6px;
           color: #9eadd3;
           font-size: 12px;
@@ -154,7 +251,7 @@ function ForgotPasswordContent() {
           letter-spacing: 1px;
         }
 
-        .hmEyebrow {
+        .hmOtpEyebrow {
           margin: 0 0 12px;
           color: #00e5ff;
           font-size: 12px;
@@ -162,22 +259,22 @@ function ForgotPasswordContent() {
           letter-spacing: 2px;
         }
 
-        .hmAuthCard h1 {
+        .hmOtpCard h1 {
           margin: 0 0 12px;
           color: #ffffff;
           font-size: 38px;
           line-height: 1.1;
         }
 
-        .hmDesc {
+        .hmOtpDesc {
           margin: 0 0 24px;
           color: #cbd5e1;
           font-size: 16px;
           line-height: 1.6;
         }
 
-        .hmSuccess,
-        .hmError {
+        .hmOtpSuccess,
+        .hmOtpError {
           margin: 0 0 18px;
           padding: 14px 15px;
           border-radius: 14px;
@@ -185,30 +282,30 @@ function ForgotPasswordContent() {
           line-height: 1.55;
         }
 
-        .hmSuccess {
+        .hmOtpSuccess {
           color: #63f1ad;
           background: rgba(45,205,124,.12);
           border: 1px solid rgba(45,205,124,.28);
         }
 
-        .hmError {
+        .hmOtpError {
           color: #ffb4c0;
           background: rgba(255,70,96,.13);
           border: 1px solid rgba(255,70,96,.3);
         }
 
-        .hmForm {
+        .hmOtpForm {
           display: grid;
           gap: 18px;
         }
 
-        .hmForm label {
+        .hmOtpForm label {
           color: #e5edff;
           font-size: 14px;
           font-weight: 850;
         }
 
-        .hmForm input {
+        .hmOtpForm input {
           display: block;
           width: 100%;
           box-sizing: border-box;
@@ -222,12 +319,12 @@ function ForgotPasswordContent() {
           font-size: 15px;
         }
 
-        .hmForm input:focus {
+        .hmOtpForm input:focus {
           border-color: #00e5ff;
           box-shadow: 0 0 0 3px rgba(0,229,255,.13);
         }
 
-        .hmForm button {
+        .hmOtpForm button {
           margin-top: 8px;
           min-height: 54px;
           border: none;
@@ -240,18 +337,26 @@ function ForgotPasswordContent() {
           box-shadow: 0 18px 34px rgba(0,229,255,.18);
         }
 
-        .hmForm button:disabled {
+        .hmOtpForm button:disabled {
           opacity: .65;
           cursor: not-allowed;
         }
 
-        .hmSwitch {
+        .hmOtpForm .hmOtpGhost {
+          margin-top: 0;
+          background: rgba(255,255,255,.08);
+          color: #ffffff;
+          border: 1px solid rgba(255,255,255,.14);
+          box-shadow: none;
+        }
+
+        .hmOtpSwitch {
           margin: 24px 0 0;
           text-align: center;
           color: #cbd5e1;
         }
 
-        .hmSwitch a {
+        .hmOtpSwitch a {
           color: #00e5ff;
           font-weight: 950;
           text-decoration: none;

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifyPasswordResetToken } from "../../../../lib/passwordResetToken";
+import { verifyPasswordResetChallenge } from "../../../../lib/passwordResetToken";
 import { supabaseAdmin } from "../../../../lib/supabase-admin";
 
 export const runtime = "nodejs";
@@ -14,16 +14,13 @@ async function findUserByEmail(email: string) {
       perPage: 1000,
     });
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
     const user = data.users.find(
       (item) => item.email?.toLowerCase() === target
     );
 
     if (user) return user;
-
     if (data.users.length < 1000) break;
   }
 
@@ -34,7 +31,8 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    const token = String(body.token || "");
+    const challengeToken = String(body.challengeToken || "");
+    const code = String(body.code || "").trim();
     const password = String(body.password || "");
 
     if (password.length < 6) {
@@ -44,7 +42,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const payload = verifyPasswordResetToken(token);
+    const payload = verifyPasswordResetChallenge(challengeToken, code);
     const user = await findUserByEmail(payload.email);
 
     if (!user) {
@@ -58,21 +56,19 @@ export async function POST(request: NextRequest) {
       password,
     });
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
     return NextResponse.json({
       message: "Đổi mật khẩu thành công. Bạn có thể đăng nhập bằng mật khẩu mới.",
     });
   } catch (error: any) {
-    console.error("reset-password-custom error:", error);
+    console.error("reset-password-custom otp error:", error);
 
     return NextResponse.json(
       {
         message:
           error?.message ||
-          "Không đổi được mật khẩu. Link có thể đã hết hạn, vui lòng gửi lại yêu cầu.",
+          "Không đổi được mật khẩu. Vui lòng kiểm tra lại mã xác nhận.",
       },
       { status: 400 }
     );
