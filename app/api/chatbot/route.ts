@@ -66,14 +66,14 @@ function preprocessPriceText(text: string) {
   let result = normalizeText(text);
 
   result = result
-    .replace(/mot\s*(trieu|tr|m)\s*ruoi/g, "1.5 trieu")
-    .replace(/hai\s*(trieu|tr|m)\s*ruoi/g, "2.5 trieu")
-    .replace(/ba\s*(trieu|tr|m)\s*ruoi/g, "3.5 trieu")
-    .replace(/bon\s*(trieu|tr|m)\s*ruoi/g, "4.5 trieu")
-    .replace(/nam\s*(trieu|tr|m)\s*ruoi/g, "5.5 trieu");
+    .replace(/mot\s*(trieu|tri|tr|m)\s*ruoi/g, "1.5 trieu")
+    .replace(/hai\s*(trieu|tri|tr|m)\s*ruoi/g, "2.5 trieu")
+    .replace(/ba\s*(trieu|tri|tr|m)\s*ruoi/g, "3.5 trieu")
+    .replace(/bon\s*(trieu|tri|tr|m)\s*ruoi/g, "4.5 trieu")
+    .replace(/nam\s*(trieu|tri|tr|m)\s*ruoi/g, "5.5 trieu");
 
   result = result.replace(
-    /(\d+(?:[.,]\d+)?)\s*(trieu|tr|m)\s*ruoi/g,
+    /(\d+(?:[.,]\d+)?)\s*(trieu|tri|tr|m)\s*ruoi/g,
     (_match, numberText) => `${parseNumber(numberText) + 0.5} trieu`
   );
 
@@ -86,7 +86,7 @@ function moneyValue(numberText: string, unitText?: string) {
 
   if (!number) return 0;
 
-  if (unit.includes("trieu") || unit === "tr" || unit === "m") {
+  if (unit.includes("trieu") || unit === "tri" || unit === "tr" || unit === "m") {
     return Math.round(number * 1000000);
   }
 
@@ -113,7 +113,7 @@ function extractRequestedCount(text: string) {
 
 function getFirstMoneyValue(text: string) {
   const priceText = preprocessPriceText(text);
-  const match = priceText.match(/(\d+(?:[.,]\d+)?)\s*(trieu|tr|m|k|nghin|ngan|d|vnd)?/i);
+  const match = priceText.match(/(\d+(?:[.,]\d+)?)\s*(trieu|tri|tr|m|k|nghin|ngan|d|vnd)?/i);
   if (!match) return 0;
   return moneyValue(match[1], match[2]);
 }
@@ -121,7 +121,34 @@ function getFirstMoneyValue(text: string) {
 function extractPriceRange(message: string): PriceRange {
   const text = preprocessPriceText(message);
   const range: PriceRange = { mode: "none" };
-  const unit = "(trieu|tr|m|k|nghin|ngan|d|vnd)?";
+
+  const onlyProductCount =
+    /(^|\s)(cho|toi|minh)?\s*\d+\s*(san pham|sp|mon|mau|lua chon|goi y)(\s|$)/i.test(text) &&
+    !hasAny(text, [
+      "gia",
+      "tam gia",
+      "ngan sach",
+      "budget",
+      "duoi",
+      "tren",
+      "hon",
+      "tu",
+      "toi da",
+      "khong qua",
+      "trieu",
+      "tri",
+      "tr",
+      "m",
+      "k",
+      "nghin",
+      "ngan",
+      "vnd",
+    ]);
+
+  if (onlyProductCount) {
+    return range;
+  }
+  const unit = "(trieu|tri|tr|m|k|nghin|ngan|d|vnd)?";
   const number = "(\\d+(?:[.,]\\d+)?)";
 
   const between = text.match(
@@ -176,7 +203,7 @@ function extractPriceRange(message: string): PriceRange {
       return range;
     }
 
-    if (hasAny(text, ["gia", "tam gia", "trieu", "k", "vnd", "d", "co hang nao"])) {
+    if (hasAny(text, ["gia", "tam gia", "trieu", "tri", "k", "vnd", "co hang nao"])) {
       const tolerance = amount >= 1000000 ? 0.2 : 0.25;
 
       range.target = amount;
@@ -490,7 +517,7 @@ function shouldRecommendProducts(text: string) {
     return false;
   }
 
-  const hasMoney = /(\d+(?:[.,]\d+)?)\s*(trieu|tr|m|k|nghin|ngan|d|vnd)?/i.test(text);
+  const hasMoney = /(\d+(?:[.,]\d+)?)\s*(trieu|tri|tr|m|k|nghin|ngan|d|vnd)?/i.test(text);
 
   return (
     hasMoney ||
