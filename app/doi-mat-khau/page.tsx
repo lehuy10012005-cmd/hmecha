@@ -1,100 +1,43 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "../../lib/supabase";
+import { FormEvent, Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function ResetPasswordPage() {
-  const router = useRouter();
+  return (
+    <Suspense
+      fallback={
+        <main
+          style={{
+            minHeight: "100vh",
+            display: "grid",
+            placeItems: "center",
+            background: "#050816",
+            color: "#ffffff",
+            fontWeight: 800,
+          }}
+        >
+          Đang tải trang đổi mật khẩu...
+        </main>
+      }
+    >
+      <ResetPasswordContent />
+    </Suspense>
+  );
+}
 
-  const [ready, setReady] = useState(false);
-  const [checking, setChecking] = useState(true);
+function ResetPasswordContent() {
+  const router = useRouter();
+  const params = useSearchParams();
+
+  const token = params.get("token") || "";
+
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-
-  useEffect(() => {
-    async function handleResetLink() {
-      setChecking(true);
-      setError("");
-
-      try {
-        const url = new URL(window.location.href);
-        const code = url.searchParams.get("code");
-
-        // Supabase PKCE link: /doi-mat-khau?code=...
-        if (code) {
-          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-
-          if (error) {
-            setReady(false);
-            setError("Link đổi mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng gửi lại yêu cầu quên mật khẩu.");
-            setChecking(false);
-            return;
-          }
-
-          if (data.session) {
-            setReady(true);
-            window.history.replaceState({}, document.title, "/doi-mat-khau");
-            setChecking(false);
-            return;
-          }
-        }
-
-        // Supabase implicit link: /doi-mat-khau#access_token=...&refresh_token=...&type=recovery
-        const hash = window.location.hash ? window.location.hash.replace(/^#/, "") : "";
-        const hashParams = new URLSearchParams(hash);
-        const accessToken = hashParams.get("access_token");
-        const refreshToken = hashParams.get("refresh_token");
-        const type = hashParams.get("type");
-
-        if (accessToken && refreshToken && type === "recovery") {
-          const { data, error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
-          });
-
-          if (error) {
-            setReady(false);
-            setError("Link đổi mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng gửi lại yêu cầu quên mật khẩu.");
-            setChecking(false);
-            return;
-          }
-
-          if (data.session) {
-            setReady(true);
-            window.history.replaceState({}, document.title, "/doi-mat-khau");
-            setChecking(false);
-            return;
-          }
-        }
-
-        const { data } = await supabase.auth.getSession();
-        setReady(Boolean(data.session));
-        setChecking(false);
-      } catch {
-        setReady(false);
-        setChecking(false);
-      }
-    }
-
-    handleResetLink();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "PASSWORD_RECOVERY" || session) {
-        setReady(true);
-      }
-
-      setChecking(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -103,13 +46,8 @@ export default function ResetPasswordPage() {
     setMessage("");
     setError("");
 
-    const { data } = await supabase.auth.getSession();
-    const hasSession = Boolean(data.session) || ready;
-
-    if (!hasSession) {
-      setError(
-        "Bạn cần mở trang này từ link đặt lại mật khẩu trong email. Link hiện tại chưa có token hợp lệ hoặc đã hết hạn."
-      );
+    if (!token) {
+      setError("Link đổi mật khẩu không hợp lệ. Vui lòng gửi lại yêu cầu quên mật khẩu.");
       setLoading(false);
       return;
     }
@@ -126,28 +64,33 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    const { error } = await supabase.auth.updateUser({
-      password,
+    const response = await fetch("/api/auth/reset-password-custom", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        token,
+        password,
+      }),
     });
 
-    if (error) {
-      setError(
-        "Không đổi được mật khẩu. Link có thể đã hết hạn, vui lòng gửi lại yêu cầu quên mật khẩu."
-      );
+    const data = await response.json();
+
+    if (!response.ok) {
+      setError(data.message || "Không đổi được mật khẩu.");
       setLoading(false);
       return;
     }
 
-    await supabase.auth.signOut();
-
-    setMessage("Đổi mật khẩu thành công. Bạn có thể đăng nhập bằng mật khẩu mới.");
+    setMessage(data.message || "Đổi mật khẩu thành công.");
     setPassword("");
     setConfirmPassword("");
     setLoading(false);
 
     setTimeout(() => {
       router.replace("/dang-nhap");
-    }, 1600);
+    }, 1700);
   }
 
   return (
@@ -165,24 +108,15 @@ export default function ResetPasswordPage() {
           Nhập mật khẩu mới cho tài khoản HMECHA của bạn.
         </p>
 
-        {checking ? (
+        {!token ? (
           <div className="hmResetNotice">
-            Đang kiểm tra link đặt lại mật khẩu...
+            Link đổi mật khẩu không hợp lệ. Hãy vào trang quên mật khẩu và gửi lại email mới.
           </div>
-        ) : null}
-
-        {!checking && !ready ? (
-          <div className="hmResetNotice">
-            Nếu bạn mở trang này trực tiếp, hệ thống sẽ không cho đổi mật khẩu.
-            Hãy vào trang quên mật khẩu, nhập email rồi bấm link được gửi trong email.
-          </div>
-        ) : null}
-
-        {!checking && ready ? (
+        ) : (
           <div className="hmResetSuccess">
             Link hợp lệ. Bạn có thể nhập mật khẩu mới bên dưới.
           </div>
-        ) : null}
+        )}
 
         {message ? <div className="hmResetSuccess">{message}</div> : null}
         {error ? <div className="hmResetError">{error}</div> : null}
@@ -210,7 +144,7 @@ export default function ResetPasswordPage() {
             />
           </label>
 
-          <button type="submit" disabled={loading || checking}>
+          <button type="submit" disabled={loading}>
             {loading ? "Đang đổi..." : "Đổi mật khẩu"}
           </button>
         </form>

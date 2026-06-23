@@ -1,67 +1,93 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
-import { supabase } from "../../lib/supabase";
+import { FormEvent, Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 export default function ForgotPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <main
+          style={{
+            minHeight: "100vh",
+            display: "grid",
+            placeItems: "center",
+            background: "#050816",
+            color: "#ffffff",
+            fontWeight: 800,
+          }}
+        >
+          Đang tải trang quên mật khẩu...
+        </main>
+      }
+    >
+      <ForgotPasswordContent />
+    </Suspense>
+  );
+}
+
+function ForgotPasswordContent() {
+  const params = useSearchParams();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    const emailParam = params.get("email");
+
+    if (emailParam) {
+      setEmail(emailParam);
+    }
+  }, [params]);
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
     setLoading(true);
     setMessage("");
     setError("");
 
-    const cleanEmail = email.trim().toLowerCase();
-
-    if (!cleanEmail) {
-      setError("Vui lòng nhập email đã đăng ký.");
-      setLoading(false);
-      return;
-    }
-
-    const redirectTo = `${window.location.origin}/doi-mat-khau`;
-
-    const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
-      redirectTo,
+    const response = await fetch("/api/auth/forgot-password-custom", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
     });
 
-    if (error) {
-      setError("Không gửi được email đặt lại mật khẩu. Vui lòng thử lại.");
+    const data = await response.json();
+
+    if (!response.ok) {
+      setError(data.message || "Không gửi được email đặt lại mật khẩu.");
       setLoading(false);
       return;
     }
 
-    setMessage(
-      "Nếu email này đã đăng ký tài khoản HMECHA, hệ thống sẽ gửi link đặt lại mật khẩu. Vui lòng kiểm tra hộp thư hoặc spam."
-    );
+    setMessage(data.message);
     setLoading(false);
   }
 
   return (
-    <main className="authPage">
-      <section className="card">
-        <Link href="/" className="brand">
+    <main className="hmAuthPage">
+      <section className="hmAuthCard">
+        <Link href="/" className="hmAuthBrand">
           <b>HMECHA</b>
           <span>MEMBER CENTER</span>
         </Link>
 
-        <p className="eyebrow">PASSWORD RECOVERY</p>
+        <p className="hmEyebrow">PASSWORD RECOVERY</p>
         <h1>Quên mật khẩu</h1>
 
-        <p className="description">
-          Nhập email đã đăng ký tài khoản. HMECHA sẽ gửi link để bạn tạo mật
-          khẩu mới.
+        <p className="hmDesc">
+          Nhập email đã đăng ký. HMECHA sẽ gửi link để bạn tạo mật khẩu mới.
         </p>
 
-        {message ? <div className="success">{message}</div> : null}
-        {error ? <div className="error">{error}</div> : null}
+        {message ? <div className="hmSuccess">{message}</div> : null}
+        {error ? <div className="hmError">{error}</div> : null}
 
-        <form onSubmit={submit} className="authForm">
+        <form onSubmit={submit} className="hmForm">
           <label>
             Email tài khoản
             <input
@@ -78,148 +104,156 @@ export default function ForgotPasswordPage() {
           </button>
         </form>
 
-        <p className="switch">
+        <p className="hmSwitch">
           Nhớ mật khẩu rồi? <Link href="/dang-nhap">Đăng nhập</Link>
         </p>
       </section>
 
       <style>{`
-        .authPage {
+        .hmAuthPage {
           min-height: 100vh;
           display: grid;
           place-items: center;
-          padding: 24px;
-          color: #fff;
+          padding: 28px;
           background:
-            radial-gradient(circle at 16% 12%, rgba(124,77,255,.28), transparent 34%),
-            radial-gradient(circle at 82% 16%, rgba(0,229,255,.18), transparent 32%),
-            #050816;
+            radial-gradient(circle at 16% 12%, rgba(124,77,255,.3), transparent 34%),
+            radial-gradient(circle at 82% 16%, rgba(0,229,255,.2), transparent 32%),
+            linear-gradient(180deg, #050816 0%, #0b1026 100%);
+          color: #ffffff;
         }
 
-        .card {
-          width: min(485px, 100%);
+        .hmAuthCard {
+          width: min(520px, 100%);
           box-sizing: border-box;
-          padding: 36px;
-          border-radius: 27px;
-          background: rgba(15,20,42,.94);
-          border: 1px solid rgba(0,229,255,.2);
-          box-shadow: 0 28px 80px rgba(0,0,0,.38);
+          padding: 38px;
+          border-radius: 28px;
+          background: rgba(11, 16, 38, .96);
+          border: 1px solid rgba(0,229,255,.24);
+          box-shadow: 0 28px 90px rgba(0,0,0,.45);
         }
 
-        .brand {
+        .hmAuthBrand {
           display: inline-flex;
           flex-direction: column;
-          margin-bottom: 30px;
+          margin-bottom: 28px;
           text-decoration: none;
         }
 
-        .brand b {
+        .hmAuthBrand b {
           color: #00e5ff;
-          font-size: 24px;
-          letter-spacing: 3px;
+          font-size: 27px;
+          letter-spacing: 4px;
+          font-weight: 950;
         }
 
-        .brand span {
+        .hmAuthBrand span {
+          margin-top: 6px;
           color: #9eadd3;
-          margin-top: 5px;
           font-size: 12px;
-          font-weight: 800;
+          font-weight: 850;
+          letter-spacing: 1px;
         }
 
-        .eyebrow {
+        .hmEyebrow {
           margin: 0 0 12px;
           color: #00e5ff;
           font-size: 12px;
           font-weight: 950;
-          letter-spacing: 1.8px;
+          letter-spacing: 2px;
         }
 
-        h1 {
-          margin: 0 0 11px;
+        .hmAuthCard h1 {
+          margin: 0 0 12px;
+          color: #ffffff;
           font-size: 38px;
+          line-height: 1.1;
         }
 
-        .description {
-          margin: 0 0 25px;
-          color: #aab9dd;
-          line-height: 1.65;
+        .hmDesc {
+          margin: 0 0 24px;
+          color: #cbd5e1;
+          font-size: 16px;
+          line-height: 1.6;
         }
 
-        .success,
-        .error {
+        .hmSuccess,
+        .hmError {
           margin: 0 0 18px;
-          padding: 13px 15px;
-          border-radius: 12px;
+          padding: 14px 15px;
+          border-radius: 14px;
           font-size: 14px;
-          line-height: 1.5;
+          line-height: 1.55;
         }
 
-        .success {
+        .hmSuccess {
           color: #63f1ad;
           background: rgba(45,205,124,.12);
-          border: 1px solid rgba(45,205,124,.26);
+          border: 1px solid rgba(45,205,124,.28);
         }
 
-        .error {
-          color: #ff9bab;
-          background: rgba(255,70,96,.12);
-          border: 1px solid rgba(255,70,96,.27);
+        .hmError {
+          color: #ffb4c0;
+          background: rgba(255,70,96,.13);
+          border: 1px solid rgba(255,70,96,.3);
         }
 
-        .authForm {
+        .hmForm {
           display: grid;
-          gap: 17px;
+          gap: 18px;
         }
 
-        .authForm label {
-          color: #dce6ff;
+        .hmForm label {
+          color: #e5edff;
           font-size: 14px;
-          font-weight: 800;
+          font-weight: 850;
         }
 
-        .authForm input {
+        .hmForm input {
           display: block;
           width: 100%;
           box-sizing: border-box;
           margin-top: 8px;
           padding: 15px 16px;
-          border: 1px solid rgba(255,255,255,.15);
-          border-radius: 13px;
+          border: 1px solid rgba(255,255,255,.16);
+          border-radius: 14px;
           outline: none;
-          background: rgba(255,255,255,.065);
-          color: #fff;
+          background: rgba(255,255,255,.075);
+          color: #ffffff;
           font-size: 15px;
         }
 
-        .authForm input:focus {
+        .hmForm input:focus {
           border-color: #00e5ff;
+          box-shadow: 0 0 0 3px rgba(0,229,255,.13);
         }
 
-        .authForm button {
+        .hmForm button {
           margin-top: 8px;
-          padding: 16px;
+          min-height: 54px;
           border: none;
-          border-radius: 14px;
+          border-radius: 15px;
           background: linear-gradient(135deg,#7c4dff,#00e5ff);
           color: #050816;
           cursor: pointer;
           font-size: 16px;
           font-weight: 950;
+          box-shadow: 0 18px 34px rgba(0,229,255,.18);
         }
 
-        .authForm button:disabled {
+        .hmForm button:disabled {
           opacity: .65;
+          cursor: not-allowed;
         }
 
-        .switch {
-          margin: 25px 0 0;
+        .hmSwitch {
+          margin: 24px 0 0;
           text-align: center;
-          color: #9eadd3;
+          color: #cbd5e1;
         }
 
-        .switch a {
+        .hmSwitch a {
           color: #00e5ff;
-          font-weight: 850;
+          font-weight: 950;
           text-decoration: none;
         }
       `}</style>
