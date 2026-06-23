@@ -2619,3 +2619,62 @@ textarea {
 }
 
 /* hmecha-cart-price-readable-end */
+
+/* hmecha-cart-checkout-button-start */
+
+/* Nút Tiến hành thanh toán trong trang giỏ hàng */
+.cartPage a[href="/checkout"],
+.cartPage a[href*="/checkout"],
+.cartPage button[class*="checkout"],
+.cartPage button[class*="Checkout"],
+.cartPage [class*="checkoutButton"],
+.cartPage [class*="CheckoutButton"] {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 48%, #b91c1c 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(185, 28, 28, 0.55) !important;
+  border-radius: 18px !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.03em !important;
+  text-transform: uppercase !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+  box-shadow: 0 16px 32px rgba(220, 38, 38, 0.26) !important;
+}
+
+/* Ép toàn bộ chữ bên trong nút thành trắng */
+.cartPage a[href="/checkout"] *,
+.cartPage a[href*="/checkout"] *,
+.cartPage button[class*="checkout"] *,
+.cartPage button[class*="Checkout"] *,
+.cartPage [class*="checkoutButton"] *,
+.cartPage [class*="CheckoutButton"] * {
+  color: #ffffff !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+
+/* Hover nhìn xịn hơn */
+.cartPage a[href="/checkout"]:hover,
+.cartPage a[href*="/checkout"]:hover,
+.cartPage button[class*="checkout"]:hover,
+.cartPage button[class*="Checkout"]:hover,
+.cartPage [class*="checkoutButton"]:hover,
+.cartPage [class*="CheckoutButton"]:hover {
+  transform: translateY(-1px) !important;
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 55%, #991b1b 100%) !important;
+  box-shadow: 0 18px 38px rgba(220, 38, 38, 0.34) !important;
+}
+
+/* Trường hợp nút bị disabled vẫn phải dễ đọc */
+.cartPage a[href="/checkout"][aria-disabled="true"],
+.cartPage a[href*="/checkout"][aria-disabled="true"],
+.cartPage button[class*="checkout"]:disabled,
+.cartPage button[class*="Checkout"]:disabled {
+  background: #ef4444 !important;
+  color: #ffffff !important;
+  opacity: 0.72 !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+
+/* hmecha-cart-checkout-button-end */
