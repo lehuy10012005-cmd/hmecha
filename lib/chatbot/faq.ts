@@ -1,216 +1,308 @@
 export type FaqItem = {
   category: string;
+  questions: string[];
   keywords: string[];
   answer: string;
 };
 
+function normalizeText(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/[^a-z0-9\s#]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export const faqItems: FaqItem[] = [
   {
-    category: "shipping",
-    keywords: [
-      "ship",
-      "phí ship",
-      "giao hàng",
-      "vận chuyển",
-      "bao lâu",
-      "freeship",
-      "miễn phí ship",
-      "giao tỉnh",
-      "giao toàn quốc",
+    category: "greeting",
+    questions: [
+      "xin chào",
+      "hello",
+      "hi shop",
+      "chào shop",
+      "chào hmecha",
     ],
+    keywords: ["xin chao", "hello", "hi", "chao"],
     answer:
-      "HMECHA hỗ trợ giao hàng toàn quốc. Phí vận chuyển mặc định là 30.000đ. Một số đơn đủ điều kiện có thể được miễn phí ship, ví dụ đơn từ 1.000.000đ hoặc có mã FREESHIP.\n\nThời gian giao tùy khu vực: nội thành thường nhanh hơn, tỉnh xa sẽ lâu hơn. Sau khi đặt hàng, admin sẽ xác nhận đơn trước khi xử lý giao.",
+      "Chào bạn, HMECHA có thể hỗ trợ bạn tìm sản phẩm, kiểm tra giá, tình trạng hàng, hướng dẫn đặt hàng, thanh toán, vận chuyển, voucher và hỗ trợ tài khoản.",
   },
   {
-    category: "payment",
-    keywords: [
-      "thanh toán",
-      "vnpay",
-      "qr",
-      "cod",
-      "chuyển khoản",
-      "trả tiền",
-      "thanh toán lỗi",
-      "bị trừ tiền",
+    category: "shop_intro",
+    questions: [
+      "shop bán gì",
+      "hmecha là gì",
+      "web này bán gì",
+      "cửa hàng có sản phẩm gì",
+      "shop chuyên về gì",
     ],
+    keywords: ["shop ban gi", "hmecha", "ban gi", "san pham gi", "chuyen ve gi"],
     answer:
-      "HMECHA hiện hỗ trợ 2 phương thức chính: COD và VNPAY / QR.\n\nCOD: bạn thanh toán khi nhận hàng.\nVNPAY / QR: bạn thanh toán qua cổng VNPAY hoặc quét QR theo hướng dẫn ở trang checkout.\n\nNếu đã bị trừ tiền nhưng đơn chưa cập nhật, bạn hãy gửi mã đơn hoặc ảnh giao dịch để admin kiểm tra.",
+      "HMECHA chuyên bán mô hình Gundam, Gunpla, Model Kit, phụ kiện lắp ráp, móc khóa và các sản phẩm sưu tầm liên quan đến Gundam.",
   },
   {
-    category: "coupon",
-    keywords: [
-      "mã giảm giá",
-      "voucher",
-      "coupon",
-      "ưu đãi",
-      "khuyến mãi",
-      "giảm giá",
-      "freeship",
-      "c3welcome",
-      "c3gundam",
-      "c3ship",
+    category: "contact",
+    questions: [
+      "shop ở đâu",
+      "địa chỉ shop",
+      "hotline shop là gì",
+      "số điện thoại shop",
+      "liên hệ shop ở đâu",
     ],
+    keywords: ["dia chi", "hotline", "so dien thoai", "lien he", "o dau"],
     answer:
-      "Mỗi đơn hàng chỉ áp dụng 1 mã giảm giá. Bạn có thể chọn mã có sẵn ở trang checkout hoặc nhập mã thủ công.\n\nMột số mã phổ biến:\nC3WELCOME: ưu đãi cho khách mới.\nC3GUNDAM: giảm theo phần trăm.\nFREESHIP: miễn phí vận chuyển nếu đủ điều kiện.\nC3SHIP: giảm phí vận chuyển.\n\nVoucher cá nhân sẽ nằm trong mục Tài khoản nếu bạn đã đăng nhập.",
+      "Bạn có thể liên hệ HMECHA qua hotline 0945632321. Địa chỉ shop: 99 Hồ Đắc Di. Các kênh mạng xã hội được đặt ở phần cuối trang web.",
   },
   {
-    category: "reward",
-    keywords: [
-      "điểm",
-      "tích điểm",
-      "điểm tích lũy",
-      "đổi điểm",
-      "đổi voucher",
-      "thẻ tích điểm",
-      "reward",
+    category: "social",
+    questions: [
+      "shop có facebook không",
+      "shop có tiktok không",
+      "shop có instagram không",
+      "shop có shopee không",
+      "xem mạng xã hội của shop ở đâu",
     ],
+    keywords: ["facebook", "tiktok", "instagram", "shopee", "mang xa hoi"],
     answer:
-      "Điểm tích lũy dùng để đổi voucher cá nhân cho các đơn sau. Khi đơn hàng được admin chuyển sang trạng thái Hoàn thành, hệ thống sẽ cộng điểm cho tài khoản.\n\nBạn có thể vào Tài khoản để xem điểm hiện có và đổi điểm lấy voucher như giảm 20K, 50K, freeship hoặc ưu đãi cao hơn nếu đủ điểm.",
-  },
-  {
-    category: "order",
-    keywords: [
-      "đơn hàng",
-      "kiểm tra đơn",
-      "mã đơn",
-      "trạng thái đơn",
-      "đơn của tôi",
-      "đặt rồi",
-      "đơn đâu",
-      "xem đơn",
-    ],
-    answer:
-      "Nếu bạn đặt hàng khi đã đăng nhập, đơn sẽ hiển thị trong Tài khoản → Đơn hàng của tôi.\n\nCác trạng thái thường gặp:\nChờ xác nhận: shop mới nhận đơn, chưa tính vào doanh thu.\nĐã xác nhận: shop đã kiểm tra đơn.\nĐang giao: đơn đang được xử lý vận chuyển.\nHoàn thành: đơn đã xong và có thể được cộng điểm tích lũy.\nĐã hủy / thanh toán thất bại: đơn không được tính.",
-  },
-  {
-    category: "wishlist",
-    keywords: [
-      "yêu thích",
-      "thêm yêu thích",
-      "wishlist",
-      "lưu sản phẩm",
-      "xem sau",
-      "trái tim",
-    ],
-    answer:
-      "Bạn có thể bấm nút trái tim hoặc nút Thêm vào yêu thích ở trang sản phẩm để lưu mẫu đang quan tâm.\n\nDanh sách yêu thích nằm trong Tài khoản → Yêu thích. Nếu chưa đăng nhập, bạn cần đăng nhập để lưu sản phẩm vào tài khoản.",
-  },
-  {
-    category: "compare",
-    keywords: [
-      "so sánh",
-      "compare",
-      "so sánh sản phẩm",
-      "khác nhau",
-      "nên chọn mẫu nào",
-      "phân vân",
-    ],
-    answer:
-      "Bạn có thể bấm So sánh sản phẩm ở trang chi tiết để thêm mẫu vào bảng so sánh. Hệ thống hỗ trợ so sánh tối đa 4 sản phẩm.\n\nTrang so sánh sẽ giúp bạn nhìn nhanh giá, SKU, thương hiệu, tình trạng, danh mục và link xem chi tiết từng mẫu.",
+      "HMECHA có các liên kết mạng xã hội ở cuối trang web. Bạn có thể kéo xuống footer để mở Facebook, Instagram, TikTok hoặc Shopee của shop.",
   },
   {
     category: "beginner",
-    keywords: [
-      "người mới",
-      "mới chơi",
-      "mới bắt đầu",
-      "dễ lắp",
-      "nên mua",
-      "hg",
-      "rg",
-      "mg",
-      "entry grade",
-      "dụng cụ",
+    questions: [
+      "tôi mới chơi nên mua gì",
+      "người mới nên mua mẫu nào",
+      "mẫu nào dễ lắp",
+      "mới bắt đầu chơi gunpla nên chọn gì",
+      "gợi ý sản phẩm cho người mới",
     ],
+    keywords: ["nguoi moi", "moi choi", "de lap", "moi bat dau", "goi y"],
     answer:
-      "Nếu bạn mới chơi Gunpla, nên bắt đầu bằng Entry Grade hoặc HG. Hai dòng này dễ lắp, giá dễ tiếp cận và không cần kỹ thuật quá phức tạp.\n\nDụng cụ cơ bản nên có: kềm cắt mô hình, dao hobby hoặc dũa, nhíp nếu dán sticker nhỏ. Sơn và keo chưa cần thiết khi mới bắt đầu.",
+      "Nếu mới chơi, bạn nên bắt đầu với các mẫu HG hoặc sản phẩm giá vừa phải. Những mẫu này dễ lắp, dễ trưng bày và không quá phức tạp. Bạn có thể hỏi thêm: “gợi ý sản phẩm dưới 500k” để mình lọc nhanh hơn.",
   },
   {
-    category: "preorder",
-    keywords: [
-      "preorder",
-      "đặt trước",
-      "hàng đặt trước",
-      "cọc",
-      "bao lâu có hàng",
-      "hàng về",
+    category: "budget",
+    questions: [
+      "có sản phẩm dưới 500k không",
+      "gợi ý sản phẩm dưới 1 triệu",
+      "sản phẩm giá rẻ",
+      "mẫu nào tầm 300k đến 800k",
+      "tôi có ngân sách 500k",
     ],
+    keywords: ["duoi", "tren", "gia re", "ngan sach", "tam gia", "500k", "1 trieu"],
     answer:
-      "Với sản phẩm Đặt trước, shop sẽ xác nhận giá, thời gian dự kiến và điều kiện cọc nếu có trước khi chốt đơn.\n\nThời gian về hàng có thể thay đổi theo lịch phát hành, vận chuyển và tình trạng nhập hàng.",
-  },
-  {
-    category: "return",
-    keywords: [
-      "đổi trả",
-      "hoàn tiền",
-      "bảo hành",
-      "thiếu part",
-      "lỗi",
-      "giao sai",
-      "móp hộp",
-      "hộp móp",
-      "đổi hàng",
-    ],
-    answer:
-      "Nếu sản phẩm bị giao sai, thiếu part hoặc lỗi rõ ràng, bạn hãy giữ lại hộp, runner, phụ kiện và chụp ảnh/video tình trạng sản phẩm để shop kiểm tra.\n\nVới hộp móp nhẹ do vận chuyển nhưng sản phẩm bên trong không ảnh hưởng, shop sẽ xem xét hỗ trợ tùy mức độ.",
-  },
-  {
-    category: "authenticity",
-    keywords: [
-      "chính hãng",
-      "bandai thật",
-      "bootleg",
-      "fake",
-      "tem",
-      "seal",
-      "nguyên seal",
-      "hàng thật",
-    ],
-    answer:
-      "HMECHA ưu tiên sản phẩm chính hãng và ghi rõ thông tin từng mẫu. Với sản phẩm Bandai, bạn có thể xem thương hiệu, ảnh hộp và thông tin sản phẩm trên trang chi tiết.\n\nNếu bạn muốn kiểm tra một mẫu cụ thể, hãy gửi tên sản phẩm hoặc link để shop kiểm tra kỹ hơn.",
+      "Bạn có thể hỏi theo ngân sách, ví dụ: “cho tôi 3 sản phẩm dưới 500k”, “sản phẩm từ 300k đến 800k” hoặc “mẫu còn hàng dưới 1 triệu”. Chatbot sẽ cố gợi ý sản phẩm phù hợp theo giá.",
   },
   {
     category: "stock",
-    keywords: [
-      "còn hàng",
-      "hết hàng",
-      "tồn kho",
-      "còn không",
-      "có sẵn",
-      "hàng sẵn",
-      "sắp hết",
+    questions: [
+      "sản phẩm còn hàng không",
+      "hàng này còn không",
+      "có sẵn không",
+      "tồn kho còn bao nhiêu",
+      "sản phẩm hết hàng thì sao",
     ],
+    keywords: ["con hang", "het hang", "ton kho", "co san", "con khong"],
     answer:
-      "Tình trạng sản phẩm được hiển thị ngay trên card và trang chi tiết. Nếu ghi Còn hàng thì bạn có thể đặt. Nếu ghi Hết hàng thì nút mua có thể bị khóa hoặc shop cần kiểm tra lại.\n\nNếu bạn muốn chắc chắn trước khi mua, hãy gửi tên mẫu để admin xác nhận tồn kho.",
+      "Tình trạng sản phẩm được hiển thị trên thẻ sản phẩm và trang chi tiết. Nếu ghi Còn hàng thì bạn có thể đặt. Nếu ghi Hết hàng thì hiện tại chưa thể mua trực tiếp hoặc cần shop cập nhật lại.",
   },
   {
-    category: "support",
-    keywords: [
-      "admin",
-      "nhân viên",
-      "người thật",
-      "tư vấn viên",
-      "gặp admin",
-      "liên hệ",
-      "zalo",
-      "facebook",
-      "hotline",
+    category: "preorder",
+    questions: [
+      "đặt trước là gì",
+      "pre order là gì",
+      "hàng đặt trước bao lâu có",
+      "sản phẩm preorder mua sao",
+      "có cần cọc khi đặt trước không",
     ],
+    keywords: ["dat truoc", "preorder", "pre order", "coc", "hang ve"],
     answer:
-      "Mình đã ghi nhận yêu cầu cần nhân viên tư vấn. Bạn có thể để lại câu hỏi cụ thể, tên sản phẩm, ngân sách hoặc mã đơn để admin phản hồi dễ hơn.\n\nVí dụ: “Mình có 500K, muốn mẫu dễ lắp”, hoặc “Kiểm tra giúp đơn #ABC123”.",
+      "Sản phẩm Đặt trước nghĩa là hàng chưa có sẵn ngay hoặc cần chờ nhập. Thời gian về hàng có thể thay đổi. Nếu cần chắc chắn, bạn nên liên hệ shop trước khi đặt.",
+  },
+  {
+    category: "cart",
+    questions: [
+      "thêm vào giỏ hàng sao",
+      "giỏ hàng ở đâu",
+      "xóa sản phẩm trong giỏ",
+      "tăng số lượng sản phẩm",
+      "giảm số lượng sản phẩm",
+    ],
+    keywords: ["gio hang", "them vao gio", "xoa san pham", "tang so luong", "giam so luong"],
+    answer:
+      "Bạn có thể bấm Thêm vào giỏ ở thẻ sản phẩm hoặc trang chi tiết. Vào Giỏ hàng để tăng/giảm số lượng, xóa sản phẩm hoặc tiến hành thanh toán.",
+  },
+  {
+    category: "checkout",
+    questions: [
+      "làm sao để đặt hàng",
+      "tôi muốn mua hàng",
+      "tiến hành thanh toán ở đâu",
+      "đặt hàng như thế nào",
+      "mua ngay là gì",
+    ],
+    keywords: ["dat hang", "mua hang", "thanh toan", "mua ngay", "checkout"],
+    answer:
+      "Bạn chọn sản phẩm, thêm vào giỏ hàng, vào Giỏ hàng, kiểm tra sản phẩm rồi bấm Tiến hành thanh toán. Sau đó nhập thông tin nhận hàng và chọn phương thức thanh toán.",
+  },
+  {
+    category: "payment",
+    questions: [
+      "shop có cod không",
+      "cod là gì",
+      "shop có vnpay không",
+      "thanh toán qr được không",
+      "nên chọn cod hay vnpay",
+    ],
+    keywords: ["cod", "vnpay", "qr", "thanh toan", "chuyen khoan"],
+    answer:
+      "HMECHA hỗ trợ COD và VNPAY/QR. COD là thanh toán khi nhận hàng. VNPAY/QR phù hợp nếu bạn muốn thanh toán online nhanh hơn.",
+  },
+  {
+    category: "shipping",
+    questions: [
+      "phí ship bao nhiêu",
+      "bao lâu nhận được hàng",
+      "shop có giao toàn quốc không",
+      "đơn bao nhiêu thì freeship",
+      "miễn phí vận chuyển không",
+    ],
+    keywords: ["phi ship", "ship", "van chuyen", "giao hang", "freeship", "mien phi"],
+    answer:
+      "Phí vận chuyển sẽ hiển thị ở giỏ hàng hoặc trang thanh toán. Một số đơn đủ điều kiện có thể được miễn phí vận chuyển, ví dụ đơn từ 1.000.000đ tùy chương trình.",
+  },
+  {
+    category: "coupon",
+    questions: [
+      "shop có mã giảm giá không",
+      "nhập voucher ở đâu",
+      "mã giảm giá không dùng được",
+      "có freeship không",
+      "mỗi đơn dùng được mấy mã",
+    ],
+    keywords: ["ma giam gia", "voucher", "coupon", "uu dai", "khuyen mai", "freeship"],
+    answer:
+      "Bạn có thể chọn voucher hoặc nhập mã giảm giá ở trang thanh toán. Thông thường mỗi đơn chỉ dùng một mã phù hợp. Nếu mã không dùng được, có thể mã đã hết hạn hoặc đơn chưa đủ điều kiện.",
+  },
+  {
+    category: "account",
+    questions: [
+      "có cần tạo tài khoản không",
+      "đăng ký tài khoản ở đâu",
+      "đăng nhập ở đâu",
+      "xem tài khoản của tôi",
+      "tài khoản dùng để làm gì",
+    ],
+    keywords: ["tai khoan", "dang ky", "dang nhap", "account", "member"],
+    answer:
+      "Tạo tài khoản giúp bạn xem lại lịch sử đơn hàng, theo dõi trạng thái đơn, lưu yêu thích và quản lý thông tin cá nhân tiện hơn.",
+  },
+  {
+    category: "password_reset",
+    questions: [
+      "tôi quên mật khẩu",
+      "đổi mật khẩu như thế nào",
+      "không nhận được mã xác nhận",
+      "mã xác nhận hết hạn",
+      "mã 6 số dùng để làm gì",
+    ],
+    keywords: ["quen mat khau", "doi mat khau", "ma xac nhan", "6 so", "otp"],
+    answer:
+      "Bạn vào trang Quên mật khẩu, nhập email đã đăng ký. HMECHA sẽ gửi mã xác nhận 6 chữ số vào email. Sau đó nhập mã, mật khẩu mới và xác nhận để đổi mật khẩu.",
+  },
+  {
+    category: "order_status",
+    questions: [
+      "xem đơn hàng ở đâu",
+      "kiểm tra trạng thái đơn hàng",
+      "đơn hàng của tôi đâu",
+      "tôi đặt hàng rồi thì làm gì",
+      "admin đổi trạng thái đơn ở đâu",
+    ],
+    keywords: ["don hang", "trang thai don", "kiem tra don", "don cua toi", "dat roi"],
+    answer:
+      "Nếu đã đăng nhập khi đặt hàng, bạn có thể vào trang Tài khoản để xem lịch sử và trạng thái đơn. Nếu cần hỗ trợ nhanh, hãy gửi thông tin đơn hàng cho HMECHA.",
+  },
+  {
+    category: "reviews",
+    questions: [
+      "đánh giá sản phẩm ở đâu",
+      "tôi muốn viết đánh giá",
+      "có xem được đánh giá không",
+      "shop có phản hồi đánh giá không",
+      "gửi bình luận sản phẩm thế nào",
+    ],
+    keywords: ["danh gia", "binh luan", "review", "phan hoi", "so sao"],
+    answer:
+      "Bạn có thể vào trang chi tiết sản phẩm, kéo xuống phần đánh giá, chọn số sao và gửi bình luận. Đánh giá giúp khách sau chọn sản phẩm dễ hơn.",
+  },
+  {
+    category: "return_policy",
+    questions: [
+      "đổi trả như thế nào",
+      "sản phẩm bị lỗi thì sao",
+      "nhận sai sản phẩm thì sao",
+      "hàng bị móp hộp thì sao",
+      "có bảo hành không",
+    ],
+    keywords: ["doi tra", "bao hanh", "bi loi", "giao sai", "mop hop", "hoan tien"],
+    answer:
+      "Nếu sản phẩm bị lỗi, giao sai hoặc có vấn đề khi nhận hàng, bạn nên chụp ảnh/video và liên hệ HMECHA sớm. Shop sẽ kiểm tra và hỗ trợ theo chính sách đổi trả.",
+  },
+  {
+    category: "authenticity",
+    questions: [
+      "hàng có chính hãng không",
+      "có phải bandai thật không",
+      "shop có bán fake không",
+      "sản phẩm có nguyên seal không",
+      "hàng có tem không",
+    ],
+    keywords: ["chinh hang", "bandai", "fake", "bootleg", "nguyen seal", "tem"],
+    answer:
+      "HMECHA ưu tiên sản phẩm chính hãng và ghi rõ thông tin trên trang chi tiết. Bạn có thể xem thương hiệu, ảnh hộp, mô tả và tình trạng sản phẩm trước khi mua.",
+  },
+  {
+    category: "human_support",
+    questions: [
+      "gặp admin",
+      "tôi muốn gặp người tư vấn",
+      "cho tôi gặp nhân viên",
+      "cần người hỗ trợ",
+      "chatbot không hiểu",
+    ],
+    keywords: ["admin", "nhan vien", "nguoi tu van", "ho tro", "khong hieu"],
+    answer:
+      "Bạn có thể để lại câu hỏi cụ thể, tên sản phẩm, ngân sách hoặc mã đơn hàng. Nếu cần hỗ trợ nhanh, liên hệ hotline HMECHA: 0945632321.",
   },
 ];
 
+function getFaqScore(item: FaqItem, normalizedMessage: string) {
+  const exactQuestionScore = item.questions.reduce((score, question) => {
+    const normalizedQuestion = normalizeText(question);
+    return normalizedMessage.includes(normalizedQuestion) ? score + 8 : score;
+  }, 0);
+
+  const keywordScore = item.keywords.reduce((score, keyword) => {
+    const normalizedKeyword = normalizeText(keyword);
+    return normalizedMessage.includes(normalizedKeyword) ? score + 2 : score;
+  }, 0);
+
+  return exactQuestionScore + keywordScore;
+}
+
 export function findFaqAnswer(message: string) {
-  const normalized = message.toLowerCase();
+  const normalizedMessage = normalizeText(message);
+
+  if (!normalizedMessage) return null;
 
   let bestMatch: FaqItem | null = null;
   let bestScore = 0;
 
   for (const item of faqItems) {
-    const score = item.keywords.reduce((total, keyword) => {
-      return normalized.includes(keyword.toLowerCase()) ? total + 1 : total;
-    }, 0);
+    const score = getFaqScore(item, normalizedMessage);
 
     if (score > bestScore) {
       bestScore = score;
@@ -218,5 +310,7 @@ export function findFaqAnswer(message: string) {
     }
   }
 
-  return bestMatch?.answer || null;
+  if (!bestMatch || bestScore < 2) return null;
+
+  return bestMatch.answer;
 }
