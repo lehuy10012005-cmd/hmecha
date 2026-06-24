@@ -2998,3 +2998,39 @@ textarea {
   accent-color: #dc2626 !important;
 }
 /* hmecha-marketing-readable-ui-v2-end */
+/* hmecha-admin-order-total-readable-start */
+body:has(a[href="/admin/marketing"]) div[style*="background: #fff7ed"],
+body:has(a[href="/admin/marketing"]) div[style*="background:#fff7ed"],
+body:has(a[href="/admin/marketing"]) div[style*="background: #fffbeb"],
+body:has(a[href="/admin/marketing"]) div[style*="background:#fffbeb"],
+body:has(a[href="/admin/marketing"]) div[style*="background: #fef3c7"],
+body:has(a[href="/admin/marketing"]) div[style*="background:#fef3c7"],
+body:has(a[href="/admin/marketing"]) div[style*="background: #fff1e6"],
+body:has(a[href="/admin/marketing"]) div[style*="background:#fff1e6"] {
+  background: #111827 !important;
+  border: 1px solid #334155 !important;
+  color: #f8fafc !important;
+}
+
+body:has(a[href="/admin/marketing"]) div[style*="background: #fff7ed"] *,
+body:has(a[href="/admin/marketing"]) div[style*="background:#fff7ed"] *,
+body:has(a[href="/admin/marketing"]) div[style*="background: #fffbeb"] *,
+body:has(a[href="/admin/marketing"]) div[style*="background:#fffbeb"] *,
+body:has(a[href="/admin/marketing"]) div[style*="background: #fef3c7"] *,
+body:has(a[href="/admin/marketing"]) div[style*="background:#fef3c7"] *,
+body:has(a[href="/admin/marketing"]) div[style*="background: #fff1e6"] *,
+body:has(a[href="/admin/marketing"]) div[style*="background:#fff1e6"] * {
+  color: #f8fafc !important;
+  text-shadow: none !important;
+}
+
+body:has(a[href="/admin/marketing"]) div[style*="background: #fff7ed"] strong,
+body:has(a[href="/admin/marketing"]) div[style*="background:#fff7ed"] strong,
+body:has(a[href="/admin/marketing"]) div[style*="background: #fffbeb"] strong,
+body:has(a[href="/admin/marketing"]) div[style*="background:#fffbeb"] strong,
+body:has(a[href="/admin/marketing"]) div[style*="background: #fef3c7"] strong,
+body:has(a[href="/admin/marketing"]) div[style*="background:#fef3c7"] strong {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+}
+/* hmecha-admin-order-total-readable-end */
