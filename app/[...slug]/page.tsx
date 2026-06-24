@@ -306,11 +306,13 @@ const product = dbProduct
             </p>
           </div>
         </section>
-<ProductReviews
-  productId={product.id}
-  productSlug={product.slug}
-  productName={product.name}
-/>
+<section id="product-reviews" className="productReviewsAnchor">
+          <ProductReviews
+            productId={product.id}
+            productSlug={product.slug}
+            productName={product.name}
+          />
+        </section>
         <RelatedProducts
           currentId={product.id}
           currentSlug={product.slug}
@@ -319,6 +321,10 @@ const product = dbProduct
       </div>
 
       <style>{`
+        .productReviewsAnchor {
+          scroll-margin-top: 110px;
+        }
+
         .page {
           min-height: 100vh;
           color: white;

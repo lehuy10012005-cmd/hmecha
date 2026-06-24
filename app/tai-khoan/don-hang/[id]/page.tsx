@@ -35,6 +35,7 @@ type PageProps = {
 };
 
 type Item = {
+  product_id?: string | null;
   product_name: string;
   product_price: number;
   quantity: number;
@@ -79,7 +80,7 @@ export default async function OrderDetailPage({ params }: PageProps) {
   const { data: orderData, error } = await supabaseAdmin
     .from("orders")
     .select(
-      "id,customer_id,customer_name,customer_phone,customer_email,customer_address,note,payment_method,payment_status,status,subtotal,shipping_fee,total,created_at,order_items(product_name,product_price,quantity)"
+      "id,customer_id,customer_name,customer_phone,customer_email,customer_address,note,payment_method,payment_status,status,subtotal,shipping_fee,total,created_at,order_items(product_id,product_name,product_price,quantity)"
     )
     .eq("id", id)
     .maybeSingle();
@@ -101,6 +102,75 @@ export default async function OrderDetailPage({ params }: PageProps) {
   }
 
   const items = order.order_items || [];
+
+  const itemProductIds = Array.from(
+    new Set(
+      items
+        .map((item) => String(item.product_id || "").trim())
+        .filter(Boolean)
+    )
+  );
+
+  const itemProductNames = Array.from(
+    new Set(
+      items
+        .map((item) => String(item.product_name || "").trim())
+        .filter(Boolean)
+    )
+  );
+
+  const productById = new Map<string, { name: string; slug: string }>();
+  const productByName = new Map<string, { name: string; slug: string }>();
+
+  if (itemProductIds.length > 0) {
+    const { data: productsById } = await supabaseAdmin
+      .from("products")
+      .select("id,name,slug")
+      .in("id", itemProductIds);
+
+    for (const product of productsById || []) {
+      productById.set(String(product.id), {
+        name: product.name,
+        slug: product.slug,
+      });
+    }
+  }
+
+  if (itemProductNames.length > 0) {
+    const { data: productsByName } = await supabaseAdmin
+      .from("products")
+      .select("name,slug")
+      .in("name", itemProductNames);
+
+    for (const product of productsByName || []) {
+      productByName.set(String(product.name), {
+        name: product.name,
+        slug: product.slug,
+      });
+    }
+  }
+
+  const reviewLinks = items
+    .map((item, index) => {
+      const byId = item.product_id
+        ? productById.get(String(item.product_id))
+        : null;
+
+      const byName = productByName.get(String(item.product_name || ""));
+
+      const product = byId || byName;
+
+      if (!product?.slug) return null;
+
+      return {
+        key: `${product.slug}-${index}`,
+        name: item.product_name,
+        href: `/${product.slug}#product-reviews`,
+      };
+    })
+    .filter(Boolean) as Array<{ key: string; name: string; href: string }>;
+
+  const firstReviewHref = reviewLinks[0]?.href || "/products";
 
   const cleanOrderStatus = displayStatusText(order.status);
   const canCustomerCancelOrder = ["Chờ xác nhận", "Chờ thanh toán"].includes(cleanOrderStatus) && String(order.payment_status || "").toLowerCase() !== "paid";
@@ -218,60 +288,25 @@ export default async function OrderDetailPage({ params }: PageProps) {
         {isCompletedOrder ? (
           <section className="reviewReminder">
             <div>
-              <p>AFTER-SALE CARE</p>
-              <h2>Đánh giá sản phẩm để nhận thêm quyền lợi</h2>
+              <p>ĐÁNH GIÁ SẢN PHẨM</p>
+              <h2>Chia sẻ cảm nhận sau khi nhận hàng</h2>
               <span>
-                Cảm ơn bạn đã hoàn tất đơn hàng tại HMECHA. Bạn có thể chia sẻ trải nghiệm về sản phẩm đã mua để giúp shop cải thiện dịch vụ và giúp khách hàng mới yên tâm hơn.
-              </span>
-
-              <ul>
-                <li>Nhận thêm điểm thưởng cho tài khoản thành viên.</li>
-                <li>Giúp HMECHA cải thiện chất lượng đóng gói và tư vấn.</li>
-                <li>Hỗ trợ người mua mới chọn mô hình phù hợp hơn.</li>
-              </ul>
-            </div>
-
-            <Link className="reviewButton" href="/products">
-              Đánh giá sản phẩm
-            </Link>
-          </section>
-        ) : null}
-
-        {isCompletedOrder ? (
-          <section className="afterSaleSuggest">
-            <div className="suggestHead">
-              <p>NEXT BUILD SUGGESTION</p>
-              <h2>Gợi ý phụ kiện cho lần build tiếp theo</h2>
-              <span>
-                Sau khi hoàn tất đơn hàng, HMECHA gợi ý thêm một số phụ kiện thường được dùng khi lắp ráp và trưng bày mô hình.
+                Viết đánh giá ngắn để giúp khách khác chọn sản phẩm dễ hơn.
               </span>
             </div>
 
-            <div className="suggestGrid">
-              <Link href="/products" className="suggestCard">
-                <b>Kìm cắt mô hình</b>
-                <span>Hỗ trợ tách part gọn hơn, hạn chế làm xước chi tiết.</span>
-              </Link>
-
-              <Link href="/products" className="suggestCard">
-                <b>Decal & sticker</b>
-                <span>Tăng độ chi tiết và giúp mô hình nhìn nổi bật hơn khi trưng bày.</span>
-              </Link>
-
-              <Link href="/products" className="suggestCard">
-                <b>Đế trưng bày</b>
-                <span>Phù hợp cho các mẫu có dáng bay, pose hành động hoặc cần cố định chắc hơn.</span>
-              </Link>
-
-              <Link href="/products" className="suggestCard">
-                <b>Phụ kiện custom</b>
-                <span>Gợi ý thêm vũ khí, hiệu ứng, tay thay thế hoặc chi tiết nâng cấp.</span>
-              </Link>
-
-              <Link href="/products" className="suggestCard">
-                <b>Mô hình cùng dòng</b>
-                <span>Tiếp tục hoàn thiện bộ sưu tập theo series hoặc cùng cấp HG, RG, MG.</span>
-              </Link>
+            <div className="reviewActions">
+              {reviewLinks.length > 1 ? (
+                reviewLinks.slice(0, 4).map((item) => (
+                  <Link className="reviewButton" href={item.href} key={item.key}>
+                    {item.name}
+                  </Link>
+                ))
+              ) : (
+                <Link className="reviewButton" href={firstReviewHref}>
+                  Đánh giá sản phẩm
+                </Link>
+              )}
             </div>
           </section>
         ) : null}
@@ -440,55 +475,47 @@ export default async function OrderDetailPage({ params }: PageProps) {
           color: #ffffff;
           line-height: 1.6;
         }
-
-
         .reviewReminder {
           margin-top: 18px;
-          padding: 26px;
+          padding: 22px;
           border-radius: 22px;
-          border: 1px solid rgba(0, 229, 255, 0.24);
-          background:
-            radial-gradient(circle at 0% 0%, rgba(0,229,255,.16), transparent 34%),
-            radial-gradient(circle at 100% 0%, rgba(124,77,255,.18), transparent 36%),
-            rgba(7, 12, 32, 0.88);
-          box-shadow: 0 18px 42px rgba(0,0,0,.24);
+          border: 1px solid rgba(229, 231, 235, 0.95);
+          background: #ffffff;
+          box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 24px;
+          gap: 22px;
         }
 
         .reviewReminder p {
           margin: 0 0 8px;
-          color: #00e5ff;
+          color: #d32f2f;
           font-size: 12px;
           font-weight: 950;
-          letter-spacing: 4px;
+          letter-spacing: 2px;
         }
 
         .reviewReminder h2 {
-          margin: 0 0 10px;
-          color: #ffffff;
-          font-size: clamp(26px, 3vw, 38px);
-          line-height: 1.12;
+          margin: 0 0 8px;
+          color: #111827;
+          font-size: clamp(24px, 2.6vw, 34px);
+          line-height: 1.15;
         }
 
         .reviewReminder span {
           display: block;
-          max-width: 820px;
-          color: #c5d2f2;
-          line-height: 1.7;
+          max-width: 680px;
+          color: #4b5563;
+          line-height: 1.65;
         }
 
-        .reviewReminder ul {
-          margin: 18px 0 0;
-          padding-left: 18px;
-          color: #dce6ff;
-          line-height: 1.8;
-        }
-
-        .reviewReminder li {
-          margin: 4px 0;
+        .reviewActions {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+          gap: 10px;
+          max-width: 460px;
         }
 
         .reviewButton {
@@ -496,104 +523,30 @@ export default async function OrderDetailPage({ params }: PageProps) {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          min-height: 48px;
-          padding: 0 22px;
+          min-height: 44px;
+          padding: 0 18px;
           border-radius: 999px;
-          color: #050816;
-          background: linear-gradient(135deg, #00e5ff, #7c4dff);
+          color: #ffffff;
+          background: linear-gradient(135deg, #ef4444, #b91c1c);
           text-decoration: none;
           font-weight: 950;
-          box-shadow: 0 14px 30px rgba(0,229,255,.22);
+          box-shadow: 0 12px 26px rgba(211, 47, 47, 0.18);
+          max-width: 260px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
 
         .reviewButton:hover {
           transform: translateY(-1px);
-          filter: brightness(1.08);
+          filter: brightness(1.05);
         }
-
-        .afterSaleSuggest {
-          margin-top: 18px;
-          padding: 26px;
-          border-radius: 22px;
-          border: 1px solid rgba(124, 77, 255, 0.28);
-          background:
-            radial-gradient(circle at 0% 0%, rgba(124,77,255,.18), transparent 34%),
-            radial-gradient(circle at 100% 0%, rgba(255,102,217,.12), transparent 36%),
-            rgba(7, 12, 32, 0.88);
-          box-shadow: 0 18px 42px rgba(0,0,0,.24);
-        }
-
-        .suggestHead {
-          margin-bottom: 20px;
-        }
-
-        .suggestHead p {
-          margin: 0 0 8px;
-          color: #ff66d9;
-          font-size: 12px;
-          font-weight: 950;
-          letter-spacing: 4px;
-        }
-
-        .suggestHead h2 {
-          margin: 0 0 10px;
-          color: #ffffff;
-          font-size: clamp(26px, 3vw, 38px);
-          line-height: 1.12;
-        }
-
-        .suggestHead span {
-          display: block;
-          max-width: 860px;
-          color: #c5d2f2;
-          line-height: 1.7;
-        }
-
-        .suggestGrid {
-          display: grid;
-          grid-template-columns: repeat(5, minmax(0, 1fr));
-          gap: 12px;
-        }
-
-        .suggestCard {
-          min-height: 150px;
-          padding: 18px;
-          border-radius: 18px;
-          border: 1px solid rgba(255,255,255,.12);
-          background: rgba(255,255,255,.055);
-          color: #ffffff;
-          text-decoration: none;
-          transition: .2s ease;
-        }
-
-        .suggestCard:hover {
-          transform: translateY(-3px);
-          border-color: rgba(0,229,255,.42);
-          background: rgba(0,229,255,.08);
-        }
-
-        .suggestCard b {
-          display: block;
-          margin-bottom: 10px;
-          color: #ffffff;
-          font-size: 16px;
-        }
-
-        .suggestCard span {
-          display: block;
-          color: #c5d2f2;
-          font-size: 13px;
-          line-height: 1.6;
-        }
-        @media (max-width: 980px) {
+@media (max-width: 980px) {
           .statusGrid,
           .contentGrid,
           .reviewReminder,
           .afterSaleSuggest,
-          .suggestGrid {
-            grid-template-columns: 1fr;
-          }
-        }
+}
       `}</style>
     </main>
   );
