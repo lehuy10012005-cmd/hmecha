@@ -14352,17 +14352,20 @@ if (popularBox) popularBox.classList.add("d-none");
 
 
 
+
 <!-- hmecha-newsletter-footer-start -->
 <script>
 (function () {
-  if (window.__hmechaNewsletterFooterInstalled) return;
-  window.__hmechaNewsletterFooterInstalled = true;
+  if (window.__hmechaNewsletterFixedV2) return;
+  window.__hmechaNewsletterFixedV2 = true;
 
   function normalizeText(value) {
     return String(value || "")
       .toLowerCase()
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/\s+/g, " ")
       .trim();
   }
 
@@ -14370,26 +14373,82 @@ if (popularBox) popularBox.classList.add("d-none");
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || "").trim());
   }
 
-  function findEmailInput(root) {
-    return root.querySelector(
+  function findNewsletterArea() {
+    var all = Array.from(document.querySelectorAll("footer, section, div"));
+
+    return all.find(function (el) {
+      var text = normalizeText(el.textContent || "");
+      return text.includes("nhan tin tu hmecha") || text.includes("dang ky de nhan thong tin");
+    }) || document;
+  }
+
+  function findNewsletterInput(area) {
+    return area.querySelector(
       'input[type="email"], input[placeholder*="Email"], input[placeholder*="email"], input[placeholder*="mail"]'
     );
   }
 
-  async function submitNewsletter(input, button) {
+  function findNewsletterButton(area) {
+    var buttons = Array.from(area.querySelectorAll("button, a, input[type='submit']"));
+
+    return buttons.find(function (btn) {
+      var text = normalizeText(btn.textContent || btn.value || "");
+      return text.includes("dang ky");
+    });
+  }
+
+  function setStatus(area, message, ok) {
+    var status = area.querySelector("[data-hmecha-newsletter-status]");
+
+    if (!status) {
+      status = document.createElement("div");
+      status.setAttribute("data-hmecha-newsletter-status", "1");
+      status.style.marginTop = "10px";
+      status.style.fontSize = "13px";
+      status.style.fontWeight = "700";
+      status.style.lineHeight = "1.45";
+
+      var input = findNewsletterInput(area);
+      if (input && input.parentElement) {
+        input.parentElement.appendChild(status);
+      } else {
+        area.appendChild(status);
+      }
+    }
+
+    status.textContent = message;
+    status.style.color = ok ? "#22c55e" : "#f87171";
+  }
+
+  async function submitNewsletter(event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    var area = findNewsletterArea();
+    var input = findNewsletterInput(area);
+    var button = findNewsletterButton(area);
+
+    if (!input) {
+      alert("Không tìm thấy ô nhập email ở footer.");
+      return;
+    }
+
     var email = String(input.value || "").trim();
 
     if (!isEmail(email)) {
-      alert("Bạn nhập email hợp lệ nhé.");
+      setStatus(area, "Bạn nhập email hợp lệ nhé.", false);
       input.focus();
       return;
     }
 
-    var oldText = button ? button.textContent : "";
+    var oldText = button ? (button.textContent || button.value || "ĐĂNG KÝ NGAY") : "";
 
     if (button) {
       button.disabled = true;
-      button.textContent = "Đang gửi...";
+      button.style.opacity = "0.75";
+      button.textContent = "ĐANG GỬI...";
     }
 
     try {
@@ -14413,78 +14472,49 @@ if (popularBox) popularBox.classList.add("d-none");
       }
 
       input.value = "";
+      setStatus(area, data.message || "Đã đăng ký nhận tin từ HMECHA.", true);
 
       if (button) {
-        button.textContent = "Đã đăng ký";
+        button.textContent = "ĐÃ ĐĂNG KÝ";
       }
-
-      alert(data.message || "Đã đăng ký nhận tin từ HMECHA.");
     } catch (error) {
-      alert(error.message || "Có lỗi khi đăng ký nhận tin.");
+      setStatus(area, error.message || "Có lỗi khi đăng ký nhận tin.", false);
 
       if (button) {
-        button.textContent = oldText || "Đăng ký";
+        button.textContent = oldText || "ĐĂNG KÝ NGAY";
       }
     } finally {
       if (button) {
         setTimeout(function () {
           button.disabled = false;
-          button.textContent = oldText || "Đăng ký";
-        }, 1800);
+          button.style.opacity = "1";
+          button.textContent = oldText || "ĐĂNG KÝ NGAY";
+        }, 2000);
       }
     }
   }
 
-  document.addEventListener("submit", function (event) {
-    var form = event.target;
-    if (!form || !form.querySelector) return;
+  function bindNewsletter() {
+    var area = findNewsletterArea();
+    var input = findNewsletterInput(area);
+    var button = findNewsletterButton(area);
 
-    var input = findEmailInput(form);
-    if (!input) return;
+    if (!input || !button || button.dataset.hmechaNewsletterBound === "1") return;
 
-    var text = normalizeText(form.textContent || "");
-    var looksLikeNewsletter =
-      text.includes("nhan tin") ||
-      text.includes("dang ky") ||
-      text.includes("email");
+    button.dataset.hmechaNewsletterBound = "1";
+    button.addEventListener("click", submitNewsletter, true);
 
-    if (!looksLikeNewsletter) return;
+    input.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        submitNewsletter(event);
+      }
+    }, true);
+  }
 
-    event.preventDefault();
-
-    var button = form.querySelector('button, input[type="submit"]');
-    submitNewsletter(input, button);
-  });
-
-  document.addEventListener("click", function (event) {
-    var button = event.target && event.target.closest
-      ? event.target.closest("button, a, input[type='submit']")
-      : null;
-
-    if (!button) return;
-
-    var buttonText = normalizeText(button.textContent || button.value || "");
-
-    var isNewsletterButton =
-      buttonText.includes("dang ky") ||
-      buttonText.includes("nhan tin") ||
-      buttonText.includes("subscribe");
-
-    if (!isNewsletterButton) return;
-
-    var root =
-      button.closest("form") ||
-      button.closest("footer") ||
-      button.closest("section") ||
-      button.parentElement ||
-      document;
-
-    var input = findEmailInput(root);
-    if (!input) return;
-
-    event.preventDefault();
-    submitNewsletter(input, button);
-  });
+  document.addEventListener("DOMContentLoaded", bindNewsletter);
+  window.addEventListener("load", bindNewsletter);
+  setTimeout(bindNewsletter, 500);
+  setTimeout(bindNewsletter, 1500);
 })();
 </script>
 <!-- hmecha-newsletter-footer-end -->
