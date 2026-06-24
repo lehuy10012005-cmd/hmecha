@@ -2678,3 +2678,22 @@ textarea {
 }
 
 /* hmecha-cart-checkout-button-end */
+
+/* hmecha-admin-logout-button-start */
+.adminNav .adminLogoutButton {
+  width: 100%;
+  min-height: 42px;
+  margin-top: 10px;
+  border: 1px solid rgba(248, 113, 113, 0.45);
+  border-radius: 14px;
+  background: rgba(220, 38, 38, 0.12);
+  color: #fecaca;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.adminNav .adminLogoutButton:hover {
+  background: rgba(220, 38, 38, 0.25);
+  color: #ffffff;
+}
+/* hmecha-admin-logout-button-end */
