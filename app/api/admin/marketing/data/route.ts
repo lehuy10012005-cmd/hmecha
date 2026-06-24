@@ -69,9 +69,7 @@ export async function GET() {
       .limit(500);
 
     if (subscribersError) {
-      warnings.push(
-        "Chưa tải được người đăng ký nhận tin. Nếu thiếu bảng, chạy file supabase-marketing-email.sql."
-      );
+      console.warn("Newsletter subscribers table is not available:", subscribersError.message);
     }
 
     const { data: ordersRaw, error: ordersError } = await supabaseAdmin

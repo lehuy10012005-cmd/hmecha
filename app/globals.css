@@ -3034,3 +3034,31 @@ body:has(a[href="/admin/marketing"]) div[style*="background:#fef3c7"] strong {
   font-weight: 900 !important;
 }
 /* hmecha-admin-order-total-readable-end */
+/* hmecha-admin-order-total-readable-v2-start */
+body:has(a[href="/admin/marketing"]) div[style*="#fff7ed"],
+body:has(a[href="/admin/marketing"]) div[style*="#fffbeb"],
+body:has(a[href="/admin/marketing"]) div[style*="#fef3c7"],
+body:has(a[href="/admin/marketing"]) div[style*="#fff1e6"],
+body:has(a[href="/admin/marketing"]) div[style*="#fffaf0"],
+body:has(a[href="/admin/marketing"]) div[style*="#fff8e1"],
+body:has(a[href="/admin/marketing"]) div[style*="rgb(255, 247, 237)"],
+body:has(a[href="/admin/marketing"]) div[style*="rgb(255, 251, 235)"],
+body:has(a[href="/admin/marketing"]) div[style*="rgb(254, 243, 199)"] {
+  background: #111827 !important;
+  border: 1px solid #334155 !important;
+  color: #f8fafc !important;
+}
+
+body:has(a[href="/admin/marketing"]) div[style*="#fff7ed"] *,
+body:has(a[href="/admin/marketing"]) div[style*="#fffbeb"] *,
+body:has(a[href="/admin/marketing"]) div[style*="#fef3c7"] *,
+body:has(a[href="/admin/marketing"]) div[style*="#fff1e6"] *,
+body:has(a[href="/admin/marketing"]) div[style*="#fffaf0"] *,
+body:has(a[href="/admin/marketing"]) div[style*="#fff8e1"] *,
+body:has(a[href="/admin/marketing"]) div[style*="rgb(255, 247, 237)"] *,
+body:has(a[href="/admin/marketing"]) div[style*="rgb(255, 251, 235)"] *,
+body:has(a[href="/admin/marketing"]) div[style*="rgb(254, 243, 199)"] * {
+  color: #f8fafc !important;
+  text-shadow: none !important;
+}
+/* hmecha-admin-order-total-readable-v2-end */
