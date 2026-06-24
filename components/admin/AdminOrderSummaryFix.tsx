@@ -63,29 +63,35 @@ function forceDarkSummaryBoxes() {
     document.querySelectorAll<HTMLElement>("div, section, article")
   );
 
-  const targets = elements.filter(isSummaryBox);
-
-  targets.forEach(applyDarkStyle);
+  elements.filter(isSummaryBox).forEach(applyDarkStyle);
 }
 
 export default function AdminOrderSummaryFix() {
   useEffect(() => {
+    const path = window.location.pathname;
+
+    const isOrderAdminPage =
+      path.includes("/admin/don-hang") ||
+      path.includes("/admin/orders") ||
+      path.includes("/admin/order");
+
+    if (!isOrderAdminPage) return;
+
+    let count = 0;
+
     forceDarkSummaryBoxes();
 
-    const interval = window.setInterval(forceDarkSummaryBoxes, 500);
-
-    const observer = new MutationObserver(() => {
+    const interval = window.setInterval(() => {
+      count += 1;
       forceDarkSummaryBoxes();
-    });
 
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
+      if (count >= 12) {
+        window.clearInterval(interval);
+      }
+    }, 500);
 
     return () => {
       window.clearInterval(interval);
-      observer.disconnect();
     };
   }, []);
 

@@ -3,7 +3,7 @@ import ChatWidget from "@/components/ChatWidget";
 export default function Home() {
   return (
     <>
-      <iframe
+      <iframe loading="lazy"
         src="/hmecha.html"
         style={{
           width: "100%",
