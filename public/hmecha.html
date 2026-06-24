@@ -12143,11 +12143,23 @@ var ajaxCart = (function(module, $) {
     };
   }
 
+  function getProductDisplayStatus(product) {
+    const status = normalizeText(product.status);
+    const stock = Number(product.stock_quantity);
+
+    if (status.includes("con hang")) return "Còn hàng";
+    if (status.includes("dat truoc") || status.includes("pre order") || status.includes("pre-order") || status.includes("preorder")) return "Đặt trước";
+    if (status.includes("het hang")) return "Hết hàng";
+
+    if (Number.isFinite(stock)) {
+      return stock > 0 ? "Còn hàng" : "Hết hàng";
+    }
+
+    return product.status || "Còn hàng";
+  }
+
   function isOutOfStock(product) {
-    return (
-      product.status === "Hết hàng" ||
-      Number(product.stock_quantity || 0) <= 0
-    );
+    return getProductDisplayStatus(product) === "Hết hàng";
   }
 
   function escapeHtml(value) {
@@ -12164,7 +12176,7 @@ var ajaxCart = (function(module, $) {
     const outOfStock = isOutOfStock(product);
     const productUrl = "/" + product.slug;
     const badge = product.badge || "";
-    const stockText = outOfStock ? "Hết hàng" : product.status || "Còn hàng";
+    const stockText = getProductDisplayStatus(product);
 
     return `
       <div class="swiper-slide">
