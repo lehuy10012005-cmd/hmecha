@@ -1071,6 +1071,83 @@ export default function CheckoutPage() {
           font-weight: 900;
         }
 
+
+        /* hmecha-checkout-readable-fix-start */
+        .checkoutPage {
+          color: #111827 !important;
+        }
+
+        .checkoutPage h1,
+        .checkoutPage h2,
+        .checkoutPage h3,
+        .checkoutPage h4,
+        .checkoutPage label span,
+        .checkoutPage .panelHeader h2,
+        .checkoutPage .sectionBlock h2,
+        .checkoutPage .orderHeader h2,
+        .checkoutPage .cartItem h3,
+        .checkoutPage .shippingOption b,
+        .checkoutPage .paymentList b,
+        .checkoutPage .summary b,
+        .checkoutPage .summary .total span {
+          color: #111827 !important;
+          text-shadow: none !important;
+        }
+
+        .checkoutPage p,
+        .checkoutPage small,
+        .checkoutPage .panelHeader p,
+        .checkoutPage .checkoutTop p,
+        .checkoutPage .shippingOption small,
+        .checkoutPage .paymentList small,
+        .checkoutPage .summary div,
+        .checkoutPage .emptyBox {
+          color: #4b5563 !important;
+          text-shadow: none !important;
+        }
+
+        .checkoutPage input,
+        .checkoutPage textarea {
+          color: #111827 !important;
+          background: #ffffff !important;
+        }
+
+        .checkoutPage input::placeholder,
+        .checkoutPage textarea::placeholder {
+          color: #9ca3af !important;
+        }
+
+        .checkoutPage .leftPanel,
+        .checkoutPage .orderPanel,
+        .checkoutPage .orderHeader,
+        .checkoutPage .summary,
+        .checkoutPage .shippingOption,
+        .checkoutPage .paymentList label {
+          background: #ffffff !important;
+          color: #111827 !important;
+        }
+
+        .checkoutPage .paymentList label.active {
+          background: #fff8ed !important;
+        }
+
+        .checkoutPage .itemPriceLine span,
+        .checkoutPage .shippingOption strong,
+        .checkoutPage .summary .total b {
+          color: #d32f2f !important;
+        }
+
+        .checkoutPage .itemPriceLine b {
+          color: #111827 !important;
+          background: #f3f4f6 !important;
+        }
+
+        .checkoutPage .orderBtn,
+        .checkoutPage .couponInput button {
+          color: #ffffff !important;
+        }
+        /* hmecha-checkout-readable-fix-end */
+
         @media (max-width: 980px) {
           .checkoutTop {
             display: block;
