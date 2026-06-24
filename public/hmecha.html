@@ -14518,5 +14518,360 @@ if (popularBox) popularBox.classList.add("d-none");
 })();
 </script>
 <!-- hmecha-newsletter-footer-end -->
+<!-- hmecha-chatbot-random-quick-replies-start -->
+<style>
+  .hmechaQuickRepliesScroll {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 10px !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding: 10px 10px 12px !important;
+    max-width: 100% !important;
+    scroll-snap-type: x proximity !important;
+    scrollbar-width: thin !important;
+  }
+
+  .hmechaQuickRepliesScroll::-webkit-scrollbar {
+    height: 7px;
+  }
+
+  .hmechaQuickRepliesScroll::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.55);
+    border-radius: 999px;
+  }
+
+  .hmechaQuickRepliesScroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, #7c3aed, #06b6d4);
+    border-radius: 999px;
+  }
+
+  .hmechaQuickRepliesScroll > button,
+  .hmechaQuickRepliesScroll > a,
+  .hmechaQuickRepliesScroll .hmechaQuickReplyButton {
+    flex: 0 0 auto !important;
+    white-space: nowrap !important;
+    scroll-snap-align: start !important;
+  }
+
+  .hmechaQuickReplyButton {
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    border-radius: 999px !important;
+    padding: 10px 16px !important;
+    min-height: 40px !important;
+    background: linear-gradient(135deg, #7c3aed, #06b6d4) !important;
+    color: #ffffff !important;
+    font-weight: 800 !important;
+    font-size: 14px !important;
+    cursor: pointer !important;
+    box-shadow: 0 10px 24px rgba(6, 182, 212, 0.18) !important;
+  }
+
+  .hmechaQuickReplyButton:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+  }
+</style>
+
+<script>
+(function () {
+  if (window.__hmechaRandomQuickRepliesV1) return;
+  window.__hmechaRandomQuickRepliesV1 = true;
+
+  var quickReplies = [
+    ["Tư vấn sản phẩm", "gợi ý vài sản phẩm đi"],
+    ["Dưới 500k", "gợi ý sản phẩm dưới 500k"],
+    ["Dưới 1 triệu", "cho 5 sản phẩm dưới 1 triệu"],
+    ["1 - 2 triệu", "tôi có 2 triệu thì mua được mẫu nào còn hàng"],
+    ["Trên 2 triệu", "cho 4 sản phẩm trên 2 triệu"],
+    ["Mô hình thôi", "tôi muốn bạn gợi ý mô hình thôi"],
+    ["HG cho người mới", "người mới chơi nên mua mẫu HG nào"],
+    ["RG chi tiết", "có mẫu RG nào đẹp không"],
+    ["MG cao cấp", "có mẫu MG nào trên 1 triệu không"],
+    ["SD nhỏ gọn", "có SD nào rẻ không"],
+    ["Bandai", "có sản phẩm Bandai không"],
+    ["P-Bandai", "có mẫu P-Bandai không"],
+    ["Hàng mới", "mẫu nào mới về"],
+    ["Còn hàng", "gợi ý sản phẩm còn hàng"],
+    ["Mua làm quà", "mua làm quà sinh nhật thì chọn mẫu nào"],
+    ["Mẫu ngầu", "có mẫu nào ngầu hơn không"],
+    ["Nhỏ gọn để bàn", "mẫu nào nhỏ gọn để bàn"],
+    ["Cao cấp trưng bày", "mẫu nào cao cấp để trưng bày"],
+    ["Dụng cụ lắp ráp", "người mới cần dụng cụ gì"],
+    ["Có cần keo không", "có cần keo không"],
+    ["Phí ship", "phí ship bao nhiêu"],
+    ["Mã giảm giá", "có mã giảm giá không"],
+    ["Thanh toán COD", "COD là gì"],
+    ["VNPAY / QR", "thanh toán VNPAY như thế nào"],
+    ["Quên mật khẩu", "tôi quên mật khẩu"],
+    ["Đổi trả", "đổi trả như thế nào"],
+    ["Kiểm tra đơn", "tôi đặt rồi muốn xem trạng thái đơn"],
+    ["Gặp admin", "tôi muốn gặp admin"],
+    ["Khác đi", "khác đi"],
+    ["Còn nữa không", "còn cái khác không"]
+  ];
+
+  var knownLabels = [
+    "tu van san pham",
+    "duoi 500k",
+    "phi ship",
+    "ma giam gia",
+    "gap admin"
+  ];
+
+  function normalizeText(value) {
+    return String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function shuffle(items) {
+    var result = items.slice();
+
+    for (var index = result.length - 1; index > 0; index--) {
+      var randomIndex = Math.floor(Math.random() * (index + 1));
+      var temp = result[index];
+
+      result[index] = result[randomIndex];
+      result[randomIndex] = temp;
+    }
+
+    return result;
+  }
+
+  function pickQuickReplies() {
+    var mustHave = [
+      ["Tư vấn sản phẩm", "gợi ý vài sản phẩm đi"],
+      ["Dưới 500k", "gợi ý sản phẩm dưới 500k"],
+      ["Phí ship", "phí ship bao nhiêu"]
+    ];
+
+    var rest = quickReplies.filter(function (item) {
+      return !mustHave.some(function (fixed) {
+        return fixed[0] === item[0];
+      });
+    });
+
+    return mustHave.concat(shuffle(rest).slice(0, 9));
+  }
+
+  function findQuickContainer() {
+    var buttons = Array.from(document.querySelectorAll("button, a")).filter(function (button) {
+      var text = normalizeText(button.textContent || button.value || "");
+
+      return knownLabels.some(function (label) {
+        return text.includes(label);
+      });
+    });
+
+    if (buttons.length < 2) return null;
+
+    var parent = buttons[0].parentElement;
+
+    while (parent && parent !== document.body) {
+      var matched = buttons.filter(function (button) {
+        return parent.contains(button);
+      });
+
+      if (matched.length >= 2) return parent;
+
+      parent = parent.parentElement;
+    }
+
+    return buttons[0].parentElement;
+  }
+
+  function findChatInput() {
+    var selectors = [
+      "textarea",
+      "input[type='text']",
+      "input:not([type])",
+      "[contenteditable='true']"
+    ];
+
+    for (var i = 0; i < selectors.length; i++) {
+      var elements = Array.from(document.querySelectorAll(selectors[i])).filter(function (el) {
+        var rect = el.getBoundingClientRect();
+        var placeholder = normalizeText(el.getAttribute("placeholder") || "");
+
+        return (
+          rect.width > 80 &&
+          rect.height > 20 &&
+          !el.disabled &&
+          (
+            placeholder.includes("nhap") ||
+            placeholder.includes("hoi") ||
+            placeholder.includes("tin nhan") ||
+            placeholder.includes("message") ||
+            el.closest("[class*='chat']") ||
+            el.closest("[id*='chat']")
+          )
+        );
+      });
+
+      if (elements[0]) return elements[0];
+    }
+
+    return null;
+  }
+
+  function findSendButton(input) {
+    var root =
+      input && (
+        input.closest("[class*='chat']") ||
+        input.closest("[id*='chat']") ||
+        input.parentElement
+      );
+
+    var buttons = Array.from((root || document).querySelectorAll("button"));
+
+    return buttons.find(function (button) {
+      var text = normalizeText(button.textContent || button.getAttribute("aria-label") || "");
+      var rect = button.getBoundingClientRect();
+
+      return (
+        rect.width > 20 &&
+        rect.height > 20 &&
+        (
+          text.includes("gui") ||
+          text.includes("send") ||
+          text.includes("➤") ||
+          text.includes("➜") ||
+          button.innerHTML.includes("svg")
+        )
+      );
+    });
+  }
+
+  function setInputValue(input, value) {
+    if (!input) return;
+
+    if (input.getAttribute("contenteditable") === "true") {
+      input.textContent = value;
+      input.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: value }));
+      return;
+    }
+
+    var setter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), "value")?.set;
+
+    if (setter) {
+      setter.call(input, value);
+    } else {
+      input.value = value;
+    }
+
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function sendMessage(message) {
+    var input = findChatInput();
+
+    if (!input) return;
+
+    setInputValue(input, message);
+
+    setTimeout(function () {
+      var sendButton = findSendButton(input);
+
+      if (sendButton) {
+        sendButton.click();
+        return;
+      }
+
+      input.dispatchEvent(new KeyboardEvent("keydown", {
+        key: "Enter",
+        code: "Enter",
+        bubbles: true
+      }));
+    }, 60);
+  }
+
+  function enhanceQuickReplies(force) {
+    var container = findQuickContainer();
+
+    if (!container) return;
+
+    if (container.dataset.hmechaQuickEnhanced === "1" && !force) {
+      container.classList.add("hmechaQuickRepliesScroll");
+      return;
+    }
+
+    container.dataset.hmechaQuickEnhanced = "1";
+    container.classList.add("hmechaQuickRepliesScroll");
+    container.innerHTML = "";
+
+    pickQuickReplies().forEach(function (item) {
+      var button = document.createElement("button");
+
+      button.type = "button";
+      button.className = "hmechaQuickReplyButton";
+      button.textContent = item[0];
+      button.addEventListener("click", function () {
+        sendMessage(item[1]);
+      });
+
+      container.appendChild(button);
+    });
+  }
+
+  function bindResetRandomizer() {
+    document.addEventListener("click", function (event) {
+      var target = event.target && event.target.closest ? event.target.closest("button, a") : null;
+
+      if (!target) return;
+
+      var text = normalizeText(target.textContent || target.getAttribute("aria-label") || "");
+
+      if (
+        text.includes("reset") ||
+        text.includes("lam moi") ||
+        text.includes("cuoc tro chuyen moi") ||
+        text.includes("tro chuyen moi") ||
+        text.includes("new chat")
+      ) {
+        setTimeout(function () {
+          var container = findQuickContainer();
+
+          if (container) {
+            container.dataset.hmechaQuickEnhanced = "";
+          }
+
+          enhanceQuickReplies(true);
+        }, 250);
+      }
+    }, true);
+  }
+
+  function boot() {
+    enhanceQuickReplies(false);
+    bindResetRandomizer();
+
+    var observer = new MutationObserver(function () {
+      enhanceQuickReplies(false);
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+
+    setInterval(function () {
+      enhanceQuickReplies(false);
+    }, 1200);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+})();
+</script>
+<!-- hmecha-chatbot-random-quick-replies-end -->
 </body>
 </html>
