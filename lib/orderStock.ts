@@ -12,6 +12,20 @@ type OrderStockResult = {
   }>;
 };
 
+type OrderItemForStock = {
+  product_id: string | null;
+  product_name: string | null;
+  quantity: number | null;
+};
+
+type ProductForStock = {
+  id: string;
+  name: string;
+  sku: string | null;
+  status: string | null;
+  stock_quantity: number | null;
+};
+
 function normalizeText(value: unknown) {
   return String(value || "")
     .toLowerCase()
@@ -73,28 +87,61 @@ async function writeInventoryLog(input: {
   source: string;
 }) {
   try {
-    const { error } = await supabaseAdmin
-      .from("inventory_logs")
-      .insert({
-        product_id: input.product_id,
-        product_name: input.product_name,
-        sku: input.sku,
-        action: input.quantity_change < 0 ? "decrease" : "increase",
-        before_stock: input.before_stock,
-        after_stock: input.after_stock,
-        quantity_change: input.quantity_change,
-        before_status: input.before_status,
-        after_status: input.after_status,
-        note: input.note,
-        source: input.source,
-      });
+    const { error } = await supabaseAdmin.from("inventory_logs").insert({
+      product_id: input.product_id,
+      product_name: input.product_name,
+      sku: input.sku,
+      action: input.quantity_change < 0 ? "decrease" : "increase",
+      before_stock: input.before_stock,
+      after_stock: input.after_stock,
+      quantity_change: input.quantity_change,
+      before_status: input.before_status,
+      after_status: input.after_status,
+      note: input.note,
+      source: input.source,
+    });
 
     if (error) {
       console.warn("Không ghi được lịch sử kho:", error.message);
     }
   } catch {
-    // Bỏ qua lỗi ghi inventory_logs để không làm hỏng luồng cập nhật đơn hàng.
+    // Không để lỗi inventory_logs làm hỏng luồng cập nhật đơn.
   }
+}
+
+async function findProductForOrderItem(item: OrderItemForStock) {
+  const productId = String(item.product_id || "").trim();
+  const productName = String(item.product_name || "").trim();
+
+  if (productId) {
+    const { data } = await supabaseAdmin
+      .from("products")
+      .select("id,name,sku,status,stock_quantity")
+      .eq("id", productId)
+      .maybeSingle<ProductForStock>();
+
+    if (data) return data;
+  }
+
+  if (productName) {
+    const { data } = await supabaseAdmin
+      .from("products")
+      .select("id,name,sku,status,stock_quantity")
+      .eq("name", productName)
+      .maybeSingle<ProductForStock>();
+
+    if (data) return data;
+
+    const { data: similarProducts } = await supabaseAdmin
+      .from("products")
+      .select("id,name,sku,status,stock_quantity")
+      .ilike("name", `%${productName.slice(0, 40)}%`)
+      .limit(1);
+
+    if (similarProducts?.[0]) return similarProducts[0] as ProductForStock;
+  }
+
+  return null;
 }
 
 async function changeStockForOrder(
@@ -104,7 +151,7 @@ async function changeStockForOrder(
 ): Promise<OrderStockResult> {
   const { data: items, error: itemsError } = await supabaseAdmin
     .from("order_items")
-    .select("product_id,quantity")
+    .select("product_id,product_name,quantity")
     .eq("order_id", orderId);
 
   if (itemsError) {
@@ -115,20 +162,13 @@ async function changeStockForOrder(
     };
   }
 
-  const quantityMap = new Map<string, number>();
+  const validItems = ((items || []) as OrderItemForStock[]).filter((item) => {
+    const quantity = Number(item.quantity || 0);
 
-  for (const item of items || []) {
-    const productId = String(item.product_id || "").trim();
-    const quantity = Math.max(0, Number(item.quantity || 0));
+    return quantity > 0 && (item.product_id || item.product_name);
+  });
 
-    if (!productId || quantity <= 0) continue;
-
-    quantityMap.set(productId, (quantityMap.get(productId) || 0) + quantity);
-  }
-
-  const productIds = Array.from(quantityMap.keys());
-
-  if (!productIds.length) {
+  if (!validItems.length) {
     return {
       ok: true,
       action: "none",
@@ -136,24 +176,22 @@ async function changeStockForOrder(
     };
   }
 
-  const { data: products, error: productsError } = await supabaseAdmin
-    .from("products")
-    .select("id,name,sku,status,stock_quantity")
-    .in("id", productIds);
-
-  if (productsError) {
-    return {
-      ok: false,
-      action: "none",
-      message: "Không đọc được tồn kho sản phẩm: " + productsError.message,
-    };
-  }
-
   const details: OrderStockResult["details"] = [];
 
-  for (const product of products || []) {
-    const productId = String(product.id);
-    const quantity = quantityMap.get(productId) || 0;
+  for (const item of validItems) {
+    const quantity = Math.max(0, Number(item.quantity || 0));
+    const product = await findProductForOrderItem(item);
+
+    if (!product) {
+      return {
+        ok: false,
+        action: "none",
+        message:
+          "Không tìm thấy sản phẩm để cập nhật kho: " +
+          (item.product_name || item.product_id || "Không rõ"),
+      };
+    }
+
     const beforeStock = Math.max(0, Number(product.stock_quantity || 0));
     const quantityChange = mode === "deduct" ? -quantity : quantity;
     const afterStock = Math.max(0, beforeStock + quantityChange);
@@ -166,7 +204,7 @@ async function changeStockForOrder(
         status: afterStatus,
         stock_updated_at: new Date().toISOString(),
       })
-      .eq("id", productId);
+      .eq("id", product.id);
 
     if (updateError) {
       return {
@@ -177,7 +215,7 @@ async function changeStockForOrder(
     }
 
     await writeInventoryLog({
-      product_id: productId,
+      product_id: product.id,
       product_name: product.name || "Sản phẩm",
       sku: product.sku || null,
       before_stock: beforeStock,
@@ -193,7 +231,7 @@ async function changeStockForOrder(
     });
 
     details.push({
-      product_id: productId,
+      product_id: product.id,
       before_stock: beforeStock,
       after_stock: afterStock,
       quantity_change: quantityChange,
