@@ -14144,5 +14144,121 @@ if (popularBox) popularBox.classList.add("d-none");
 
 
 
+<!-- hmecha-homepage-status-sync-start -->
+<script>
+(function () {
+  function normalizeText(value) {
+    return String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/đ/g, "d")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function getSlugFromHref(href) {
+    try {
+      var url = new URL(href, window.location.origin);
+      return url.pathname.split("/").filter(Boolean).pop() || "";
+    } catch (error) {
+      return String(href || "").split("/").filter(Boolean).pop() || "";
+    }
+  }
+
+  function getDisplayStatus(product) {
+    var status = normalizeText(product && product.status);
+    var stock = Number(product && product.stock_quantity);
+
+    if (status.includes("het hang")) return "Hết hàng";
+    if (status.includes("dat truoc") || status.includes("preorder") || status.includes("pre-order")) return "Đặt trước";
+    if (status.includes("con hang")) return "Còn hàng";
+
+    if (Number.isFinite(stock)) {
+      if (stock > 0) return "Còn hàng";
+      return "Hết hàng";
+    }
+
+    return product && product.status ? product.status : "Đang cập nhật";
+  }
+
+  function updateCard(form, product) {
+    var status = getDisplayStatus(product);
+
+    var stockText = form.querySelector(".inventory_quantity .a-stock");
+    if (stockText) {
+      stockText.textContent = status;
+    }
+
+    var button = form.querySelector(".product-button button");
+    if (button) {
+      if (status === "Hết hàng") {
+        button.disabled = true;
+        button.classList.add("disabled");
+        button.classList.remove("add_to_cart");
+        button.setAttribute("title", "Hết hàng");
+        button.textContent = "Hết hàng";
+      } else {
+        button.disabled = false;
+        button.classList.remove("disabled");
+        button.classList.add("add_to_cart");
+        button.setAttribute("title", status === "Đặt trước" ? "Đặt trước" : "Thêm vào giỏ");
+        button.textContent = status === "Đặt trước" ? "Đặt trước" : "Thêm vào giỏ";
+      }
+    }
+
+    var preorderBadge = form.querySelector(".pre-order");
+    if (preorderBadge) {
+      preorderBadge.style.display = status === "Đặt trước" ? "" : "none";
+    }
+  }
+
+  async function syncHomepageStatuses() {
+    try {
+      var response = await fetch("/api/home-products?ts=" + Date.now(), {
+        cache: "no-store"
+      });
+
+      if (!response.ok) return;
+
+      var data = await response.json();
+      var products = Array.isArray(data.products) ? data.products : [];
+
+      var productBySlug = new Map();
+
+      products.forEach(function (product) {
+        if (product && product.slug) {
+          productBySlug.set(String(product.slug), product);
+        }
+      });
+
+      document.querySelectorAll("form.product-action").forEach(function (form) {
+        var link =
+          form.querySelector("a.image_thumb[href]") ||
+          form.querySelector(".product-name a[href]") ||
+          form.querySelector("a[href]");
+
+        if (!link) return;
+
+        var slug = getSlugFromHref(link.getAttribute("href") || link.href);
+        var product = productBySlug.get(slug);
+
+        if (!product) return;
+
+        updateCard(form, product);
+      });
+    } catch (error) {
+      console.warn("Không đồng bộ được trạng thái sản phẩm trang chủ:", error);
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", syncHomepageStatuses);
+  } else {
+    syncHomepageStatuses();
+  }
+})();
+</script>
+<!-- hmecha-homepage-status-sync-end -->
 </body>
 </html>
