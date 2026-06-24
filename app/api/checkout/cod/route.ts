@@ -125,25 +125,7 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
-
-    for (const item of cart) {
-      if (isUuid(item.id)) {
-        await supabaseAdmin.rpc("decrement_product_stock", {
-          product_id_input: item.id,
-          quantity_input: item.quantity,
-        });
-      }
-    }
-
-    await supabaseAdmin
-      .from("orders")
-      .update({
-        stock_deducted: true,
-        stock_deducted_at: new Date().toISOString(),
-      })
-      .eq("id", order.id);
-
-    try {
+try {
       await sendOrderEmail(order.id);
     } catch (emailError) {
       console.error("COD email failed:", emailError);

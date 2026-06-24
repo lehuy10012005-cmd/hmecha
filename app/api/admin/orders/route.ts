@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAuthServerClient } from "../../../../lib/supabase-auth/server";
 import { supabaseAdmin } from "../../../../lib/supabase-admin";
 import { awardPointsForCompletedOrder } from "../../../../lib/customerRewards";
+import { isStockDeductStatus, syncOrderStockForStatus } from "../../../../lib/orderStock";
 
 export const dynamic = "force-dynamic";
 
@@ -12,6 +13,7 @@ const allowedStatuses = [
   "Đã xác nhận",
   "Đang giao",
   "Hoàn thành",
+  "Đã hoàn thành",
   "Đã hủy",
   "Thanh toán thất bại",
 ];
@@ -76,9 +78,23 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 
+  const stockResult = await syncOrderStockForStatus(orderId, status, "admin-orders");
+
+  if (!stockResult.ok) {
+    return NextResponse.json(
+      {
+        success: false,
+        order,
+        stock: stockResult,
+        message: stockResult.message,
+      },
+      { status: 500 }
+    );
+  }
+
   let reward = null;
 
-  if (status === "Hoàn thành") {
+  if (isStockDeductStatus(status)) {
     reward = await awardPointsForCompletedOrder(orderId);
   }
 
@@ -86,8 +102,9 @@ export async function PATCH(request: Request) {
     success: true,
     order,
     reward,
+    stock: stockResult,
     message: reward?.awarded
-      ? reward.message
-      : "Đã cập nhật trạng thái đơn hàng.",
+      ? reward.message + " " + stockResult.message
+      : "Đã cập nhật trạng thái đơn hàng. " + stockResult.message,
   });
 }

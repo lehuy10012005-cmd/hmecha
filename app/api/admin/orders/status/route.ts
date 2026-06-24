@@ -6,6 +6,7 @@ import {
   createAfterSaleVoucher,
   sendOrderStatusEmail,
 } from "../../../../../lib/afterSaleMarketing";
+import { isStockDeductStatus, syncOrderStockForStatus } from "../../../../../lib/orderStock";
 
 export const dynamic = "force-dynamic";
 
@@ -23,11 +24,6 @@ async function requireAdmin() {
   }
 
   return user;
-}
-
-function isCompletedStatus(status: string) {
-  const value = String(status || "").trim();
-  return value === "Hoàn thành" || value === "completed" || value === "Hoan thanh";
 }
 
 export async function PATCH(request: NextRequest) {
@@ -68,11 +64,28 @@ export async function PATCH(request: NextRequest) {
     );
   }
 
+  const stockResult = await syncOrderStockForStatus(
+    orderId,
+    status,
+    "admin-orders-status"
+  );
+
+  if (!stockResult.ok) {
+    return NextResponse.json(
+      {
+        order,
+        stock: stockResult,
+        message: stockResult.message,
+      },
+      { status: 500 }
+    );
+  }
+
   let rewardResult: any = null;
   let voucherResult: any = null;
   let emailResult: any = null;
 
-  if (isCompletedStatus(status)) {
+  if (isStockDeductStatus(status)) {
     rewardResult = await awardPointsForCompletedOrder(orderId).catch((err) => ({
       awarded: false,
       message: err?.message || "Không cộng được điểm.",
@@ -99,9 +112,10 @@ export async function PATCH(request: NextRequest) {
     reward: rewardResult,
     voucher: voucherResult,
     email: emailResult,
+    stock: stockResult,
     message:
-      isCompletedStatus(status) && rewardResult?.awarded
-        ? rewardResult.message
-        : "Đã cập nhật trạng thái đơn hàng.",
+      isStockDeductStatus(status) && rewardResult?.awarded
+        ? rewardResult.message + " " + stockResult.message
+        : "Đã cập nhật trạng thái đơn hàng. " + stockResult.message,
   });
 }

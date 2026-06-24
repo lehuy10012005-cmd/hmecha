@@ -54,7 +54,7 @@ export default async function VNPayReturnPage({ searchParams }: PageProps) {
 if (txnRef && isValidSignature) {
   const { data: orderData, error: orderReadError } = await supabase
     .from("orders")
-    .select("id, stock_deducted")
+    .select("id")
     .eq("vnpay_txn_ref", txnRef)
     .single();
 
@@ -77,34 +77,7 @@ if (txnRef && isValidSignature) {
   updateMessage = "Có lỗi khi cập nhật đơn hàng trong Supabase.";
 } else {
   updateMessage = "Đã cập nhật trạng thái đơn hàng.";
-
-  if (isPaid && orderData && !orderData.stock_deducted) {
-    const { data: orderItems, error: itemsError } = await supabase
-      .from("order_items")
-      .select("product_id, quantity")
-      .eq("order_id", orderData.id);
-
-    if (!itemsError && orderItems) {
-      for (const item of orderItems) {
-        if (item.product_id) {
-          await supabase.rpc("decrement_product_stock", {
-            product_id_input: item.product_id,
-            quantity_input: item.quantity,
-          });
-        }
-      }
-
-      await supabase
-        .from("orders")
-        .update({
-          stock_deducted: true,
-          stock_deducted_at: new Date().toISOString(),
-        })
-        .eq("id", orderData.id);
-
-      updateMessage = "Thanh toán thành công và đã tự động trừ tồn kho.";
-    }
-  }
+  // Không trừ kho tại bước thanh toán VNPAY. Kho chỉ trừ khi admin đổi đơn sang Hoàn thành.
 
   if (isPaid && orderData?.id) {
     try {

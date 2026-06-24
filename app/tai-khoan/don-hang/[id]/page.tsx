@@ -1,4 +1,5 @@
 import Link from "next/link";
+import CustomerCancelOrderButton from "../../../../components/customer/CustomerCancelOrderButton";
 import { notFound, redirect } from "next/navigation";
 import { createAuthServerClient } from "../../../../lib/supabase-auth/server";
 import { supabaseAdmin } from "../../../../lib/supabase-admin";
@@ -102,6 +103,8 @@ export default async function OrderDetailPage({ params }: PageProps) {
   const items = order.order_items || [];
 
   const cleanOrderStatus = displayStatusText(order.status);
+  const canCustomerCancelOrder = ["Chờ xác nhận", "Chờ thanh toán"].includes(cleanOrderStatus) && String(order.payment_status || "").toLowerCase() !== "paid";
+
   const isCompletedOrder =
     cleanOrderStatus === "Hoàn thành" ||
     String(order.status || "").toLowerCase() === "completed";
@@ -137,6 +140,10 @@ export default async function OrderDetailPage({ params }: PageProps) {
             <strong>{displayStatusText(order.payment_status) || "Đang cập nhật"}</strong>
           </div>
         </section>
+
+        {canCustomerCancelOrder ? (
+          <CustomerCancelOrderButton orderId={order.id} />
+        ) : null}
 
         <section className="contentGrid">
           <div className="card">
