@@ -38,6 +38,23 @@ function money(value: number) {
   return Number(value || 0).toLocaleString("vi-VN") + "đ";
 }
 
+function parseManualRecipients(value: string): Recipient[] {
+  const emails = value
+    .split(/[\n,; ]+/)
+    .map((item) => item.trim().toLowerCase())
+    .filter((item) => item && item.includes("@"));
+
+  const uniqueEmails = Array.from(new Set(emails));
+
+  return uniqueEmails.map((email) => ({
+    id: `manual:${email}`,
+    email,
+    name: "",
+    source: "manual",
+    label: "Email nhập thủ công",
+  }));
+}
+
 export default function AdminMarketingPage() {
   const [campaignType, setCampaignType] = useState<"new_product" | "comeback">("new_product");
   const [recipientGroup, setRecipientGroup] = useState<RecipientGroup>("newsletter");
@@ -50,6 +67,7 @@ export default function AdminMarketingPage() {
   });
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedRecipientIds, setSelectedRecipientIds] = useState<string[]>([]);
+  const [manualEmails, setManualEmails] = useState("");
   const [selectedProductIds, setSelectedProductIds] = useState<Array<string | number>>([]);
   const [productSearch, setProductSearch] = useState("");
   const [couponCode, setCouponCode] = useState("COMEBACK10");
@@ -99,6 +117,19 @@ export default function AdminMarketingPage() {
     const selected = new Set(selectedRecipientIds);
     return currentRecipients.filter((item) => selected.has(item.id));
   }, [currentRecipients, selectedRecipientIds]);
+
+  const manualRecipients = useMemo(() => {
+    return parseManualRecipients(manualEmails);
+  }, [manualEmails]);
+
+  const finalRecipients = useMemo(() => {
+    const map = new Map<string, Recipient>();
+
+    selectedRecipients.forEach((item) => map.set(item.email.toLowerCase(), item));
+    manualRecipients.forEach((item) => map.set(item.email.toLowerCase(), item));
+
+    return Array.from(map.values());
+  }, [selectedRecipients, manualRecipients]);
 
   const filteredProducts = useMemo(() => {
     const keyword = productSearch.trim().toLowerCase();
@@ -152,7 +183,7 @@ export default function AdminMarketingPage() {
         body: JSON.stringify({
           type: campaignType,
           couponCode,
-          recipients: selectedRecipients,
+          recipients: finalRecipients,
           products: selectedProducts.map((item) => ({
             name: item.name,
             slug: item.slug,
@@ -356,7 +387,7 @@ export default function AdminMarketingPage() {
           <button disabled={sending} style={styles.submitButton}>
             {sending
               ? "Đang gửi..."
-              : `Gửi email cho ${selectedRecipients.length} khách`}
+              : `Gửi email cho ${finalRecipients.length} khách`}
           </button>
         </form>
 
@@ -374,7 +405,7 @@ export default function AdminMarketingPage() {
 
           <div style={styles.previewSection}>
             <span style={styles.previewLabel}>Người nhận</span>
-            <strong>{selectedRecipients.length} email đã chọn</strong>
+            <strong>{finalRecipients.length} email đã chọn</strong>
             <p>{groupLabels[recipientGroup]}</p>
           </div>
 
@@ -615,6 +646,20 @@ const styles: Record<string, CSSProperties> = {
     color: "#ffffff",
     fontWeight: 900,
     cursor: "pointer",
+  },
+  manualEmailBox: {
+    display: "grid",
+    gap: "12px",
+    padding: "16px",
+    borderRadius: "18px",
+    background: "#0f172a",
+    border: "1px solid #334155",
+  },
+  manualHint: {
+    margin: 0,
+    color: "#bae6fd",
+    fontWeight: 800,
+    fontSize: "13px",
   },
   previewCard: {
     position: "sticky",
