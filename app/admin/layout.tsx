@@ -1,3 +1,4 @@
+import AdminOrderSummaryFix from "../../components/admin/AdminOrderSummaryFix";
 import { redirect } from "next/navigation";
 import AdminSidebarNav from "../../components/admin/AdminSidebarNav";
 import { createAuthServerClient } from "../../lib/supabase-auth/server";
@@ -30,7 +31,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <AdminSidebarNav />
       </aside>
 
-      <section className="content">{children}</section>
+      <section className="content"><AdminOrderSummaryFix />{children}</section>
 
       <style>{`
         .adminShell {
