@@ -1,44 +1,3 @@
-function getRandomQuickReplies() {
-  const fixed = [
-    "Tư vấn sản phẩm",
-    "Dưới 500k",
-    "Phí ship",
-  ];
-
-  const pool = [
-    "Dưới 1 triệu",
-    "1 - 2 triệu",
-    "Trên 2 triệu",
-    "Mô hình thôi",
-    "HG cho người mới",
-    "RG chi tiết",
-    "MG cao cấp",
-    "SD nhỏ gọn",
-    "Bandai",
-    "P-Bandai",
-    "Hàng mới",
-    "Còn hàng",
-    "Mua làm quà",
-    "Mẫu ngầu",
-    "Nhỏ gọn để bàn",
-    "Cao cấp trưng bày",
-    "Dụng cụ lắp ráp",
-    "Có cần keo không",
-    "Mã giảm giá",
-    "Thanh toán COD",
-    "VNPAY / QR",
-    "Quên mật khẩu",
-    "Đổi trả",
-    "Kiểm tra đơn",
-    "Gặp admin",
-    "Khác đi",
-    "Còn nữa không",
-  ];
-
-  const shuffled = [...pool].sort(() => Math.random() - 0.5);
-
-  return [...fixed, ...shuffled.slice(0, 9)];
-}
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
@@ -50,13 +9,64 @@ type ChatMessage = {
   content: string;
 };
 
-const suggestions = [
-  "Tư vấn sản phẩm",
-  "Dưới 500k",
-  "Phí ship",
-  "Mã giảm giá",
-  "Gặp admin",
+type ChatSuggestion = {
+  label: string;
+  message: string;
+};
+
+const fixedSuggestions: ChatSuggestion[] = [
+  { label: "Tư vấn sản phẩm", message: "gợi ý vài sản phẩm đi" },
+  { label: "Dưới 500k", message: "gợi ý sản phẩm dưới 500k" },
+  { label: "Phí ship", message: "phí ship bao nhiêu" },
 ];
+
+const rotatingSuggestions: ChatSuggestion[] = [
+  { label: "Dưới 1 triệu", message: "cho 5 sản phẩm dưới 1 triệu" },
+  { label: "1 - 2 triệu", message: "tôi có 2 triệu thì mua được mẫu nào còn hàng" },
+  { label: "Trên 2 triệu", message: "cho 4 sản phẩm trên 2 triệu" },
+  { label: "Mô hình thôi", message: "tôi muốn bạn gợi ý mô hình thôi" },
+  { label: "HG người mới", message: "người mới chơi nên mua mẫu HG nào" },
+  { label: "RG chi tiết", message: "có mẫu RG nào đẹp không" },
+  { label: "MG cao cấp", message: "có mẫu MG nào trên 1 triệu không" },
+  { label: "SD nhỏ gọn", message: "có SD nào rẻ không" },
+  { label: "Bandai", message: "có sản phẩm Bandai không" },
+  { label: "P-Bandai", message: "có mẫu P-Bandai không" },
+  { label: "Hàng mới", message: "mẫu nào mới về" },
+  { label: "Còn hàng", message: "gợi ý sản phẩm còn hàng" },
+  { label: "Mua làm quà", message: "mua làm quà sinh nhật thì chọn mẫu nào" },
+  { label: "Mẫu ngầu", message: "có mẫu nào ngầu hơn không" },
+  { label: "Nhỏ gọn", message: "mẫu nào nhỏ gọn để bàn" },
+  { label: "Cao cấp", message: "mẫu nào cao cấp để trưng bày" },
+  { label: "Dụng cụ", message: "người mới cần dụng cụ gì" },
+  { label: "Cần keo không", message: "có cần keo không" },
+  { label: "Mã giảm giá", message: "có mã giảm giá không" },
+  { label: "COD", message: "COD là gì" },
+  { label: "VNPAY / QR", message: "thanh toán VNPAY như thế nào" },
+  { label: "Quên mật khẩu", message: "tôi quên mật khẩu" },
+  { label: "Đổi trả", message: "đổi trả như thế nào" },
+  { label: "Kiểm tra đơn", message: "tôi đặt rồi muốn xem trạng thái đơn" },
+  { label: "Gặp admin", message: "tôi muốn gặp admin" },
+  { label: "Khác đi", message: "khác đi" },
+  { label: "Còn nữa không", message: "còn cái khác không" },
+];
+
+function shuffleSuggestions(items: ChatSuggestion[]) {
+  const result = [...items];
+
+  for (let index = result.length - 1; index > 0; index--) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    const current = result[index];
+
+    result[index] = result[randomIndex];
+    result[randomIndex] = current;
+  }
+
+  return result;
+}
+
+function pickChatSuggestions() {
+  return [...fixedSuggestions, ...shuffleSuggestions(rotatingSuggestions).slice(0, 10)];
+}
 
 function makeSessionId() {
   return "hm_chat_" + Date.now() + "_" + Math.random().toString(16).slice(2);
@@ -112,6 +122,9 @@ export default function ChatWidget() {
   const [sessionId, setSessionId] = useState("");
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [quickSuggestions, setQuickSuggestions] = useState<ChatSuggestion[]>(() =>
+    pickChatSuggestions()
+  );
 
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
@@ -263,6 +276,7 @@ export default function ChatWidget() {
 
     window.localStorage.setItem("hmecha_chat_session_id", nextSession);
     setSessionId(nextSession);
+    setQuickSuggestions(pickChatSuggestions());
 
     setMessages([
       {
@@ -331,14 +345,14 @@ export default function ChatWidget() {
           </div>
 
           <div className="hm-chat-suggestions">
-            {suggestions.map((item) => (
+            {quickSuggestions.map((item) => (
               <button
-                key={item}
+                key={item.label}
                 type="button"
-                onClick={() => sendMessage(item)}
+                onClick={() => sendMessage(item.message)}
                 disabled={loading}
               >
-                {item}
+                {item.label}
               </button>
             ))}
           </div>
@@ -551,24 +565,46 @@ export default function ChatWidget() {
         }
 
         .hm-chat-suggestions {
-          padding: 10px 12px;
+          padding: 10px 12px 12px;
           border-top: 1px solid rgba(255,255,255,.1);
           display: flex;
           gap: 8px;
-          flex-wrap: wrap;
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          overflow-y: hidden;
+          white-space: nowrap;
           background: #0f172a;
+          scrollbar-width: thin;
+          scrollbar-color: #06b6d4 rgba(15,23,42,.85);
+        }
+
+        .hm-chat-suggestions::-webkit-scrollbar {
+          height: 7px;
+        }
+
+        .hm-chat-suggestions::-webkit-scrollbar-track {
+          background: rgba(15,23,42,.85);
+          border-radius: 999px;
+        }
+
+        .hm-chat-suggestions::-webkit-scrollbar-thumb {
+          background: linear-gradient(90deg, #7c3aed, #06b6d4);
+          border-radius: 999px;
         }
 
         .hm-chat-suggestions button {
-          min-height: 32px;
+          flex: 0 0 auto;
+          min-height: 36px;
           border: 1px solid rgba(255,255,255,.16);
           border-radius: 999px;
-          padding: 0 11px;
-          background: rgba(255,255,255,.06);
-          color: #e5e7eb;
-          font-weight: 750;
+          padding: 0 13px;
+          background: linear-gradient(135deg, #7c3aed, #06b6d4);
+          color: #ffffff;
+          font-weight: 850;
           cursor: pointer;
           font-size: 12.5px;
+          white-space: nowrap;
+          box-shadow: 0 10px 24px rgba(6,182,212,.18);
         }
 
         .hm-chat-suggestions button:hover {
