@@ -12,36 +12,30 @@ function normalizeText(value: string) {
     .trim();
 }
 
-function forceDarkSummaryBox() {
-  const elements = Array.from(
-    document.querySelectorAll<HTMLElement>("div, section, article")
-  );
+function isSummaryBox(element: HTMLElement) {
+  const text = normalizeText(element.textContent || "");
+  const rect = element.getBoundingClientRect();
 
-  const candidates = elements
-    .filter((element) => {
-      const text = normalizeText(element.textContent || "");
+  const hasSummaryText =
+    text.includes("tam tinh") &&
+    text.includes("phi van chuyen") &&
+    text.includes("tong cong");
 
-      return (
-        text.includes("tam tinh") &&
-        text.includes("phi van chuyen") &&
-        text.includes("tong cong")
-      );
-    })
-    .map((element) => {
-      const rect = element.getBoundingClientRect();
+  const isNotWholeOrderCard =
+    !text.includes("san pham trong don") &&
+    !text.includes("so dien thoai") &&
+    !text.includes("dia chi") &&
+    !text.includes("thanh toan");
 
-      return {
-        element,
-        area: rect.width * rect.height,
-      };
-    })
-    .filter((item) => item.area > 30000)
-    .sort((a, b) => a.area - b.area);
+  const sizeLooksLikeSummary =
+    rect.width > 250 &&
+    rect.height > 70 &&
+    rect.height < 260;
 
-  const target = candidates[0]?.element;
+  return hasSummaryText && isNotWholeOrderCard && sizeLooksLikeSummary;
+}
 
-  if (!target) return;
-
+function applyDarkStyle(target: HTMLElement) {
   target.style.setProperty("background", "#071126", "important");
   target.style.setProperty("border", "1px solid #00c8ff", "important");
   target.style.setProperty("color", "#f8fafc", "important");
@@ -53,20 +47,35 @@ function forceDarkSummaryBox() {
 
     const text = normalizeText(child.textContent || "");
 
-    if (text.includes("tong cong") || text.includes("2.690.000")) {
+    if (
+      text.includes("tong cong") ||
+      text.includes("tam tinh") ||
+      text.includes("phi van chuyen") ||
+      /\d[\d.]*d/.test(text)
+    ) {
       child.style.setProperty("font-weight", "900", "important");
     }
   });
 }
 
+function forceDarkSummaryBoxes() {
+  const elements = Array.from(
+    document.querySelectorAll<HTMLElement>("div, section, article")
+  );
+
+  const targets = elements.filter(isSummaryBox);
+
+  targets.forEach(applyDarkStyle);
+}
+
 export default function AdminOrderSummaryFix() {
   useEffect(() => {
-    forceDarkSummaryBox();
+    forceDarkSummaryBoxes();
 
-    const interval = window.setInterval(forceDarkSummaryBox, 600);
+    const interval = window.setInterval(forceDarkSummaryBoxes, 500);
 
     const observer = new MutationObserver(() => {
-      forceDarkSummaryBox();
+      forceDarkSummaryBoxes();
     });
 
     observer.observe(document.body, {
