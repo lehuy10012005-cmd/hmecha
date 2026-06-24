@@ -2887,3 +2887,114 @@ textarea {
   background: #64748b !important;
 }
 /* hmecha-marketing-readable-ui-end */
+/* hmecha-marketing-readable-ui-v2-start */
+.marketingAdminPage {
+  background: #08111f !important;
+  color: #f8fafc !important;
+}
+
+.marketingAdminPage h1,
+.marketingAdminPage h2,
+.marketingAdminPage h3,
+.marketingAdminPage strong,
+.marketingAdminPage label {
+  color: #f8fafc !important;
+}
+
+.marketingAdminPage p,
+.marketingAdminPage span,
+.marketingAdminPage small {
+  color: #cbd5e1 !important;
+}
+
+.marketingAdminPage input:not([type="checkbox"]),
+.marketingAdminPage select,
+.marketingAdminPage textarea {
+  background: #ffffff !important;
+  color: #111827 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+.marketingAdminPage input::placeholder {
+  color: #64748b !important;
+  opacity: 1 !important;
+}
+
+.marketingAdminPage button {
+  background-image: none !important;
+  background: #1e293b !important;
+  color: #f8fafc !important;
+  border: 1px solid #334155 !important;
+  box-shadow: none !important;
+}
+
+.marketingAdminPage button:hover {
+  background: #334155 !important;
+}
+
+.marketingAdminPage button[type="submit"] {
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+  color: #ffffff !important;
+  font-weight: 900 !important;
+}
+
+.marketingAdminPage button strong {
+  color: #ffffff !important;
+  font-size: 14px !important;
+  line-height: 1.35 !important;
+}
+
+.marketingAdminPage button strong + span {
+  display: block !important;
+  margin-top: 5px !important;
+  color: #bae6fd !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+}
+
+.marketingAdminPage label:has(input[type="checkbox"]) {
+  background: #111827 !important;
+  border: 1px solid #334155 !important;
+  color: #f8fafc !important;
+}
+
+.marketingAdminPage label:has(input[type="checkbox"]) strong {
+  color: #f8fafc !important;
+}
+
+.marketingAdminPage label:has(input[type="checkbox"]) small {
+  color: #94a3b8 !important;
+}
+
+.marketingAdminPage div[style*="background: #ffffff"],
+.marketingAdminPage div[style*="background:#ffffff"],
+.marketingAdminPage div[style*="background: #f9fafb"],
+.marketingAdminPage div[style*="background:#f9fafb"] {
+  background: #111827 !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+.marketingAdminPage div[style*="max-height"] {
+  background: #0b1220 !important;
+  border-color: #334155 !important;
+}
+
+.marketingAdminPage div[style*="background: #fff1f2"],
+.marketingAdminPage div[style*="background:#fff1f2"] {
+  background: #3b1d1d !important;
+  color: #fecaca !important;
+  border-color: #7f1d1d !important;
+}
+
+.marketingAdminPage div[style*="background: rgba(255,255,255"],
+.marketingAdminPage div[style*="background:rgba(255,255,255"] {
+  background: #111827 !important;
+  border-color: #334155 !important;
+}
+
+.marketingAdminPage input[type="checkbox"] {
+  accent-color: #dc2626 !important;
+}
+/* hmecha-marketing-readable-ui-v2-end */
