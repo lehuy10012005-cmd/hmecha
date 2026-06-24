@@ -154,7 +154,9 @@ export default function AdminProductsPage() {
         </div>
 
         <div className="actions">
-          
+          <Link href="/" className="ghostBtn">
+            Về website
+          </Link>
           <Link href="/admin/products/new" className="addBtn">
             + Thêm sản phẩm
           </Link>

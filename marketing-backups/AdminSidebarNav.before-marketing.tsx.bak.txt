@@ -13,10 +13,10 @@ const navItems = [
   { href: "/admin/bao-cao", label: "Báo cáo" },
   { href: "/admin/ma-giam-gia", label: "Mã giảm giá" },
   { href: "/admin/chatbot", label: "Chatbot" },
-  { href: "/admin/marketing", label: "Marketing" },
   { href: "/admin/khach-hang", label: "Khách hàng" },
   { href: "/admin/danh-gia", label: "Đánh giá" },
   { href: "/admin/phan-tich-san-pham", label: "Phân tích sản phẩm" },
+  { href: "/", label: "Về website" },
 ];
 
 function matchScore(pathname: string, href: string) {
@@ -47,16 +47,6 @@ export default function AdminSidebarNav() {
           .sort((a, b) => b.score - a.score)[0].href
       : "";
 
-  async function handleAdminLogout() {
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-    } catch {
-      // ignore
-    }
-
-    window.location.href = "/admin-login";
-  }
-
   return (
     <nav className="adminNav">
       {navItems.map((item) => (
@@ -68,9 +58,6 @@ export default function AdminSidebarNav() {
           {item.label}
         </Link>
       ))}
-          <button type="button" className="adminLogoutButton" onClick={handleAdminLogout}>
-        Đăng xuất
-      </button>
     </nav>
   );
 }

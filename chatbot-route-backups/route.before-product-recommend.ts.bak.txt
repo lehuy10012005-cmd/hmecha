@@ -1,0 +1,90 @@
+import { NextRequest, NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
+
+function normalizeText(value: string) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
+function hasAny(text: string, keywords: string[]) {
+  return keywords.some((keyword) => text.includes(keyword));
+}
+
+function getReply(message: string) {
+  const text = normalizeText(message);
+
+  if (!text) {
+    return "Bạn nhập nội dung cần hỏi nhé. HMECHA có thể hỗ trợ về sản phẩm, phí ship, thanh toán, mã giảm giá, đặt hàng hoặc bảo hành.";
+  }
+
+  if (hasAny(text, ["xin chao", "hello", "hi", "chao", "alo"])) {
+    return "Chào bạn, mình là HMECHA Assistant. Bạn cần tư vấn mô hình, hỏi phí ship, thanh toán hay tình trạng đơn hàng?";
+  }
+
+  if (hasAny(text, ["ship", "giao hang", "van chuyen", "phi giao", "phi ship"])) {
+    return "HMECHA hỗ trợ giao hàng toàn quốc. Phí ship phụ thuộc vào địa chỉ nhận hàng và sẽ được kiểm tra ở bước checkout. Một số chương trình khuyến mãi có thể hỗ trợ freeship.";
+  }
+
+  if (hasAny(text, ["thanh toan", "cod", "vnpay", "qr", "chuyen khoan"])) {
+    return "Website hỗ trợ COD khi nhận hàng và VNPAY/QR sandbox. Khi checkout, bạn chọn phương thức phù hợp rồi làm theo hướng dẫn trên màn hình.";
+  }
+
+  if (hasAny(text, ["ma giam gia", "voucher", "coupon", "khuyen mai", "sale", "flash sale"])) {
+    return "Bạn có thể nhập mã giảm giá ở trang checkout. Nếu mã còn hiệu lực và đúng điều kiện, hệ thống sẽ tự trừ tiền vào tổng đơn hàng.";
+  }
+
+  if (hasAny(text, ["dat hang", "mua hang", "checkout", "gio hang", "them vao gio"])) {
+    return "Để đặt hàng, bạn mở sản phẩm, chọn số lượng, bấm Mua ngay hoặc Thêm vào giỏ hàng, sau đó điền thông tin nhận hàng ở trang checkout.";
+  }
+
+  if (hasAny(text, ["don hang", "kiem tra don", "trang thai don", "ma don"])) {
+    return "Bạn đăng nhập tài khoản rồi vào mục Đơn hàng của tôi để xem trạng thái. Nếu cần shop kiểm tra nhanh, hãy gửi mã đơn hàng và số điện thoại đặt hàng.";
+  }
+
+  if (hasAny(text, ["het hang", "con hang", "ton kho", "preorder", "dat truoc", "sap ve"])) {
+    return "Nếu sản phẩm còn hàng, bạn có thể đặt mua trực tiếp. Nếu sản phẩm hết hàng, sắp về hoặc preorder, bạn có thể để lại email để HMECHA thông báo khi có cập nhật mới.";
+  }
+
+  if (hasAny(text, ["nguoi moi", "moi choi", "nen mua", "tu van", "goi y", "chon mau"])) {
+    return "Nếu bạn mới chơi mô hình, nên bắt đầu với HG hoặc Entry Grade vì dễ lắp, giá dễ tiếp cận và có nhiều mẫu đẹp. Nếu muốn chi tiết hơn, bạn có thể xem RG hoặc MG.";
+  }
+
+  if (hasAny(text, ["duoi 500", "500k", "re", "gia re", "gia tot"])) {
+    return "Với ngân sách dưới 500k, bạn nên xem các mẫu HG, Entry Grade, phụ kiện lắp ráp hoặc model kit nhỏ. Bạn cũng có thể dùng bộ lọc giá trên trang chủ để tìm nhanh hơn.";
+  }
+
+  if (hasAny(text, ["bao hanh", "doi tra", "loi", "thieu part", "giao sai", "hong"])) {
+    return "Nếu sản phẩm lỗi, thiếu part hoặc giao sai, bạn nên giữ hộp, runner và chụp ảnh/video tình trạng sản phẩm. Sau đó liên hệ HMECHA để được hỗ trợ kiểm tra.";
+  }
+
+  if (hasAny(text, ["admin", "nhan vien", "tu van vien", "gap shop", "lien he"])) {
+    return "Bạn có thể để lại nội dung cần hỗ trợ, mã đơn nếu có và số điện thoại. HMECHA sẽ kiểm tra và phản hồi cho bạn sớm nhất có thể.";
+  }
+
+  return "Mình đã nhận được câu hỏi của bạn. Bạn có thể hỏi rõ hơn về sản phẩm, phí ship, thanh toán, mã giảm giá, đặt hàng, preorder hoặc kiểm tra đơn hàng để mình hỗ trợ chính xác hơn.";
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const message = String(body.message || "");
+    const reply = getReply(message);
+
+    return NextResponse.json({
+      intent: "basic",
+      reply,
+    });
+  } catch {
+    return NextResponse.json(
+      {
+        intent: "error",
+        reply: "Chatbot đang gặp lỗi xử lý. Bạn thử gửi lại tin nhắn nhé.",
+      },
+      { status: 500 }
+    );
+  }
+}

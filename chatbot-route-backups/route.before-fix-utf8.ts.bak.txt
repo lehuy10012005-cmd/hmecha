@@ -1,0 +1,91 @@
+import { NextRequest, NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
+
+function normalizeText(value: string) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
+function hasAny(text: string, keywords: string[]) {
+  return keywords.some((keyword) => text.includes(keyword));
+}
+
+function getReply(message: string) {
+  const text = normalizeText(message);
+
+  if (!text) {
+    return "Bạn nhập nội dung cần hỏi nhé. HMECHA có thể hỗ trợ về sản phẩm, đặt hàng, phí ship, thanh toán hoặc bảo hành.";
+  }
+
+  if (hasAny(text, ["xin chao", "hello", "hi", "chao", "alo"])) {
+    return "Chào bạn, mình là HMECHA Assistant. Bạn cần tư vấn mô hình, hỏi phí ship, thanh toán hay tình trạng đơn hàng?";
+  }
+
+  if (hasAny(text, ["ship", "giao hang", "van chuyen", "phi giao", "phi ship"])) {
+    return "HMECHA hỗ trợ giao hàng toàn quốc. Phí ship sẽ phụ thuộc vào địa chỉ nhận hàng và có thể được tính khi checkout. Với một số chương trình khuyến mãi, đơn hàng có thể được hỗ trợ freeship.";
+  }
+
+  if (hasAny(text, ["thanh toan", "cod", "vnpay", "qr", "chuyen khoan"])) {
+    return "Website hiện hỗ trợ thanh toán COD khi nhận hàng và VNPAY/QR trong môi trường sandbox. Khi đặt hàng, bạn có thể chọn phương thức phù hợp ở trang checkout.";
+  }
+
+  if (hasAny(text, ["ma giam gia", "voucher", "coupon", "khuyen mai", "sale", "flash sale"])) {
+    return "HMECHA có thể áp dụng mã giảm giá hoặc voucher ở trang checkout. Bạn nhập mã vào ô mã giảm giá, nếu mã hợp lệ hệ thống sẽ tự trừ vào tổng tiền đơn hàng.";
+  }
+
+  if (hasAny(text, ["dat hang", "mua hang", "checkout", "gio hang", "them vao gio"])) {
+    return "Để đặt hàng, bạn chọn sản phẩm, bấm thêm vào giỏ hàng hoặc mua ngay, sau đó điền thông tin nhận hàng ở trang checkout và chọn phương thức thanh toán.";
+  }
+
+  if (hasAny(text, ["don hang", "kiem tra don", "trang thai don", "ma don"])) {
+    return "Bạn có thể đăng nhập tài khoản và vào mục Đơn hàng của tôi để xem trạng thái đơn. Nếu cần shop kiểm tra nhanh, bạn hãy gửi mã đơn hàng và số điện thoại đặt hàng.";
+  }
+
+  if (hasAny(text, ["het hang", "con hang", "ton kho", "preorder", "dat truoc", "sap ve"])) {
+    return "Nếu sản phẩm còn hàng, bạn có thể đặt mua trực tiếp. Nếu sản phẩm hết hàng, sắp về hoặc preorder, bạn có thể để lại email để HMECHA thông báo khi có cập nhật mới.";
+  }
+
+  if (hasAny(text, ["nguoi moi", "moi choi", "nen mua", "tu van", "goi y", "chon mau"])) {
+    return "Nếu bạn mới chơi mô hình, nên bắt đầu với HG hoặc Entry Grade vì dễ lắp, giá dễ tiếp cận và có nhiều mẫu đẹp. Nếu muốn chi tiết hơn, bạn có thể xem RG hoặc MG.";
+  }
+
+  if (hasAny(text, ["duoi 500", "500k", "re", "gia re", "gia tot"])) {
+    return "Với ngân sách dưới 500k, bạn nên xem các mẫu HG, Entry Grade, phụ kiện lắp ráp hoặc một số model kit nhỏ. Bạn có thể dùng bộ lọc giá trên trang chủ để tìm nhanh sản phẩm phù hợp.";
+  }
+
+  if (hasAny(text, ["bao hanh", "doi tra", "loi", "thieu part", "giao sai", "hong"])) {
+    return "Nếu sản phẩm bị lỗi, thiếu part hoặc giao sai, bạn nên giữ lại hộp, runner và chụp ảnh/video tình trạng sản phẩm. Sau đó liên hệ HMECHA để được hỗ trợ kiểm tra và xử lý.";
+  }
+
+  if (hasAny(text, ["admin", "nhan vien", "tu van vien", "gap shop", "lien he"])) {
+    return "Mình đã ghi nhận nhu cầu gặp shop. Bạn có thể để lại nội dung cần hỗ trợ, mã đơn nếu có và số điện thoại để HMECHA kiểm tra nhanh hơn.";
+  }
+
+  return "Mình đã nhận được câu hỏi của bạn. Hiện HMECHA Assistant có thể hỗ trợ các nội dung như tư vấn sản phẩm, phí ship, thanh toán, mã giảm giá, đặt hàng, preorder và kiểm tra đơn hàng. Bạn có thể hỏi cụ thể hơn để mình hỗ trợ chính xác nhé.";
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const message = String(body.message || "");
+
+    const reply = getReply(message);
+
+    return NextResponse.json({
+      intent: "basic",
+      reply,
+    });
+  } catch {
+    return NextResponse.json(
+      {
+        intent: "error",
+        reply: "Chatbot đang gặp lỗi xử lý. Bạn thử gửi lại tin nhắn nhé.",
+      },
+      { status: 500 }
+    );
+  }
+}
