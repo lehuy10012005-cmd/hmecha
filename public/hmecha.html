@@ -14156,7 +14156,8 @@ if (popularBox) popularBox.classList.add("d-none");
 
 
 
-<!-- hmecha-homepage-status-sync-start -->
+
+<!-- hmecha-homepage-status-stock-sync-start -->
 <script>
 (function () {
   function normalizeText(value) {
@@ -14179,55 +14180,156 @@ if (popularBox) popularBox.classList.add("d-none");
   }
 
   function getDisplayStatus(product) {
-    var status = normalizeText(product && product.status);
+    var rawStatus = String(product && product.status ? product.status : "");
+    var status = normalizeText(rawStatus);
     var stock = Number(product && product.stock_quantity);
 
-    if (status.includes("het hang")) return "Hết hàng";
-    if (status.includes("dat truoc") || status.includes("preorder") || status.includes("pre-order")) return "Đặt trước";
-    if (status.includes("con hang")) return "Còn hàng";
+    // Ưu tiên trạng thái đặt trước nếu đọc được
+    if (
+      status.includes("dat truoc") ||
+      status.includes("preorder") ||
+      status.includes("pre-order") ||
+      status.includes("pre order")
+    ) {
+      return "Đặt trước";
+    }
 
-    if (Number.isFinite(stock)) {
-      if (stock > 0) return "Còn hàng";
+    // Quan trọng nhất: nếu tồn kho > 0 thì phải là Còn hàng
+    if (Number.isFinite(stock) && stock > 0) {
+      return "Còn hàng";
+    }
+
+    if (Number.isFinite(stock) && stock <= 0) {
       return "Hết hàng";
     }
 
-    return product && product.status ? product.status : "Đang cập nhật";
-  }
+    if (status.includes("con hang")) return "Còn hàng";
+    if (status.includes("het hang")) return "Hết hàng";
 
-  function updateCard(form, product) {
-    var status = getDisplayStatus(product);
-
-    var stockText = form.querySelector(".inventory_quantity .a-stock");
-    if (stockText) {
-      stockText.textContent = status;
+    // Xử lý chuỗi lỗi mã hóa kiểu CÃ²n hÃ ng nếu còn sót
+    if (rawStatus.includes("CÃ") || rawStatus.includes("cÃ")) {
+      if (rawStatus.toLowerCase().includes("n")) return "Còn hàng";
     }
 
-    var button = form.querySelector(".product-button button");
-    if (button) {
-      if (status === "Hết hàng") {
-        button.disabled = true;
-        button.classList.add("disabled");
-        button.classList.remove("add_to_cart");
-        button.setAttribute("title", "Hết hàng");
-        button.textContent = "Hết hàng";
-      } else {
-        button.disabled = false;
-        button.classList.remove("disabled");
-        button.classList.add("add_to_cart");
-        button.setAttribute("title", status === "Đặt trước" ? "Đặt trước" : "Thêm vào giỏ");
-        button.textContent = status === "Đặt trước" ? "Đặt trước" : "Thêm vào giỏ";
+    return rawStatus || "Đang cập nhật";
+  }
+
+  function findProductCardsBySlug(slug) {
+    var links = Array.from(document.querySelectorAll('a[href*="' + slug + '"]'));
+    var cards = [];
+
+    links.forEach(function (link) {
+      var current = link;
+
+      while (current && current !== document.body) {
+        var text = normalizeText(current.textContent || "");
+        var hasProductInfo =
+          text.includes("tinh trang") ||
+          text.includes("het hang") ||
+          text.includes("con hang") ||
+          text.includes("dat truoc") ||
+          current.querySelector(".inventory_quantity, .a-stock, .product-action, .product-button");
+
+        if (hasProductInfo) {
+          cards.push(current);
+          return;
+        }
+
+        current = current.parentElement;
       }
-    }
 
-    var preorderBadge = form.querySelector(".pre-order");
-    if (preorderBadge) {
-      preorderBadge.style.display = status === "Đặt trước" ? "" : "none";
+      var fallback =
+        link.closest("form") ||
+        link.closest(".item_product_main") ||
+        link.closest(".product-item") ||
+        link.closest(".product-box") ||
+        link.closest(".swiper-slide") ||
+        link.parentElement;
+
+      if (fallback) cards.push(fallback);
+    });
+
+    return Array.from(new Set(cards));
+  }
+
+  function replaceStatusTextInCard(card, status) {
+    var statusTargets = Array.from(
+      card.querySelectorAll(".inventory_quantity .a-stock, .inventory_quantity, .a-stock")
+    );
+
+    statusTargets.forEach(function (target) {
+      if (normalizeText(target.textContent || "").includes("tinh trang")) {
+        var label = target.querySelector(".a-stock");
+        if (label) {
+          label.textContent = status;
+        } else {
+          target.textContent = "Tình trạng: " + status;
+        }
+      } else {
+        target.textContent = status;
+      }
+    });
+
+    // Fallback: nếu không tìm thấy class trạng thái thì thay text node chứa trạng thái cũ
+    if (statusTargets.length === 0) {
+      var walker = document.createTreeWalker(card, NodeFilter.SHOW_TEXT);
+      var nodes = [];
+
+      while (walker.nextNode()) {
+        var node = walker.currentNode;
+        var text = normalizeText(node.nodeValue || "");
+
+        if (
+          text.includes("het hang") ||
+          text.includes("con hang") ||
+          text.includes("dat truoc")
+        ) {
+          nodes.push(node);
+        }
+      }
+
+      nodes.forEach(function (node) {
+        node.nodeValue = node.nodeValue
+          .replace(/Hết hàng/g, status)
+          .replace(/Còn hàng/g, status)
+          .replace(/Đặt trước/g, status);
+      });
     }
   }
 
-  async function syncHomepageStatuses() {
+  function updateCardButtons(card, status) {
+    var buttons = Array.from(card.querySelectorAll("button"));
+
+    buttons.forEach(function (button) {
+      var text = normalizeText(button.textContent || button.getAttribute("title") || "");
+
+      if (
+        text.includes("het hang") ||
+        text.includes("them vao gio") ||
+        text.includes("dat truoc") ||
+        button.classList.contains("add_to_cart") ||
+        button.classList.contains("disabled")
+      ) {
+        if (status === "Hết hàng") {
+          button.disabled = true;
+          button.classList.add("disabled");
+          button.classList.remove("add_to_cart");
+          button.textContent = "Hết hàng";
+          button.setAttribute("title", "Hết hàng");
+        } else {
+          button.disabled = false;
+          button.classList.remove("disabled");
+          button.classList.add("add_to_cart");
+          button.textContent = status === "Đặt trước" ? "Đặt trước" : "Thêm vào giỏ";
+          button.setAttribute("title", status === "Đặt trước" ? "Đặt trước" : "Thêm vào giỏ");
+        }
+      }
+    });
+  }
+
+  async function syncHomepageProductStatuses() {
     try {
-      var response = await fetch("/api/home-products?ts=" + Date.now(), {
+      var response = await fetch("/api/home-products?t=" + Date.now(), {
         cache: "no-store"
       });
 
@@ -14236,41 +14338,40 @@ if (popularBox) popularBox.classList.add("d-none");
       var data = await response.json();
       var products = Array.isArray(data.products) ? data.products : [];
 
-      var productBySlug = new Map();
-
       products.forEach(function (product) {
-        if (product && product.slug) {
-          productBySlug.set(String(product.slug), product);
-        }
-      });
+        if (!product || !product.slug) return;
 
-      document.querySelectorAll("form.product-action").forEach(function (form) {
-        var link =
-          form.querySelector("a.image_thumb[href]") ||
-          form.querySelector(".product-name a[href]") ||
-          form.querySelector("a[href]");
+        var status = getDisplayStatus(product);
+        var cards = findProductCardsBySlug(String(product.slug));
 
-        if (!link) return;
-
-        var slug = getSlugFromHref(link.getAttribute("href") || link.href);
-        var product = productBySlug.get(slug);
-
-        if (!product) return;
-
-        updateCard(form, product);
+        cards.forEach(function (card) {
+          replaceStatusTextInCard(card, status);
+          updateCardButtons(card, status);
+        });
       });
     } catch (error) {
-      console.warn("Không đồng bộ được trạng thái sản phẩm trang chủ:", error);
+      console.warn("Không đồng bộ được trạng thái sản phẩm trang chính:", error);
     }
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", syncHomepageStatuses);
+    document.addEventListener("DOMContentLoaded", syncHomepageProductStatuses);
   } else {
-    syncHomepageStatuses();
+    syncHomepageProductStatuses();
   }
+
+  // Chạy lại vài lần vì sản phẩm trang chính có thể render sau khi HTML load
+  var runCount = 0;
+  var timer = setInterval(function () {
+    runCount += 1;
+    syncHomepageProductStatuses();
+
+    if (runCount >= 8) {
+      clearInterval(timer);
+    }
+  }, 700);
 })();
 </script>
-<!-- hmecha-homepage-status-sync-end -->
+<!-- hmecha-homepage-status-stock-sync-end -->
 </body>
 </html>
