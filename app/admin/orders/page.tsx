@@ -266,7 +266,7 @@ export default function AdminOrdersPage() {
           border-radius: 12px;
           padding: 12px 14px;
           background: white;
-          color: #111827;
+          color: #f8fafc;
           font-weight: 900;
         }
 
