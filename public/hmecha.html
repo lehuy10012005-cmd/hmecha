@@ -8991,7 +8991,7 @@ a[href^="tel:"] {
                 <div class="content_about_2">
 					<div class="section-title a-left font-title">
 						<h2>
-							Nơi Từng Chi Tiết Nhỏ Tạo Nên  <span>  Giá Trị Lớn</span>
+							Nơi Từng <strong class="hm-nowrap">Chi Tiết Nhỏ</strong> Tạo Nên <span>Giá Trị Lớn</span>
 						</h2>
 					</div>
 					<span class="content">
@@ -14518,6 +14518,50 @@ if (popularBox) popularBox.classList.add("d-none");
 </script>
 <!-- hmecha-newsletter-footer-end -->
 
+
+
+<style id="hmecha-font-sync-fix">
+/* Sửa chữ "Chi Tiết Nhỏ" không bị tách thành Tiế t */
+.section_about_2 .content_about_2 .section-title h2 .hm-nowrap {
+  white-space: nowrap !important;
+  color: inherit !important;
+  font: inherit !important;
+  letter-spacing: inherit !important;
+}
+
+/* Cho tiêu đề lọc sản phẩm dùng cùng kiểu font với phần "Nơi Từng Chi Tiết..." */
+.hmecha-filter-heading h2 {
+  margin: 0 !important;
+  color: #111827 !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: clamp(34px, 4vw, 46px) !important;
+  line-height: 1.2 !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.04em !important;
+  text-shadow: none !important;
+}
+
+.hmecha-filter-heading h2 span {
+  color: #d32f2f !important;
+  font-family: inherit !important;
+  font-weight: inherit !important;
+  letter-spacing: inherit !important;
+}
+
+/* Đồng bộ lại tiêu đề trong card chất lượng */
+.section_about_2 .content_about_2 .section-title h2 {
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.04em !important;
+  line-height: 1.2 !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+}
+
+.section_about_2 .content_about_2 .section-title h2 span {
+  color: #d32f2f !important;
+}
+</style>
 
 </body>
 </html>
