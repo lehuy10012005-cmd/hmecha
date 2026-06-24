@@ -304,7 +304,7 @@ export default function CartPage() {
           border: none;
           text-align: center;
           background: white;
-          color: #111827;
+          color: #f8fafc;
           font-weight: 900;
         }
 

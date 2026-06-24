@@ -1,3 +1,44 @@
+function getRandomQuickReplies() {
+  const fixed = [
+    "Tư vấn sản phẩm",
+    "Dưới 500k",
+    "Phí ship",
+  ];
+
+  const pool = [
+    "Dưới 1 triệu",
+    "1 - 2 triệu",
+    "Trên 2 triệu",
+    "Mô hình thôi",
+    "HG cho người mới",
+    "RG chi tiết",
+    "MG cao cấp",
+    "SD nhỏ gọn",
+    "Bandai",
+    "P-Bandai",
+    "Hàng mới",
+    "Còn hàng",
+    "Mua làm quà",
+    "Mẫu ngầu",
+    "Nhỏ gọn để bàn",
+    "Cao cấp trưng bày",
+    "Dụng cụ lắp ráp",
+    "Có cần keo không",
+    "Mã giảm giá",
+    "Thanh toán COD",
+    "VNPAY / QR",
+    "Quên mật khẩu",
+    "Đổi trả",
+    "Kiểm tra đơn",
+    "Gặp admin",
+    "Khác đi",
+    "Còn nữa không",
+  ];
+
+  const shuffled = [...pool].sort(() => Math.random() - 0.5);
+
+  return [...fixed, ...shuffled.slice(0, 9)];
+}
 "use client";
 
 import { useEffect, useMemo, useState } from "react";

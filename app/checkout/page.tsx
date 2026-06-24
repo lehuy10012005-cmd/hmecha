@@ -599,7 +599,7 @@ export default function CheckoutPage() {
           min-height: 100vh;
           padding: 34px 20px 80px;
           background: #f3f6fb;
-          color: #111827;
+          color: #f8fafc;
           font-family: Arial, "Helvetica Neue", sans-serif !important;
         }
 
@@ -643,7 +643,7 @@ export default function CheckoutPage() {
 
         .checkoutTop h1 {
           margin: 0;
-          color: #111827;
+          color: #f8fafc;
           font-size: clamp(30px, 4vw, 44px);
           line-height: 1.1;
           font-weight: 950;
@@ -652,7 +652,7 @@ export default function CheckoutPage() {
 
         .checkoutTop p {
           margin: 8px 0 0;
-          color: #6b7280;
+          color: #cbd5e1;
           font-size: 15px;
         }
 
@@ -683,7 +683,7 @@ export default function CheckoutPage() {
         .panelHeader h2,
         .sectionBlock h2 {
           margin: 0;
-          color: #111827;
+          color: #f8fafc;
           font-size: 24px;
           line-height: 1.2;
           font-weight: 900;
@@ -692,7 +692,7 @@ export default function CheckoutPage() {
 
         .panelHeader p {
           margin: 8px 0 0;
-          color: #6b7280;
+          color: #cbd5e1;
           line-height: 1.6;
           font-size: 14px;
         }
@@ -714,7 +714,7 @@ export default function CheckoutPage() {
         }
 
         .fieldGrid span {
-          color: #374151;
+          color: #e5e7eb;
           font-size: 13px;
           font-weight: 800;
         }
@@ -727,7 +727,7 @@ export default function CheckoutPage() {
           border-radius: 12px;
           padding: 14px 15px;
           background: #ffffff;
-          color: #111827;
+          color: #f8fafc;
           font-size: 15px;
           line-height: 1.4;
         }
@@ -785,7 +785,7 @@ export default function CheckoutPage() {
         .shippingOption b,
         .paymentList b {
           display: block;
-          color: #111827;
+          color: #f8fafc;
           margin-bottom: 5px;
           font-size: 14px;
           font-weight: 900;
@@ -793,7 +793,7 @@ export default function CheckoutPage() {
 
         .shippingOption small,
         .paymentList small {
-          color: #6b7280;
+          color: #cbd5e1;
           line-height: 1.45;
           font-size: 13px;
         }
@@ -848,7 +848,7 @@ export default function CheckoutPage() {
 
         .orderHeader h2 {
           margin: 0;
-          color: #111827;
+          color: #f8fafc;
           font-size: 23px;
           line-height: 1.2;
           font-weight: 900;
@@ -892,7 +892,7 @@ export default function CheckoutPage() {
 
         .cartItem h3 {
           margin: 0 0 7px;
-          color: #111827;
+          color: #f8fafc;
           font-size: 14px;
           line-height: 1.35;
           font-weight: 800;
@@ -923,7 +923,7 @@ export default function CheckoutPage() {
           padding: 0 8px;
           border-radius: 999px;
           background: #f3f4f6;
-          color: #374151;
+          color: #e5e7eb;
           font-size: 13px;
           font-weight: 900;
         }
@@ -1019,7 +1019,7 @@ export default function CheckoutPage() {
         }
 
         .summary b {
-          color: #111827;
+          color: #f8fafc;
           font-weight: 900;
         }
 
@@ -1035,7 +1035,7 @@ export default function CheckoutPage() {
         }
 
         .summary .total span {
-          color: #111827;
+          color: #f8fafc;
           font-size: 18px;
           font-weight: 800;
         }
